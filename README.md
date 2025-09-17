@@ -1,7 +1,7 @@
 
 
-Upload lang ng myhmsdb.sql
-database ngalang myhms.sql
+Import lang ng myhmsdb.sql sa Mysql
+ngalan myhmsdb
 
 
 
