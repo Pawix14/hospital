@@ -1,0 +1,5 @@
+- [x] Add "Add Doctor" button in Doctor Management tab
+- [x] Add modal form for adding a new doctor
+- [x] Add "Add Nurse" button in Nurse Management tab
+- [x] Add modal form for adding a new nurse
+- [ ] Test the functionality
