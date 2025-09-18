@@ -28,56 +28,93 @@ if(isset($_GET['pid']) && isset($_GET['fname']) && isset($_GET['lname'])) {
     $lname = $_GET['lname'];
 }
 
-if(isset($_POST['prescribe']) && isset($_POST['pid']) && isset($_POST['lname']) && isset($_POST['fname'])){
-    $fname = $_POST['fname'];
-    $lname = $_POST['lname'];
-    $pid = $_POST['pid'];
+    if(isset($_POST['prescribe']) && isset($_POST['pid']) && isset($_POST['lname']) && isset($_POST['fname'])){
+        $fname = $_POST['fname'];
+        $lname = $_POST['lname'];
+        $pid = $_POST['pid'];
 
-    if ($is_nurse) {
-        // Nurse prescription fields
-        $medicine_name = $_POST['medicine_name'];
-        $quantity = $_POST['quantity'];
-        $price_per_unit = $_POST['price_per_unit'];
-        $follow_up = $_POST['follow_up'];
+        if ($is_nurse) {
+            // Nurse prescription fields
+            $medicine_name = $_POST['medicine_name'];
+            $quantity = $_POST['quantity'];
+            $price_per_unit = $_POST['price_per_unit'];
+            $follow_up = $_POST['follow_up'];
+            $symptoms = $_POST['symptoms'] ?? '';  // Fix undefined variable
 
-        $price = $quantity * $price_per_unit;
-        $disease = "N/A";
-        $allergy = "N/A";
-        $prescription = "Medicine: $medicine_name, Qty: $quantity, Price: $price, Follow-up: $follow_up";
+            $price = $quantity * $price_per_unit;
+            $disease = "N/A";
+            $allergy = "N/A";
+            $prescription = "Medicine: $medicine_name, Qty: $quantity, Price: $price, Follow-up: $follow_up";
 
-        $query = mysqli_query($con, "INSERT INTO prestb(doctor, pid, fname, lname, symptoms, allergy, prescription, price) VALUES ('$doctor', '$pid', '$fname', '$lname', '$symptoms', '$allergy', '$prescription', '$price')");
-        if ($query) {
-            echo "<script>alert('Prescribed successfully!');</script>";
+            $query = mysqli_query($con, "INSERT INTO prestb(doctor, pid, fname, lname, symptoms, allergy, prescription, price) VALUES ('$doctor', '$pid', '$fname', '$lname', '$symptoms', '$allergy', '$prescription', '$price')");
+            if ($query) {
+                // Decrement medicine quantity in medicinetb for nurse prescription
+                $update_qty_query = "UPDATE medicinetb SET quantity = quantity - $quantity WHERE medicine_name = '$medicine_name' AND quantity >= $quantity";
+                mysqli_query($con, $update_qty_query);
+
+                echo "<script>alert('Prescribed successfully!');</script>";
+            } else {
+                echo "<script>alert('Unable to process your request. Try again!');</script>";
+            }
         } else {
-            echo "<script>alert('Unable to process your request. Try again!');</script>";
-        }
-    } else {
 
-        $diagnosis_details = $_POST['diagnosis_details'];
-        $allergy = $_POST['allergy'];
-        $medicines = $_POST['medicines'];
-        $price = $_POST['price'];
+            $diagnosis_details = $_POST['diagnosis_details'];
+            $allergy = $_POST['allergy'];
+            $medicines = $_POST['medicines'];
+            $medicine_quantities = $_POST['medicine_quantities'];
+            $dosages = isset($_POST['dosage']) ? $_POST['dosage'] : [];
+            $frequencies = isset($_POST['frequency']) ? $_POST['frequency'] : [];
+            $durations = isset($_POST['duration']) ? $_POST['duration'] : [];
+            $price = $_POST['price'];
 
-    
-        $medicine_names = [];
-        $total_price = 0;
-        foreach ($medicines as $med_id) {
-            $med_query = mysqli_query($con, "SELECT medicine_name, price FROM medicinetb WHERE id = '$med_id'");
-            if ($med_row = mysqli_fetch_array($med_query)) {
-                $medicine_names[] = $med_row['medicine_name'];
-                $total_price += $med_row['price'];
+            $medicine_names = [];
+            $total_price = 0;
+            $insufficient_stock = false;
+            foreach ($medicines as $med_id) {
+                $quantity_prescribed = isset($medicine_quantities[$med_id]) ? intval($medicine_quantities[$med_id]) : 0;
+                $med_query = mysqli_query($con, "SELECT medicine_name, price, quantity FROM medicinetb WHERE id = '$med_id'");
+                if ($med_row = mysqli_fetch_array($med_query)) {
+                    if ($med_row['quantity'] < $quantity_prescribed) {
+                        $insufficient_stock = true;
+                        break;
+                    }
+                    $medicine_names[] = $med_row['medicine_name'];
+                    $total_price += $med_row['price'] * $quantity_prescribed;
+                }
+            }
+            if ($insufficient_stock) {
+                echo "<script>alert('Insufficient stock for one or more medicines. Please adjust quantities.');</script>";
+            } else {
+                $prescribed_medicines = implode(', ', $medicine_names);
+                $symptoms = $_POST['symptoms'] ?? '';  // Fix undefined variable in doctor block
+
+                // Prepare prescription details with dosage, frequency, and duration
+                $prescription_details = [];
+                foreach ($medicines as $med_id) {
+                    $med_name = '';
+                    $med_query = mysqli_query($con, "SELECT medicine_name FROM medicinetb WHERE id = '$med_id'");
+                    if ($med_row = mysqli_fetch_array($med_query)) {
+                        $med_name = $med_row['medicine_name'];
+                    }
+                    $prescription_details[] = $med_name;
+                }
+                $prescription_str = implode(', ', $prescription_details);
+
+                $query = mysqli_query($con, "INSERT INTO prestb(doctor, pid, fname, lname, allergy, prescription, price, symptoms, diagnosis_details, prescribed_medicines, dosage, frequency, duration) VALUES ('$doctor', '$pid', '$fname', '$lname', '$allergy', '$prescription_str', '$total_price', '$symptoms', '$diagnosis_details', '$prescribed_medicines', '" . implode(',', $dosages) . "', '" . implode(',', $frequencies) . "', '" . implode(',', $durations) . "')");
+                if ($query) {
+                    // Decrement medicine quantity in medicinetb for doctor prescription
+                    foreach ($medicines as $med_id) {
+                        $quantity_prescribed = isset($medicine_quantities[$med_id]) ? intval($medicine_quantities[$med_id]) : 0;
+                        $update_qty_query = "UPDATE medicinetb SET quantity = quantity - $quantity_prescribed WHERE id = '$med_id' AND quantity >= $quantity_prescribed";
+                        mysqli_query($con, $update_qty_query);
+                    }
+                    echo "<script>alert('Prescribed successfully!');</script>";
+                } else {
+                    echo "<script>alert('Unable to process your request. Try again!');</script>";
+                }
             }
         }
-        $prescribed_medicines = implode(', ', $medicine_names);
-
-        $query = mysqli_query($con, "INSERT INTO prestb(doctor, pid, fname, lname, allergy, prescription, price, symptoms, diagnosis_details, prescribed_medicines) VALUES ('$doctor', '$pid', '$fname', '$lname', '$allergy', '$prescribed_medicines', '$total_price', '$symptoms', '$diagnosis_details', '$prescribed_medicines')");
-        if ($query) {
-            echo "<script>alert('Prescribed successfully!');</script>";
-        } else {
-            echo "<script>alert('Unable to process your request. Try again!');</script>";
-        }
     }
-}
 
 ?>
 
@@ -388,7 +425,7 @@ if(isset($_POST['prescribe']) && isset($_POST['pid']) && isset($_POST['lname']) 
                                     <div class="col-md-3">
                                         <label class="required-field">Known Allergies:</label>
                                     </div>
-                                    <div class="col-md-9">
+                                    <div c  lass="col-md-9">
                                         <select id="allergy" name="allergy" class="form-control" required>
                                             <option value="">Select Allergy</option>
                                             <option value="None">None</option>
@@ -408,16 +445,49 @@ if(isset($_POST['prescribe']) && isset($_POST['pid']) && isset($_POST['lname']) 
                                         <label class="required-field">Prescribe Medicines:</label>
                                     </div>
                                     <div class="col-md-9">
-                                        <select id="medicines" name="medicines[]" class="form-control" multiple="multiple" size="5" required>
-                                            <?php
-                                            $medicine_query = "SELECT id, medicine_name, price FROM medicinetb WHERE quantity > 0";
-                                            $medicine_result = mysqli_query($con, $medicine_query);
-                                            while ($med = mysqli_fetch_array($medicine_result)) {
-                                                echo '<option value="' . $med['id'] . '" data-price="' . $med['price'] . '">' . $med['medicine_name'] . ' - $' . $med['price'] . '</option>';
-                                            }
-                                            ?>
-                                        </select>
-                                        <small class="form-text text-muted">Hold Ctrl/Cmd to select multiple medicines.</small>
+                                <div id="medicine-quantity-container">
+                                    <?php
+                                    $medicine_query = "SELECT id, medicine_name, price, quantity FROM medicinetb WHERE quantity > 0";
+                                    $medicine_result = mysqli_query($con, $medicine_query);
+                                    $modern_prices = [
+                                        'Paracetamol' => 10.50,
+                                        'Ibuprofen' => 15.75,
+                                        'Amoxicillin' => 15.20,
+                                        'Aspirin' => 30.40,
+                                        'Insulin' => 45.00,
+                                        'Vitamin D' => 25.30,
+                                        'Antihistamine' => 50.60,
+                                        'Cough Syrup' => 70.00,
+                                        'Bandages' => 30.10,
+                                        'Antiseptic Cream' => 20.50
+                                    ];
+                                    while ($med = mysqli_fetch_array($medicine_result)) {
+                                        $price = $med['price'];
+                                        if (array_key_exists($med['medicine_name'], $modern_prices)) {
+                                            $price = $modern_prices[$med['medicine_name']];
+                                        }
+                                        echo '<div class="form-group row align-items-center mb-2">';
+                                        echo '<div class="col-md-4">';
+                                        echo '<input type="checkbox" class="form-check-input medicine-checkbox" id="med_' . $med['id'] . '" name="medicines[]" value="' . $med['id'] . '" data-price="' . $price . '" data-name="' . htmlspecialchars($med['medicine_name']) . '">';
+                                        echo '<label class="form-check-label" for="med_' . $med['id'] . '">' . htmlspecialchars($med['medicine_name']) . ' - ₱' . number_format($price, 2) . ' (Available: ' . $med['quantity'] . ')</label>';
+                                        echo '</div>';
+                                        echo '<div class="col-md-2">';
+                                        echo '<input type="number" class="form-control medicine-quantity" name="medicine_quantities[' . $med['id'] . ']" min="1" max="' . $med['quantity'] . '" value="1" disabled placeholder="Qty">';
+                                        echo '</div>';
+                                        echo '<div class="col-md-2">';
+                                        echo '<input type="text" class="form-control" name="dosage[' . $med['id'] . ']" placeholder="Dosage" disabled>';
+                                        echo '</div>';
+                                        echo '<div class="col-md-2">';
+                                        echo '<input type="text" class="form-control" name="frequency[' . $med['id'] . ']" placeholder="Frequency" disabled>';
+                                        echo '</div>';
+                                        echo '<div class="col-md-2">';
+                                        echo '<input type="text" class="form-control" name="duration[' . $med['id'] . ']" placeholder="Duration" disabled>';
+                                        echo '</div>';
+                                        echo '</div>';
+                                    }
+                                    ?>
+                                </div>
+                                <small class="form-text text-muted">Select medicines and specify quantities.</small>
                                     </div>
                                 </div>
                                 
@@ -438,7 +508,7 @@ if(isset($_POST['prescribe']) && isset($_POST['pid']) && isset($_POST['lname']) 
                                     </div>
                                     <div class="col-md-9">
                                         <div class="total-price-container">
-                                            $<span id="total-price">0.00</span>
+                                            ₱<span id="total-price">0.00</span>
                                         </div>
                                         <input type="hidden" id="total_price" name="price" value="0" required />
                                     </div>
@@ -469,47 +539,79 @@ if(isset($_POST['prescribe']) && isset($_POST['pid']) && isset($_POST['lname']) 
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const medicinesSelect = document.getElementById('medicines');
+            const medicineCheckboxes = document.querySelectorAll('.medicine-checkbox');
             const totalPriceElement = document.getElementById('total-price');
             const totalPriceInput = document.getElementById('total_price');
             const selectedMedicationsContainer = document.getElementById('selected-medications');
-            
-            if (medicinesSelect) {
-                medicinesSelect.addEventListener('change', function() {
+
+            function updateMedicationSummary() {
+                let total = 0;
+                let medicationsHTML = '';
+                medicineCheckboxes.forEach(checkbox => {
+                    if (checkbox.checked) {
+                        const medId = checkbox.value;
+                        const medName = checkbox.getAttribute('data-name');
+                        const price = parseFloat(checkbox.getAttribute('data-price'));
+                        const quantityInput = document.querySelector('input[name="medicine_quantities[' + medId + ']"]');
+                        const quantity = quantityInput ? parseInt(quantityInput.value) : 0;
+                        const medTotal = price * quantity;
+                        total += medTotal;
+
+                        medicationsHTML += `
+                            <div class="medication-item">
+                                <div class="d-flex justify-content-between">
+                                    <span>${medName} x ${quantity}</span>
+                                    <span>₱${medTotal.toFixed(2)}</span>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+
+                if (medicationsHTML === '') {
+                    medicationsHTML = '<p class="text-muted">No medications selected</p>';
+                }
+
+                selectedMedicationsContainer.innerHTML = medicationsHTML;
+                totalPriceElement.textContent = total.toFixed(2);
+                totalPriceInput.value = total.toFixed(2);
+            }
+
+            medicineCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const medId = this.value;
+                    const quantityInput = document.querySelector('input[name="medicine_quantities[' + medId + ']"]');
+                    const dosageInput = document.querySelector('input[name="dosage[' + medId + ']"]');
+                    const frequencyInput = document.querySelector('input[name="frequency[' + medId + ']"]');
+                    const durationInput = document.querySelector('input[name="duration[' + medId + ']"]');
+                    if (this.checked) {
+                        quantityInput.disabled = false;
+                        dosageInput.disabled = false;
+                        frequencyInput.disabled = false;
+                        durationInput.disabled = false;
+                    } else {
+                        quantityInput.disabled = true;
+                        quantityInput.value = 1;
+                        dosageInput.disabled = true;
+                        dosageInput.value = '';
+                        frequencyInput.disabled = true;
+                        frequencyInput.value = '';
+                        durationInput.disabled = true;
+                        durationInput.value = '';
+                    }
                     updateMedicationSummary();
                 });
-                
-                function updateMedicationSummary() {
-                    const selectedOptions = this.selectedOptions;
-                    let total = 0;
-                    let medicationsHTML = '';
-                    
-                    if (selectedOptions.length > 0) {
-                        for (let i = 0; i < selectedOptions.length; i++) {
-                            const option = selectedOptions[i];
-                            const price = parseFloat(option.getAttribute('data-price'));
-                            total += price;
-                            
-                            medicationsHTML += `
-                                <div class="medication-item">
-                                    <div class="d-flex justify-content-between">
-                                        <span>${option.text}</span>
-                                        <span>$${price.toFixed(2)}</span>
-                                    </div>
-                                </div>
-                            `;
-                        }
-                    } else {
-                        medicationsHTML = '<p class="text-muted">No medications selected</p>';
-                    }
-                    
-                    selectedMedicationsContainer.innerHTML = medicationsHTML;
-                    totalPriceElement.textContent = total.toFixed(2);
-                    totalPriceInput.value = total.toFixed(2);
-                }
-                
-                updateMedicationSummary.call(medicinesSelect);
-            }
+            });
+
+            const quantityInputs = document.querySelectorAll('.medicine-quantity');
+            quantityInputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    if (this.value < 1) this.value = 1;
+                    updateMedicationSummary();
+                });
+            });
+
+            updateMedicationSummary();
         });
     </script>
 </body>

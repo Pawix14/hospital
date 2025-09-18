@@ -1,19 +1,16 @@
 <!-- JavaScript for Modal Functions -->
 <script>
-function editPatient(pid, fname, lname, gender, email, contact, age, address, blood_group, emergency_contact, emergency_contact_name) {
+function editPatient(pid, fname, lname, gender, email, password, contact, age, address) {
     document.getElementById('edit_pid').value = pid;
     document.getElementById('edit_fname').value = fname;
     document.getElementById('edit_lname').value = lname;
     document.getElementById('edit_gender').value = gender;
     document.getElementById('edit_email').value = email;
+    document.getElementById('edit_password').value = password;
     document.getElementById('edit_contact').value = contact;
     document.getElementById('edit_age').value = age;
     document.getElementById('edit_address').value = address;
-    document.getElementById('edit_blood_group').value = blood_group;
-    document.getElementById('edit_emergency_contact').value = emergency_contact;
-    document.getElementById('edit_emergency_contact_name').value = emergency_contact_name;
 }
-
 function editDoctor(id, fname, lname, email, contact, specialization, qualification, experience, fee, status) {
     document.getElementById('edit_doctor_id').value = id;
     document.getElementById('edit_doctor_fname').value = fname;
@@ -37,4 +34,22 @@ function editNurse(id, fname, lname, email, contact, department, shift, status) 
     document.getElementById('edit_nurse_shift').value = shift;
     document.getElementById('edit_nurse_status').value = status;
 }
+document.addEventListener('DOMContentLoaded', function () {
+    const togglePassword = document.getElementById('togglePassword');
+    if (togglePassword) {
+        togglePassword.addEventListener('click', function () {
+            const passwordInput = document.getElementById('edit_password');
+            const icon = this.querySelector('i');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    }
+});
 </script>

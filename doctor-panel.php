@@ -157,476 +157,525 @@ if (isset($_POST['mark_ready'])) {
 ?>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="stylesheet" type="text/css" href="font-awesome-4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="vendor/fontawesome/css/font-awesome.min.css">
-    <link rel="shortcut icon" type="image/x-icon" href="images/favicon.png" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
-    <link href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans&display=swap" rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Dashboard - Madridano Health Care Hospital</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-      .btn-outline-light:hover{
-        color: #25bef7;
-        background-color: #f8f9fa;
-        border-color: #f8f9fa;
-      }
-      .bg-primary {
-        background: -webkit-linear-gradient(left, #3931af, #00c6ff);
-      }
-      .list-group-item.active {
-        z-index: 2;
-        color: #fff;
-        background-color: #342ac1;
-        border-color: #007bff;
-      }
-      .text-primary {
-        color: #342ac1!important;
-      }
-      button:hover{cursor:pointer;}
-      #inputbtn:hover{cursor:pointer;}
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #fdbb2d 0%, #22c1c3 100%);
+        }
 
-      .modal {
-        z-index: 1050 !important;
-      }
-      .modal-backdrop {
-        z-index: 1040 !important;
-      }
-      #list-dash .container-fluid {
-        position: relative;
-        z-index: 1;
-      }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+        }
+
+        .navbar-glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .navbar-brand {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            color: white !important;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card {
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            color: white;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .sidebar {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 20px;
+            pointer-events: auto !important;
+            z-index: 10;
+        }
+
+        .nav-pills .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+            pointer-events: auto !important;
+            z-index: 10;
+        }
+
+        .nav-pills .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .nav-pills .nav-link.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .table-glass {
+            background: transparent;
+            color: #2c3e50;
+        }
+
+        .table-glass th {
+            background: rgba(255, 255, 255, 0.2);
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .welcome-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .welcome-header h2 {
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+        }
+
+        .welcome-header p {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .badge-lg {
+            padding: 8px 12px;
+            font-size: 0.9rem;
+        }
+
+        .btn-outline-light:hover {
+            color: #25bef7;
+            background-color: #f8f9fa;
+            border-color: #f8f9fa;
+        }
+
+        .modal {
+            z-index: 1050 !important;
+        }
+        .modal-backdrop {
+            z-index: 1040 !important;
+        }
     </style>
 </head>
-<body style="padding-top:50px;">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
-        <a class="navbar-brand" href="#"><i class="fa fa-user-plus" aria-hidden="true"></i> Madridano Health Care Hospital </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
 
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav mr-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="logout.php"><i class="fa fa-sign-out" aria-hidden="true"></i>Logout</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#"></a>
-                </li>
-            </ul>
-            <form class="form-inline my-2 my-lg-0" method="post" action="search.php">
-                <input class="form-control mr-sm-2" type="text" placeholder="Enter contact number" aria-label="Search" name="contact">
-                <input type="submit" class="btn btn-outline-light" id="inputbtn" name="search_submit" value="Search">
-            </form>
+<body>
+    <nav class="navbar navbar-expand-lg fixed-top navbar-glass">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-hospital-symbol me-2"></i>
+                Madridano Health Care Hospital
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="nav-link text-white">
+                    <i class="fas fa-user-md me-1"></i>Dr. <?php echo $doctor; ?>
+                </span>
+                <a class="nav-link text-white" href="logout.php">
+                    <i class="fas fa-sign-out-alt me-1"></i>Logout
+                </a>
+            </div>
         </div>
     </nav>
 
-    <div class="container-fluid" style="margin-top:50px;">
-        <h3 style="margin-left: 40%; padding-bottom: 20px;font-family:'IBM Plex Sans', sans-serif;"> Welcome &nbsp<?php echo $_SESSION['dname'] ?>  </h3>
+    <div class="container-fluid" style="padding-top: 100px;">
+        <div class="welcome-header">
+            <h2>Welcome, Dr. <?php echo $doctor; ?>!</h2>
+            <p>Doctor Dashboard - Manage patient diagnostics, treatments, and medical care</p>
+        </div>
+
         <div class="row">
-            <div class="col-md-4" style="max-width:18%;margin-top: 3%;">
-                <div class="list-group" id="list-tab" role="tablist" style="background-color: #f8f9fa; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-                    <a class="list-group-item list-group-item-action active d-flex align-items-center" id="list-dash-list" href="#list-dash" role="tab" aria-controls="home" data-toggle="list" style="border-radius: 8px; background-color: #007bff; color: white;">
-                        <i class="fa fa-tachometer mr-2"></i> Dashboard
-                    </a>
-                    <a class="list-group-item list-group-item-action d-flex align-items-center" id="list-patients-list" href="#list-patients" role="tab" data-toggle="list" aria-controls="home" style="border-radius: 8px; color: #495057;">
-                        <i class="fa fa-procedures mr-2"></i> My Assigned Patients
-                    </a>
-                    <a class="list-group-item list-group-item-action d-flex align-items-center" id="list-diagnostics-list" href="#list-diagnostics" role="tab" data-toggle="list" aria-controls="home" style="border-radius: 8px; color: #495057;">
-                        <i class="fa fa-stethoscope mr-2"></i> Diagnostics
-                    </a>
-                    <a class="list-group-item list-group-item-action d-flex align-items-center" id="list-lab-requests-list" href="#list-lab-requests" role="tab" data-toggle="list" aria-controls="home" style="border-radius: 8px; color: #495057;">
-                        <i class="fa fa-flask mr-2"></i> Lab Requests
-                    </a>
-                    <a class="list-group-item list-group-item-action d-flex align-items-center" id="list-services-list" href="#list-services" role="tab" data-toggle="list" aria-controls="home" style="border-radius: 8px; color: #495057;">
-                        <i class="fa fa-file-medical-alt mr-2"></i> Service Reports
-                    </a>
-                </div><br>
+            <!-- Sidebar -->
+            <div class="col-lg-3 col-md-4">
+                <div class="sidebar">
+                    <div class="nav flex-column nav-pills" role="tablist">
+                        <a class="nav-link active" role="tab" data-toggle="tab" href="#dashboard" aria-controls="dashboard" aria-selected="true" id="dashboard-tab">
+                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                        </a>
+                        <a class="nav-link" role="tab" data-toggle="tab" href="#patients" aria-controls="patients" aria-selected="false" id="patients-tab">
+                            <i class="fas fa-procedures me-2"></i>My Assigned Patients
+                        </a>
+                        <a class="nav-link" role="tab" data-toggle="tab" href="#diagnostics" aria-controls="diagnostics" aria-selected="false" id="diagnostics-tab">
+                            <i class="fas fa-stethoscope me-2"></i>Diagnostics
+                        </a>
+                        <a class="nav-link" role="tab" data-toggle="tab" href="#lab-requests" aria-controls="lab-requests" aria-selected="false" id="lab-requests-tab">
+                            <i class="fas fa-flask me-2"></i>Lab Requests
+                        </a>
+                        <a class="nav-link" role="tab" data-toggle="tab" href="#services" aria-controls="services" aria-selected="false" id="services-tab">
+                            <i class="fas fa-file-medical-alt me-2"></i>Service Reports
+                        </a>
+                    </div>
+                </div>
             </div>
-            <div class="col-md-8" style="margin-top: 3%;">
-                <div class="tab-content" id="nav-tabContent">
-                    <div class="tab-pane fade show active" id="list-dash" role="tabpanel" aria-labelledby="list-dash-list">
-                        <div class="container-fluid" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 30px;">
-                            <div class="row mb-4">
-                                <div class="col-12">
-                                    <div class="card border-0 shadow-lg" style="background: rgba(255,255,255,0.95); border-radius: 20px;">
-                                        <div class="card-body text-center py-4">
-                                            <h2 class="mb-2" style="color: #2c3e50; font-weight: 700;">
-                                                <i class="fa fa-user-md text-primary me-3"></i>Doctor Dashboard
-                                            </h2>
-                                            <p class="text-muted mb-0">Welcome Dr. <?php echo $doctor; ?> - Madridano Health Care Hospital</p>
-                                            <small class="text-muted">Manage patient diagnostics, treatments, and medical care</small>
-                                        </div>
-                                    </div>
+            
+            <div class="col-lg-9 col-md-8">
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="dashboard" role="tabpanel" aria-labelledby="dashboard-tab">
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-6 col-lg-3">
+                                <div class="stat-card" style="background: var(--primary-gradient);">
+                                    <i class="fas fa-procedures fa-3x mb-3"></i>
+                                    <h3>
+                                        <?php
+                                        $dname = $_SESSION['dname'];
+                                        $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM admissiontb WHERE assigned_doctor='$dname' AND status != 'Discharged'");
+                                        $row = mysqli_fetch_assoc($result);
+                                        echo $row['total'];
+                                        ?>
+                                    </h3>
+                                    <p>My Patients</p>
                                 </div>
                             </div>
-                            <div class="row g-4 mb-4">
-                                <div class="col-lg-3 col-md-6">
-                                    <div class="card border-0 shadow-lg h-100" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px;">
-                                        <div class="card-body text-center text-white p-4">
-                                            <div class="mb-3">
-                                                <i class="fa fa-procedures fa-3x opacity-75"></i>
-                                            </div>
-                                            <h3 class="fw-bold mb-2">
-                                                <?php
-                                                $dname = $_SESSION['dname'];
-                                                $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM admissiontb WHERE assigned_doctor='$dname' AND status != 'Discharged'");
-                                                $row = mysqli_fetch_assoc($result);
-                                                echo $row['total'];
-                                                ?>
-                                            </h3>
-                                            <p class="mb-3 opacity-90">My Patients</p>
-                                            <button class="btn btn-light btn-sm fw-bold" onclick="$('#list-patients-list').click()">
-                                                <i class="fa fa-eye me-1"></i>View All
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-3 col-md-6">
-                                    <div class="card border-0 shadow-lg h-100" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); border-radius: 15px;">
-                                        <div class="card-body text-center text-white p-4">
-                                            <div class="mb-3">
-                                                <i class="fa fa-stethoscope fa-3x opacity-75"></i>
-                                            </div>
-                                            <h3 class="fw-bold mb-2">
-                                                <?php
-                                                $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM diagnosticstb WHERE doctor_name='$dname'");
-                                                $row = mysqli_fetch_assoc($result);
-                                                echo $row['total'];
-                                                ?>
-                                            </h3>
-                                            <p class="mb-3 opacity-90">Diagnostics Made</p>
-                                            <button class="btn btn-light btn-sm fw-bold" onclick="$('#list-diagnostics-list').click()">
-                                                <i class="fa fa-plus me-1"></i>Add New
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-3 col-md-6">
-                                    <div class="card border-0 shadow-lg h-100" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 15px;">
-                                        <div class="card-body text-center text-white p-4">
-                                            <div class="mb-3">
-                                                <i class="fa fa-flask fa-3x opacity-75"></i>
-                                            </div>
-                                            <h3 class="fw-bold mb-2">
-                                                <?php
-                                                $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM labtesttb lt JOIN admissiontb a ON lt.pid = a.pid WHERE a.assigned_doctor='$dname'");
-                                                $row = mysqli_fetch_assoc($result);
-                                                echo $row['total'];
-                                                ?>
-                                            </h3>
-                                            <p class="mb-3 opacity-90">Lab Tests Ordered</p>
-                                            <button class="btn btn-light btn-sm fw-bold" onclick="$('#list-lab-requests-list').click()">
-                                                <i class='fa fa-vial me-1'></i>Order Tests
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-3 col-md-6">
-                                    <div class="card border-0 shadow-lg h-100" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border-radius: 15px;">
-                                        <div class="card-body text-center text-white p-4">
-                                            <div class="mb-3">
-                                                <i class="fa fa-money-bill fa-3x opacity-75"></i>
-                                            </div>
-                                            <h3 class="fw-bold mb-2">
-                                                <?php
-                                                $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM patient_chargstb pc JOIN admissiontb a ON pc.pid = a.pid WHERE a.assigned_doctor='$dname'");
-                                                $row = mysqli_fetch_assoc($result);
-                                                echo $row['total'];
-                                                ?>
-                                            </h3>
-                                            <p class="mb-3 opacity-90">Charges Applied</p>
-                                            <button class="btn btn-light btn-sm fw-bold" onclick="$('#list-services-list').click()">
-                                                <i class="fa fa-chart-line me-1"></i>View Report
-                                            </button>
-                                        </div>
-                                    </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="stat-card" style="background: var(--secondary-gradient);">
+                                    <i class="fas fa-stethoscope fa-3x mb-3"></i>
+                                    <h3>
+                                        <?php
+                                        $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM diagnosticstb WHERE doctor_name='$dname'");
+                                        $row = mysqli_fetch_assoc($result);
+                                        echo $row['total'];
+                                        ?>
+                                    </h3>
+                                    <p>Diagnostics Made</p>
                                 </div>
                             </div>
-
-                            <div class="row g-4">
-                                <div class="col-lg-4">
-                                    <div class="card border-0 shadow-lg h-100" style="background: rgba(255,255,255,0.95); border-radius: 15px;">
-                                        <div class="card-body text-center p-4">
-                                            <div class="mb-3">
-                                                <i class="fa fa-user-injured fa-3x text-primary"></i>
-                                            </div>
-                                            <h5 class="fw-bold mb-3" style="color: #2c3e50;">Patient Management</h5>
-                                            <p class="text-muted mb-3">View and manage your assigned patients</p>
-                                            <button class="btn btn-primary fw-bold" onclick="$('#list-patients-list').click()">
-                                                <i class="fa fa-users me-1"></i>View My Patients
-                                            </button>
-                                        </div>
-                                    </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="stat-card" style="background: var(--warning-gradient);">
+                                    <i class="fas fa-flask fa-3x mb-3"></i>
+                                    <h3>
+                                        <?php
+                                        $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM labtesttb lt JOIN admissiontb a ON lt.pid = a.pid WHERE a.assigned_doctor='$dname'");
+                                        $row = mysqli_fetch_assoc($result);
+                                        echo $row['total'];
+                                        ?>
+                                    </h3>
+                                    <p>Lab Tests Ordered</p>
                                 </div>
-                                <div class="col-lg-4">
-                                    <div class="card border-0 shadow-lg h-100" style="background: rgba(255,255,255,0.95); border-radius: 15px;">
-                                        <div class="card-body text-center p-4">
-                                            <div class="mb-3">
-                                                <i class="fa fa-diagnoses fa-3x text-success"></i>
-                                            </div>
-                                            <h5 class="fw-bold mb-3" style="color: #2c3e50;">Medical Diagnostics</h5>
-                                            <p class="text-muted mb-3">Create diagnoses and treatment plans</p>
-                                            <button class="btn btn-success fw-bold" onclick="$('#list-diagnostics-list').click()">
-                                                <i class="fa fa-stethoscope me-1"></i>Add Diagnosis
-                                            </button>
-                                        </div>
-                                    </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="stat-card" style="background: var(--success-gradient);">
+                                    <i class="fas fa-money-bill fa-3x mb-3"></i>
+                                    <h3>
+                                        <?php
+                                        $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM patient_chargstb pc JOIN admissiontb a ON pc.pid = a.pid WHERE a.assigned_doctor='$dname'");
+                                        $row = mysqli_fetch_assoc($result);
+                                        echo $row['total'];
+                                        ?>
+                                    </h3>
+                                    <p>Charges Applied</p>
                                 </div>
-                                <div class="col-lg-4">
-                                    <div class="card border-0 shadow-lg h-100" style="background: rgba(255,255,255,0.95); border-radius: 15px;">
-                                        <div class="card-body text-center p-4">
-                                            <div class="mb-3">
-                                                <i class="fa fa-chart-pie fa-3x text-info"></i>
-                                            </div>
-                                            <h5 class="fw-bold mb-3" style="color: #2c3e50;">Today's Summary</h5>
-                                            <div class="row text-center">
-                                                <div class="col-6">
-                                                    <h6 class="text-primary fw-bold">
-                                                        <?php
-                                                        $today = date('Y-m-d');
-                                                        $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM diagnosticstb WHERE doctor_name='$dname' AND DATE(created_date) = '$today'");
-                                                        $row = mysqli_fetch_assoc($result);
-                                                        echo $row['total'];
-                                                        ?>
-                                                    </h6>
-                                                    <small class="text-muted">Today's Diagnoses</small>
-                                                </div>
-                                                <div class="col-6">
-                                                    <h6 class="text-warning fw-bold">
-                                                        <?php
-                                                        $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM admissiontb WHERE assigned_doctor='$dname' AND status='Ready for Discharge'");
-                                                        $row = mysqli_fetch_assoc($result);
-                                                        echo $row['total'];
-                                                        ?>
-                                                    </h6>
-                                                    <small class="text-muted">Ready for Discharge</small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                            </div>
+                        </div>
+                        
+                        <div class="glass-card p-4 mb-4">
+                            <h4 class="text-dark mb-4">
+                                <i class="fas fa-user-md me-2"></i>Doctor Dashboard
+                            </h4>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Doctor Name:</strong> Dr. <?php echo $doctor; ?></p>
+                                    <p><strong>Total Patients:</strong> 
+                                        <?php
+                                        $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM admissiontb WHERE assigned_doctor='$dname' AND status != 'Discharged'");
+                                        $row = mysqli_fetch_assoc($result);
+                                        echo $row['total'];
+                                        ?>
+                                    </p>
+                                    <p><strong>Diagnostics Today:</strong> 
+                                        <?php
+                                        $today = date('Y-m-d');
+                                        $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM diagnosticstb WHERE doctor_name='$dname' AND DATE(created_date) = '$today'");
+                                        $row = mysqli_fetch_assoc($result);
+                                        echo $row['total'];
+                                        ?>
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Ready for Discharge:</strong> 
+                                        <?php
+                                        $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM admissiontb WHERE assigned_doctor='$dname' AND status='Ready for Discharge'");
+                                        $row = mysqli_fetch_assoc($result);
+                                        echo $row['total'];
+                                        ?>
+                                    </p>
+                                    <p><strong>Lab Tests Today:</strong> 
+                                        <?php
+                                        $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM labtesttb WHERE suggested_by_doctor='$dname' AND DATE(requested_date) = '$today'");
+                                        $row = mysqli_fetch_assoc($result);
+                                        echo $row['total'];
+                                        ?>
+                                    </p>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <div class="tab-pane fade" id="list-patients" role="tabpanel" aria-labelledby="list-patients-list">
-                        <div class="table-responsive">
-                            <table class="table table-hover table-striped table-bordered">
-                                <thead class="thead-light">
-                                    <tr>
-                                        <th scope="col">Patient ID</th>
-                                        <th scope="col">Name</th>
-                                        <th scope="col">Age</th>
-                                        <th scope="col">Gender</th>
-                                        <th scope="col">Contact</th>
-                                        <th scope="col">Room</th>
-                                        <th scope="col">Admission Date</th>
-                                        <th scope="col">Reason</th>
-                                        <th scope="col">Status</th>
-                                        <th scope="col">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php 
-                                    $con=mysqli_connect("localhost","root","","myhmsdb");
-                                    global $con;
-                                    $dname = $_SESSION['dname'];
-                                    $query = "SELECT pid, fname, lname, age, gender, contact, room_number, admission_date, reason, status FROM admissiontb WHERE assigned_doctor='$dname' AND status != 'Discharged'";
-                                    $result = mysqli_query($con,$query);
-                                    while ($row = mysqli_fetch_array($result)){
-                                    ?>
-                                    <tr>
-                                        <td><?php echo $row['pid'];?></td>
-                                        <td><?php echo $row['fname'] . ' ' . $row['lname'];?></td>
-                                        <td><?php echo $row['age'];?></td>
-                                        <td><?php echo $row['gender'];?></td>
-                                        <td><?php echo $row['contact'];?></td>
-                                        <td><?php echo $row['room_number'];?></td>
-                                        <td><?php echo $row['admission_date'];?></td>
-                                        <td><?php echo substr($row['reason'], 0, 50) . '...';?></td>
-                                        <td><span class="badge badge-info"><?php echo $row['status'];?></span></td>
-                                        <td>
-                                            <button type="button" class="btn btn-primary btn-sm mb-1" data-toggle="modal" data-target="#diagnosisModal-<?php echo $row['pid']; ?>">
-                                                <i class="fa fa-stethoscope"></i> Diagnose
-                                            </button>
-                                            <button type="button" class="btn btn-info btn-sm mb-1" data-toggle="modal" data-target="#suggestLabModal-<?php echo $row['pid']; ?>">
-                                                <i class="fa fa-flask"></i> Lab Test
-                                            </button>
-                    <button type="button" class="btn btn-success btn-sm mb-1" data-toggle="modal" data-target="#addServiceModal-<?php echo $row['pid']; ?>">
-                        <i class="fa fa-plus"></i> Add Service
-                    </button>
-<button type="button" class="btn btn-warning btn-sm mb-1" onclick="markReady(<?php echo $row['pid']; ?>)">
-    <i class="fa fa-check"></i> Ready for Discharge
-</button>
-<a href="prescribe.php?pid=<?php echo $row['pid']; ?>&fname=<?php echo urlencode($row['fname']); ?>&lname=<?php echo urlencode($row['lname']); ?>" class="btn btn-success btn-sm mb-1">
-    <i class="fa fa-prescription-bottle-alt"></i> Prescribe Medicine
-</a>
-<button type="button" class="btn btn-secondary btn-sm mb-1" data-toggle="modal" data-target="#viewPrescriptionsModal-<?php echo $row['pid']; ?>">
-    <i class="fa fa-file-medical"></i> View Prescriptions
-</button>
-                                        </td>
-                                    </tr>
-                                    <?php } ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div class="tab-pane fade" id="list-diagnostics" role="tabpanel" aria-labelledby="list-diagnostics-list">
-                        <h4>Patient Diagnostics History</h4>
-                        <div class="table-responsive">
-                            <table class="table table-hover table-striped">
-                                <thead class="thead-light">
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Patient</th>
-                                        <th>Symptoms</th>
-                                        <th>Diagnosis</th>
-                                        <th>Treatment Plan</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php
-                                    $diagnostics_query = "SELECT d.*, a.fname, a.lname FROM diagnosticstb d 
-                                                        JOIN admissiontb a ON d.pid = a.pid 
-                                                        WHERE d.doctor_name = '$doctor' 
-                                                        ORDER BY d.created_date DESC, d.created_time DESC";
-                                    $diagnostics_result = mysqli_query($con, $diagnostics_query);
-                                    while ($diag = mysqli_fetch_array($diagnostics_result)) {
-                                        echo "<tr>
-                                            <td>{$diag['created_date']}<br><small>{$diag['created_time']}</small></td>
-                                            <td>{$diag['fname']} {$diag['lname']}<br><small>ID: {$diag['pid']}</small></td>
-                                            <td>" . substr($diag['symptoms'], 0, 50) . "...</td>
-                                            <td>" . substr($diag['diagnosis'], 0, 50) . "...</td>
-                                            <td>" . substr($diag['treatment_plan'], 0, 50) . "...</td>
+                    
+                    <div class="tab-pane fade" id="patients" role="tabpanel" aria-labelledby="patients-tab">
+                        <div class="glass-card p-4">
+                            <h4 class="text-dark mb-4">
+                                <i class="fas fa-procedures me-2"></i>My Assigned Patients
+                            </h4>
+                            <div class="table-responsive">
+                                <table class="table table-glass">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Patient ID</th>
+                                            <th scope="col">Name</th>
+                                            <th scope="col">Age</th>
+                                            <th scope="col">Gender</th>
+                                            <th scope="col">Contact</th>
+                                            <th scope="col">Room</th>
+                                            <th scope="col">Admission Date</th>
+                                            <th scope="col">Reason</th>
+                                            <th scope="col">Status</th>
+                                            <th scope="col">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php 
+                                        $con=mysqli_connect("localhost","root","","myhmsdb");
+                                        global $con;
+                                        $dname = $_SESSION['dname'];
+                                        $query = "SELECT pid, fname, lname, age, gender, contact, room_number, admission_date, reason, status FROM admissiontb WHERE assigned_doctor='$dname' AND status != 'Discharged'";
+                                        $result = mysqli_query($con,$query);
+                                        while ($row = mysqli_fetch_array($result)){
+                                        ?>
+                                        <tr>
+                                            <td><?php echo $row['pid'];?></td>
+                                            <td><?php echo $row['fname'] . ' ' . $row['lname'];?></td>
+                                            <td><?php echo $row['age'];?></td>
+                                            <td><?php echo $row['gender'];?></td>
+                                            <td><?php echo $row['contact'];?></td>
+                                            <td><?php echo $row['room_number'];?></td>
+                                            <td><?php echo $row['admission_date'];?></td>
+                                            <td><?php echo substr($row['reason'], 0, 50) . '...';?></td>
+                                            <td><span class="badge badge-info badge-lg"><?php echo $row['status'];?></span></td>
                                             <td>
-                                                <button class='btn btn-info btn-sm' data-toggle='modal' data-target='#viewDiagnosisModal-{$diag['id']}'>
-                                                    <i class='fa fa-eye'></i> View
+                                                <button type="button" class="btn btn-primary btn-sm mb-1" data-toggle="modal" data-target="#diagnosisModal-<?php echo $row['pid']; ?>">
+                                                    <i class="fas fa-stethoscope"></i> Diagnose
                                                 </button>
-                                            </td>
-                                        </tr>";
-                                    }
-                                    ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <div class="tab-pane fade" id="list-lab-requests" role="tabpanel" aria-labelledby="list-lab-requests-list">
-                        <h4>Lab Test Requests</h4>
-                        <div class="table-responsive">
-                            <table class="table table-hover table-striped">
-                                <thead class="thead-light">
-                                    <tr>
-                                        <th>Request Date</th>
-                                        <th>Patient</th>
-                                        <th>Test Name</th>
-                                        <th>Priority</th>
-                                        <th>Scheduled Date</th>
-                                        <th>Price</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php
-                                    $lab_query = "SELECT lt.*, a.fname, a.lname FROM labtesttb lt 
-                                                JOIN admissiontb a ON lt.pid = a.pid 
-                                                WHERE lt.suggested_by_doctor = '$doctor' 
-                                                ORDER BY lt.requested_date DESC, lt.requested_time DESC";
-                                    $lab_result = mysqli_query($con, $lab_query);
-                                    while ($lab = mysqli_fetch_array($lab_result)) {
-                                        $status_class = '';
-                                        if ($lab['status'] == 'Completed') $status_class = 'badge-success';
-                                        elseif ($lab['status'] == 'Pending') $status_class = 'badge-warning';
-                                        elseif ($lab['status'] == 'In Progress') $status_class = 'badge-info';
-                                        else $status_class = 'badge-secondary';
-                                        
-                                        echo "<tr>
-                                            <td>{$lab['requested_date']}<br><small>{$lab['requested_time']}</small></td>
-                                            <td>{$lab['fname']} {$lab['lname']}<br><small>ID: {$lab['pid']}</small></td>
-                                            <td>{$lab['test_name']}</td>
-                                            <td><span class='badge badge-primary'>{$lab['priority']}</span></td>
-                                            <td>{$lab['scheduled_date']}</td>
-                                            <td>₱{$lab['price']}</td>
-                                            <td><span class='badge {$status_class}'>{$lab['status']}</span></td>
-                                            <td>
-                                                <button class='btn btn-info btn-sm' data-toggle='modal' data-target='#viewLabResultModal-{$lab['id']}'>
-                                                    <i class='fa fa-eye'></i> View
+                                                <button type="button" class="btn btn-info btn-sm mb-1" data-toggle="modal" data-target="#suggestLabModal-<?php echo $row['pid']; ?>">
+                                                    <i class="fas fa-flask"></i> Lab Test
                                                 </button>
+                                                <button type="button" class="btn btn-success btn-sm mb-1" data-toggle="modal" data-target="#addServiceModal-<?php echo $row['pid']; ?>">
+                                                    <i class="fas fa-plus"></i> Add Service
+                                                </button>
+                                                <button type="button" class="btn btn-warning btn-sm mb-1" onclick="markReady(<?php echo $row['pid']; ?>)">
+                                                    <i class="fas fa-check"></i> Ready for Discharge
+                                                </button>
+                                                <a href="prescribe.php?pid=<?php echo $row['pid']; ?>&fname=<?php echo urlencode($row['fname']); ?>&lname=<?php echo urlencode($row['lname']); ?>" class="btn btn-success btn-sm mb-1">
+                                                    <i class="fas fa-prescription-bottle-alt"></i> Prescribe Medicine
+                                                </a>
                                             </td>
-                                        </tr>";
-                                    }
-                                    ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div class="tab-pane fade" id="list-services" role="tabpanel" aria-labelledby="list-services-list">
-                        <h4>Service Charges Management</h4>
-                        <div class="card mb-4">
-                            <div class="card-header bg-primary text-white">
-                                <h5 class="mb-0">Patient Services</h5>
+                                        </tr>
+                                        <?php } ?>
+                                    </tbody>
+                                </table>
                             </div>
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-hover table-striped">
-                                        <thead class="thead-light">
-                                            <tr>
-                                                <th>Patient</th>
-                                                <th>Service</th>
-                                                <th>Quantity</th>
-                                                <th>Unit Price</th>
-                                                <th>Total Price</th>
-                                                <th>Date</th>
-                                                <th>Description</th>
-                                                <th>Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php
-                                            $services_query = "SELECT pc.*, a.fname, a.lname, s.service_name 
-                                                            FROM patient_chargstb pc 
-                                                            JOIN admissiontb a ON pc.pid = a.pid 
-                                                            JOIN servicestb s ON pc.service_id = s.id 
-                                                            WHERE a.assigned_doctor = '$doctor' 
-                                                            ORDER BY pc.added_date DESC, pc.added_time DESC";
-                                            $services_result = mysqli_query($con, $services_query);
-                                            while ($service = mysqli_fetch_array($services_result)) {
-                                                echo "<tr>
-                                                    <td>{$service['fname']} {$service['lname']}<br><small>ID: {$service['pid']}</small></td>
-                                                    <td>{$service['service_name']}</td>
-                                                    <td>{$service['quantity']}</td>
-                                                    <td>₱{$service['unit_price']}</td>
-                                                    <td><strong>₱{$service['total_price']}</strong></td>
-                                                    <td>{$service['added_date']}<br><small>{$service['added_time']}</small></td>
-                                                    <td>" . (strlen($service['description']) > 50 ? substr($service['description'], 0, 50) . '...' : $service['description']) . "</td>
-                                                    <td>
-                                                        <button class='btn btn-info btn-sm mb-1 edit-service-btn' 
-                                                                data-id='{$service['id']}' 
-                                                                data-pid='{$service['pid']}'
-                                                                data-quantity='{$service['quantity']}'
-                                                                data-description='{$service['description']}'>
-                                                            <i class='fa fa-edit'></i> Edit
-                                                        </button>
-                                                        <button class='btn btn-danger btn-sm mb-1 delete-service-btn' 
-                                                                data-id='{$service['id']}' 
-                                                                data-pid='{$service['pid']}'
-                                                                data-service='{$service['service_name']}'>
-                                                            <i class='fa fa-trash'></i> Delete
-                                                        </button>
-                                                    </td>
-                                                </tr>";
-                                            }
-                                            ?>
-                                        </tbody>
-                                    </table>
-                                </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-pane fade" id="diagnostics" role="tabpanel" aria-labelledby="diagnostics-tab">
+                        <div class="glass-card p-4">
+                            <h4 class="text-dark mb-4">
+                                <i class="fas fa-stethoscope me-2"></i>Patient Diagnostics History
+                            </h4>
+                            <div class="table-responsive">
+                                <table class="table table-glass">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Patient</th>
+                                            <th>Symptoms</th>
+                                            <th>Diagnosis</th>
+                                            <th>Treatment Plan</th>
+                                            <th>Prescription</th>
+                                            <th>Dosage</th>
+                                            <th>Frequency</th>
+                                            <th>Duration</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php
+                                        $diagnostics_query = "SELECT d.*, a.fname, a.lname, p.prescription, p.dosage, p.frequency, p.duration FROM diagnosticstb d 
+                                                            JOIN admissiontb a ON d.pid = a.pid 
+                                                            LEFT JOIN prestb p ON d.pid = p.pid AND d.doctor_name = p.doctor
+                                                            WHERE d.doctor_name = '$doctor' 
+                                                            ORDER BY d.created_date DESC, d.created_time DESC";
+                                        $diagnostics_result = mysqli_query($con, $diagnostics_query);
+                                        while ($diag = mysqli_fetch_array($diagnostics_result)) {
+                                            echo "<tr>
+                                                <td>{$diag['created_date']}<br><small>{$diag['created_time']}</small></td>
+                                                <td>{$diag['fname']} {$diag['lname']}<br><small>ID: {$diag['pid']}</small></td>
+                                                <td>" . substr($diag['symptoms'], 0, 50) . "...</td>
+                                                <td>" . substr($diag['diagnosis'], 0, 50) . "...</td>
+                                                <td>" . substr($diag['treatment_plan'], 0, 50) . "...</td>
+                                                <td>" . (isset($diag['prescription']) ? $diag['prescription'] : 'N/A') . "</td>
+                                                <td>" . (isset($diag['dosage']) ? $diag['dosage'] : 'N/A') . "</td>
+                                                <td>" . (isset($diag['frequency']) ? $diag['frequency'] : 'N/A') . "</td>
+                                                <td>" . (isset($diag['duration']) ? $diag['duration'] : 'N/A') . "</td>
+                                                <td>
+                                                    <button class='btn btn-info btn-sm' data-toggle='modal' data-target='#viewDiagnosisModal-{$diag['id']}'>
+                                                        <i class='fas fa-eye'></i> View
+                                                    </button>
+                                                </td>
+                                            </tr>";
+                                        }
+                                        ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-pane fade" id="lab-requests" role="tabpanel" aria-labelledby="lab-requests-tab">
+                        <div class="glass-card p-4">
+                            <h4 class="text-dark mb-4">
+                                <i class="fas fa-flask me-2"></i>Lab Test Requests
+                            </h4>
+                            <div class="table-responsive">
+                                <table class="table table-glass">
+                                    <thead>
+                                        <tr>
+                                            <th>Request Date</th>
+                                            <th>Patient</th>
+                                            <th>Test Name</th>
+                                            <th>Priority</th>
+                                            <th>Scheduled Date</th>
+                                            <th>Price</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php
+                                        $lab_query = "SELECT lt.*, a.fname, a.lname FROM labtesttb lt 
+                                                    JOIN admissiontb a ON lt.pid = a.pid 
+                                                    WHERE lt.suggested_by_doctor = '$doctor' 
+                                                    ORDER BY lt.requested_date DESC, lt.requested_time DESC";
+                                        $lab_result = mysqli_query($con, $lab_query);
+                                        while ($lab = mysqli_fetch_array($lab_result)) {
+                                            $status_class = '';
+                                            if ($lab['status'] == 'Completed') $status_class = 'badge-success';
+                                            elseif ($lab['status'] == 'Pending') $status_class = 'badge-warning';
+                                            elseif ($lab['status'] == 'In Progress') $status_class = 'badge-info';
+                                            else $status_class = 'badge-secondary';
+                                            
+                                            echo "<tr>
+                                                <td>{$lab['requested_date']}<br><small>{$lab['requested_time']}</small></td>
+                                                <td>{$lab['fname']} {$lab['lname']}<br><small>ID: {$lab['pid']}</small></td>
+                                                <td>{$lab['test_name']}</td>
+                                                <td><span class='badge badge-primary badge-lg'>{$lab['priority']}</span></td>
+                                                <td>{$lab['scheduled_date']}</td>
+                                                <td>₱{$lab['price']}</td>
+                                                <td><span class='badge {$status_class} badge-lg'>{$lab['status']}</span></td>
+                                                <td>
+                                                    <button class='btn btn-info btn-sm' data-toggle='modal' data-target='#viewLabResultModal-{$lab['id']}'>
+                                                        <i class='fas fa-eye'></i> View
+                                                    </button>
+                                                </td>
+                                            </tr>";
+                                        }
+                                        ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-pane fade" id="services" role="tabpanel" aria-labelledby="services-tab">
+                        <div class="glass-card p-4">
+                            <h4 class="text-dark mb-4">
+                                <i class="fas fa-file-medical-alt me-2"></i>Service Charges Management
+                            </h4>
+                            <div class="table-responsive">
+                                <table class="table table-glass">
+                                    <thead>
+                                        <tr>
+                                            <th>Patient</th>
+                                            <th>Service</th>
+                                            <th>Quantity</th>
+                                            <th>Unit Price</th>
+                                            <th>Total Price</th>
+                                            <th>Date</th>
+                                            <th>Description</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php
+                                        $services_query = "SELECT pc.*, a.fname, a.lname, s.service_name 
+                                                        FROM patient_chargstb pc 
+                                                        JOIN admissiontb a ON pc.pid = a.pid 
+                                                        JOIN servicestb s ON pc.service_id = s.id 
+                                                        WHERE a.assigned_doctor = '$doctor' 
+                                                        ORDER BY pc.added_date DESC, pc.added_time DESC";
+                                        $services_result = mysqli_query($con, $services_query);
+                                        while ($service = mysqli_fetch_array($services_result)) {
+                                            echo "<tr>
+                                                <td>{$service['fname']} {$service['lname']}<br><small>ID: {$service['pid']}</small></td>
+                                                <td>{$service['service_name']}</td>
+                                                <td>{$service['quantity']}</td>
+                                                <td>₱{$service['unit_price']}</td>
+                                                <td><strong>₱{$service['total_price']}</strong></td>
+                                                <td>{$service['added_date']}<br><small>{$service['added_time']}</small></td>
+                                                <td>" . (strlen($service['description']) > 50 ? substr($service['description'], 0, 50) . '...' : $service['description']) . "</td>
+                                                <td>
+                                                    <button class='btn btn-info btn-sm mb-1 edit-service-btn' 
+                                                            data-id='{$service['id']}' 
+                                                            data-pid='{$service['pid']}'
+                                                            data-quantity='{$service['quantity']}'
+                                                            data-description='{$service['description']}'>
+                                                        <i class='fas fa-edit'></i> Edit
+                                                    </button>
+                                                    <button class='btn btn-danger btn-sm mb-1 delete-service-btn' 
+                                                            data-id='{$service['id']}' 
+                                                            data-pid='{$service['pid']}'
+                                                            data-service='{$service['service_name']}'>
+                                                        <i class='fas fa-trash'></i> Delete
+                                                    </button>
+                                                </td>
+                                            </tr>";
+                                        }
+                                        ?>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -634,6 +683,7 @@ if (isset($_POST['mark_ready'])) {
             </div>
         </div>
     </div>
+
     <?php
     $con=mysqli_connect("localhost","root","","myhmsdb");
     $dname = $_SESSION['dname'];
@@ -641,7 +691,6 @@ if (isset($_POST['mark_ready'])) {
     $result = mysqli_query($con,$query);
     while ($row = mysqli_fetch_array($result)){
     ?>
- <?php echo $row['pid']; ?>
     <div class="modal fade" id="diagnosisModal-<?php echo $row['pid']; ?>" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
             <form method="post" action="doctor-panel.php" class="modal-content">
@@ -696,7 +745,6 @@ if (isset($_POST['mark_ready'])) {
         </div>
     </div>
 
- <?php echo $row['pid']; ?>
     <div class="modal fade" id="suggestLabModal-<?php echo $row['pid']; ?>" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <form method="post" action="doctor-panel.php" class="modal-content">
@@ -712,15 +760,15 @@ if (isset($_POST['mark_ready'])) {
                         <label>Test Name</label>
                         <select name="test_name" class="form-control" onchange="updateLabPrice(this, <?php echo $row['pid']; ?>)" required>
                             <option value="">Select Test</option>
-                            <option value="Complete Blood Count (CBC)" data-price="45.00">Complete Blood Count (CBC) - ₱450.00</option>
-                            <option value="Blood Sugar Test" data-price="25.00">Blood Sugar Test - ₱250.00</option>
-                            <option value="Urine Analysis" data-price="30.00">Urine Analysis - ₱300.00</option>
+                            <option value="Complete Blood Count (CBC)" data-price="450.00">Complete Blood Count (CBC) - ₱450.00</option>
+                            <option value="Blood Sugar Test" data-price="250.00">Blood Sugar Test - ₱250.00</option>
+                            <option value="Urine Analysis" data-price="300.00">Urine Analysis - ₱300.00</option>
                             <option value="Chest X-Ray" data-price="150.00">Chest X-Ray - ₱150.00</option>
                             <option value="ECG" data-price="100.00">ECG - ₱100.00</option>
                             <option value="MRI Brain" data-price="500.00">MRI Brain - ₱500.00</option>
                             <option value="CT Scan" data-price="400.00">CT Scan - ₱400.00</option>
-                            <option value="Liver Function Test" data-price="60.00">Liver Function Test - ₱600.00</option>
-                            <option value="Kidney Function Test" data-price="55.00">Kidney Function Test - ₱550.00</option>
+                            <option value="Liver Function Test" data-price="600.00">Liver Function Test - ₱600.00</option>
+                            <option value="Kidney Function Test" data-price="550.00">Kidney Function Test - ₱550.00</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -748,7 +796,6 @@ if (isset($_POST['mark_ready'])) {
         </div>
     </div>
 
- <?php echo $row['pid']; ?> 
     <div class="modal fade" id="addServiceModal-<?php echo $row['pid']; ?>" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <form method="post" action="doctor-panel.php" class="modal-content">
@@ -768,18 +815,22 @@ if (isset($_POST['mark_ready'])) {
                             $service_query = "SELECT id, service_name, price FROM servicestb WHERE status = 'Active'";
                             $service_result = mysqli_query($con, $service_query);
                             while ($service = mysqli_fetch_array($service_result)) {
-                                echo "<option value='{$service['id']}' data-price='{$service['price']}'>{$service['service_name']} - \${$service['price']}</option>";
+                                echo "<option value='{$service['id']}' data-price='{$service['price']}'>{$service['service_name']} - ₱{$service['price']}</option>";
                             }
                             ?>
                         </select>
                     </div>
                     <div class="form-group">
                         <label>Quantity</label>
-                        <input type="number" name="quantity" class="form-control" value="1" min="1" required>
+                        <input type="number" name="quantity" id="service_quantity_<?php echo $row['pid']; ?>" class="form-control" value="1" min="1" required>
                     </div>
                     <div class="form-group">
                         <label>Unit Price</label>
                         <input type="number" step="0.01" id="service_price_<?php echo $row['pid']; ?>" class="form-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Total Price</label>
+                        <input type="number" step="0.01" id="service_total_price_<?php echo $row['pid']; ?>" name="price" class="form-control" readonly>
                     </div>
                     <div class="form-group">
                         <label>Description</label>
@@ -823,6 +874,7 @@ if (isset($_POST['mark_ready'])) {
             </form>
         </div>
     </div>
+
     <div class="modal fade" id="deleteServiceModal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <form method="post" action="doctor-panel.php" class="modal-content">
@@ -966,6 +1018,10 @@ if (isset($_POST['mark_ready'])) {
     </div>
     <?php } ?>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
+    
     <script>
         function updateLabPrice(select, pid) {
             var price = $(select).find(':selected').data('price');
@@ -975,8 +1031,21 @@ if (isset($_POST['mark_ready'])) {
         function updateServicePrice(select, pid) {
             var price = $(select).find(':selected').data('price');
             $('#service_price_' + pid).val(price);
+            updateServiceTotalPrice(pid);
         }
-        
+
+        function updateServiceTotalPrice(pid) {
+            var quantity = parseInt($('#service_quantity_' + pid).val()) || 0;
+            var unitPrice = parseFloat($('#service_price_' + pid).val()) || 0;
+            var totalPrice = quantity * unitPrice;
+            $('#service_total_price_' + pid).val(totalPrice.toFixed(2));
+        }
+
+        $(document).on('input', '[id^=service_quantity_]', function() {
+            var pid = this.id.split('_').pop();
+            updateServiceTotalPrice(pid);
+        });
+
         function markReady(pid) {
             if (confirm("Are you sure you want to mark this patient as ready for discharge?")) {
                 var form = document.createElement("form");
@@ -1013,6 +1082,7 @@ if (isset($_POST['mark_ready'])) {
 
             $('#editServiceModal').modal('show');
         });
+
         $(document).on('click', '.delete-service-btn', function() {
             var chargeId = $(this).data('id');
             var pid = $(this).data('pid');
@@ -1024,9 +1094,10 @@ if (isset($_POST['mark_ready'])) {
 
             $('#deleteServiceModal').modal('show');
         });
+
         $(function () {
             $('[data-toggle="tooltip"]').tooltip()
-        })
+        });
     </script>
 </body>
 </html>

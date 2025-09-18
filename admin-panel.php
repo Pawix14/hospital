@@ -1,4 +1,4 @@
-
+    
 <?php
 session_start();
 
@@ -30,46 +30,46 @@ if (isset($_POST['update_payment'])) {
         echo "<script>alert('Payment status updated successfully!');</script>";
     }
 }
-if (isset($_POST['update_patient'])) {
-    $pid = $_POST['pid'];
-    $fname = $_POST['fname'];
-    $lname = $_POST['lname'];
-    $gender = $_POST['gender'];
-    $email = $_POST['email'];
-    $contact = $_POST['contact'];
-    $age = $_POST['age'];
-    $address = $_POST['address'];
-    $blood_group = $_POST['blood_group'];
-    $emergency_contact = $_POST['emergency_contact'];
-    $emergency_contact_name = $_POST['emergency_contact_name'];
-    $password = $_POST['password'] ?? null; 
-    
-    $update_query = "UPDATE admissiontb SET fname='$fname', lname='$lname', gender='$gender', email='$email', contact='$contact', age='$age', address='$address', blood_group='$blood_group', emergency_contact='$emergency_contact', emergency_contact_name='$emergency_contact_name' WHERE pid='$pid'";
-    $update_patreg_query = "UPDATE patreg SET fname='$fname', lname='$lname', gender='$gender', email='$email', contact='$contact'";
-    if ($password !== null && $password !== '') {
-        $update_patreg_query .= ", password='$password'";
+    if (isset($_POST['update_patient'])) {
+        $pid = $_POST['pid'];
+        $fname = $_POST['fname'];
+        $lname = $_POST['lname'];
+        $gender = $_POST['gender'];
+        $email = $_POST['email'];
+        $contact = $_POST['contact'];
+        $age = $_POST['age'];
+        $address = $_POST['address'];
+        $blood_group = $_POST['blood_group'];
+        $emergency_contact = $_POST['emergency_contact'];
+        $emergency_contact_name = $_POST['emergency_contact_name'];
+        $password = $_POST['password'] ?? null; 
+        
+        // Store password in plaintext for admin panel only
+        $update_query = "UPDATE admissiontb SET fname='$fname', lname='$lname', gender='$gender', email='$email', contact='$contact', age='$age', address='$address', blood_group='$blood_group', emergency_contact='$emergency_contact', emergency_contact_name='$emergency_contact_name'";
+        if ($password !== null && $password !== '') {
+            $update_query .= ", password='$password'";
+        }
+        $update_query .= " WHERE pid='$pid'";
+        
+        $success1 = mysqli_query($con, $update_query);
+        if ($success1) {
+            echo "<script>alert('Patient updated successfully!');</script>";
+        } else {
+            echo "<script>alert('Error updating patient details.');</script>";
+        }
     }
-    $update_patreg_query .= " WHERE pid='$pid'";
-    
-    $success1 = mysqli_query($con, $update_query);
-    $success2 = mysqli_query($con, $update_patreg_query);
-    if ($success1 && $success2) {
-        echo "<script>alert('Patient updated successfully!');</script>";
-    } else {
-        echo "<script>alert('Error updating patient details.');</script>";
-    }
-}
 
 if (isset($_POST['delete_patient'])) {
     $pid = $_POST['delete_pid'];
     mysqli_query($con, "DELETE FROM billtb WHERE pid='$pid'");
     mysqli_query($con, "DELETE FROM dischargetb WHERE pid='$pid'");
     mysqli_query($con, "DELETE FROM labtesttb WHERE pid='$pid'");
+    mysqli_query($con, "DELETE FROM diagnosticstb WHERE pid='$pid'");
+    mysqli_query($con, "DELETE FROM patient_chargstb WHERE pid='$pid'");
+    mysqli_query($con, "DELETE FROM paymentstb WHERE pid='$pid'");
     $delete_query1 = "DELETE FROM admissiontb WHERE pid='$pid'";
-    $delete_query2 = "DELETE FROM patreg WHERE pid='$pid'";
     $success1 = mysqli_query($con, $delete_query1);
-    $success2 = mysqli_query($con, $delete_query2);
-    if ($success1 && $success2) {
+    if ($success1) {
         echo "<script>alert('Patient deleted successfully!');</script>";
     } else {
         echo "<script>alert('Error deleting patient.');</script>";
@@ -308,37 +308,40 @@ if (isset($_POST['delete_nurse'])) {
             <!-- Sidebar -->
             <div class="col-lg-3 col-md-4">
                 <div class="sidebar">
-                    <div class="nav flex-column nav-pills" role="tablist">
-                        <a class="nav-link active" role="tab" data-toggle="tab" href="#dashboard" aria-controls="dashboard" aria-selected="true">
-                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-                        </a>
-                        <a class="nav-link" role="tab" data-toggle="tab" href="#admissions" aria-controls="admissions" aria-selected="false">
-                            <i class="fas fa-hospital-user me-2"></i>Patient Admissions
-                        </a>
-                        <a class="nav-link" role="tab" data-toggle="tab" href="#billing" aria-controls="billing" aria-selected="false">
-                            <i class="fas fa-file-invoice-dollar me-2"></i>Billing Management
-                        </a>
-                        <a class="nav-link" role="tab" data-toggle="tab" href="#discharge" aria-controls="discharge" aria-selected="false">
-                            <i class="fas fa-sign-out-alt me-2"></i>Patient Discharge
-                        </a>
-                        <a class="nav-link" role="tab" data-toggle="tab" href="#list-pat-list" aria-controls="patient-management" aria-selected="false">
-                            <i class="fas fa-users me-2"></i>Patient Management
-                        </a>
-                        <a class="nav-link" role="tab" data-toggle="tab" href="#doctor-management" aria-controls="doctor-management" aria-selected="false">
-                            <i class="fas fa-user-md me-2"></i>Doctor Management
-                        </a>
-                        <a class="nav-link" role="tab" data-toggle="tab" href="#nurse-management" aria-controls="nurse-management" aria-selected="false">
-                            <i class="fas fa-user-nurse me-2"></i>Nurse Management
-                        </a>
-                        <a class="nav-link" role="tab" data-toggle="tab" href="#invoice-requests" aria-controls="invoice-requests" aria-selected="false">
-                            <i class="fas fa-file-invoice me-2"></i>Invoice Requests
-                        </a>
-                    </div>
+                        <div class="nav flex-column nav-pills" role="tablist">
+                            <a class="nav-link active" role="tab" data-toggle="tab" href="#dashboard" aria-controls="dashboard" aria-selected="true" id="dashboard-tab">
+                                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                            </a>
+                            <a class="nav-link" role="tab" data-toggle="tab" href="#admissions" aria-controls="admissions" aria-selected="false" id="admissions-tab">
+                                <i class="fas fa-hospital-user me-2"></i>Patient Admissions
+                            </a>
+                            <a class="nav-link" role="tab" data-toggle="tab" href="#billing" aria-controls="billing" aria-selected="false" id="billing-tab">
+                                <i class="fas fa-file-invoice-dollar me-2"></i>Billing Management
+                            </a>
+                            <a class="nav-link" role="tab" data-toggle="tab" href="#discharge" aria-controls="discharge" aria-selected="false" id="discharge-tab">
+                                <i class="fas fa-sign-out-alt me-2"></i>Patient Discharge
+                            </a>
+                            <a class="nav-link" role="tab" data-toggle="tab" href="#patient-management" aria-controls="patient-management" aria-selected="false" id="patient-management-tab">
+                                <i class="fas fa-users me-2"></i>Patient Management
+                            </a>
+                            <a class="nav-link" role="tab" data-toggle="tab" href="#doctor-management" aria-controls="doctor-management" aria-selected="false" id="doctor-management-tab">
+                                <i class="fas fa-user-md me-2"></i>Doctor Management
+                            </a>
+                            <a class="nav-link" role="tab" data-toggle="tab" href="#nurse-management" aria-controls="nurse-management" aria-selected="false" id="nurse-management-tab">
+                                <i class="fas fa-user-nurse me-2"></i>Nurse Management
+                            </a>
+                            <a class="nav-link" role="tab" data-toggle="tab" href="#invoice-requests" aria-controls="invoice-requests" aria-selected="false" id="invoice-requests-tab">
+                                <i class="fas fa-file-invoice me-2"></i>Invoice Requests
+                            </a>
+                            <a class="nav-link" role="tab" data-toggle="tab" href="#prescriptions" aria-controls="prescriptions" aria-selected="false" id="prescriptions-tab">
+                                <i class="fa fa-medkit me-2"></i>Prescriptions
+                            </a>
+                        </div>
                 </div>
             </div>
             <div class="col-lg-9 col-md-8">
                 <div class="tab-content">
-                                <div class="tab-pane fade" id="invoice-requests" role="tabpanel" aria-labelledby="invoice-requests-tab">
+                    <div class="tab-pane fade" id="invoice-requests" role="tabpanel" aria-labelledby="invoice-requests-tab">
                 <div class="glass-card p-4">
                     <h4 class="text-dark mb-4">
                         <i class="fas fa-file-invoice me-2"></i>Invoice Requests
@@ -389,6 +392,45 @@ if (isset($_POST['delete_nurse'])) {
                                         echo '-';
                                     }
                                     echo '</td>
+                                    </tr>';
+                                }
+                                ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="prescriptions" role="tabpanel" aria-labelledby="prescriptions-tab">
+                <div class="glass-card p-4">
+                    <h4 class="text-dark mb-4">
+                        <i class="fa fa-medkit me-2"></i>Prescriptions
+                    </h4>
+                    <div class="table-responsive">
+                        <table class="table table-glass">
+                            <thead>
+                                <tr>
+                                    <th>Patient ID</th>
+                                    <th>Patient Name</th>
+                                    <th>Doctor</th>
+                                    <th>Symptoms</th>
+                                    <th>Diagnosis</th>
+                                    <th>Prescribed Medicines</th>
+                                    <th>Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                $prescriptions_query = "SELECT p.*, a.fname, a.lname FROM prestb p JOIN admissiontb a ON p.pid = a.pid ORDER BY p.id DESC";
+                                $prescriptions_result = mysqli_query($con, $prescriptions_query);
+                                while ($pres = mysqli_fetch_array($prescriptions_result)) {
+                                    echo '<tr>
+                                        <td>' . $pres['pid'] . '</td>
+                                        <td>' . $pres['fname'] . ' ' . $pres['lname'] . '</td>
+                                        <td>' . $pres['doctor'] . '</td>
+                                        <td>' . $pres['symptoms'] . '</td>
+                                        <td>' . $pres['diagnosis_details'] . '</td>
+                                        <td>' . $pres['prescribed_medicines'] . '</td>
+                                        <td>₱' . number_format($pres['price'], 2) . '</td>
                                     </tr>';
                                 }
                                 ?>
@@ -470,9 +512,9 @@ if (isset($_POST['delete_nurse'])) {
                                                 <td>'.$row['fname'].' '.$row['lname'].'</td>
                                                 <td>'.$row['contact'].'</td>
                                                 <td>'.$row['admission_date'].'</td>
-                                                <td><span class="badge bg-'.$statusClass.'">'.$row['status'].'</span></td>
-                                            </tr>';
-                                        }
+        <td><span class="badge bg-'.$statusClass.'">'.$row['status'].'</span></td>
+    </tr>';
+}
                                         ?>
                                     </tbody>
                                 </table>
@@ -509,9 +551,9 @@ if (isset($_POST['delete_nurse'])) {
                                                 <td>'.$row['contact'].'</td>
                                                 <td>'.$row['email'].'</td>
                                                 <td>'.$row['admission_date'].'</td>
-                                                <td><span class="badge bg-'.$statusClass.'">'.$row['status'].'</span></td>
-                                            </tr>';
-                                        }
+        <td><span class="badge bg-'.$statusClass.'">'.$row['status'].'</span></td>
+    </tr>';
+}
                                         ?>
                                     </tbody>
                                 </table>
@@ -539,16 +581,33 @@ if (isset($_POST['delete_nurse'])) {
                                     </thead>
                                     <tbody>
                                         <?php 
+                                        // Fetch medicine fees per patient from prestb
+                                        $medicine_fees_result = mysqli_query($con, "SELECT pid, SUM(price) AS total_medicine_fees FROM prestb WHERE diagnosis_details IS NOT NULL AND diagnosis_details != '' GROUP BY pid");
+                                        $medicine_fees_map = [];
+                                        while ($mf_row = mysqli_fetch_assoc($medicine_fees_result)) {
+                                            $medicine_fees_map[$mf_row['pid']] = $mf_row['total_medicine_fees'];
+                                        }
+                                        
                                         $query = mysqli_query($con, "SELECT b.*, a.fname, a.lname FROM billtb b JOIN admissiontb a ON b.pid = a.pid ORDER BY b.pid DESC");
                                         while($row = mysqli_fetch_array($query)) {
                                             $statusClass = ($row['status'] == 'Paid') ? 'success' : 'warning';
+
+                                            // Override medicine fees and total with calculated values
+                                            $calculated_medicine_fees = $medicine_fees_map[$row['pid']] ?? 0;
+                                            $calculated_total = 
+                                                ($row['consultation_fees'] ?? 0) + 
+                                                ($row['lab_fees'] ?? 0) + 
+                                                $calculated_medicine_fees + 
+                                                ($row['room_charges'] ?? 0) + 
+                                                ($row['service_charges'] ?? 0);
+
                                             echo '<tr>
                                                 <td>'.$row['pid'].'</td>
                                                 <td>'.$row['fname'].' '.$row['lname'].'</td>
-                                                <td>$'.number_format($row['consultation_fees'], 2).'</td>
-                                                <td>$'.number_format($row['lab_fees'], 2).'</td>
-                                                <td>$'.number_format($row['medicine_fees'], 2).'</td>
-                                                <td>$'.number_format($row['total'], 2).'</td>
+                                                <td>₱'.number_format($row['consultation_fees'], 2).'</td>
+                                                <td>₱'.number_format($row['lab_fees'], 2).'</td>
+                                                <td>₱'.number_format($calculated_medicine_fees, 2).'</td>
+                                                <td>₱'.number_format($calculated_total, 2).'</td>
                                                 <td><span class="badge bg-'.$statusClass.'">'.$row['status'].'</span></td>
                                                 <td>';
                                             if($row['status'] == 'Unpaid') {
@@ -560,13 +619,13 @@ if (isset($_POST['delete_nurse'])) {
                                             }
                                             echo '</td></tr>';
                                         }
-                                        ?>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="tab-pane fade" id="discharge">
+                                         ?>
+                                     </tbody>
+                                 </table>
+                             </div>
+                         </div>
+                     </div>
+                     <div class="tab-pane fade" id="discharge">
                         <div class="glass-card p-4">
                             <h4 class="text-dark mb-4">
                                 <i class="fas fa-sign-out-alt me-2"></i>Patient Discharge Management
@@ -586,7 +645,7 @@ if (isset($_POST['delete_nurse'])) {
                                     </thead>
                                     <tbody>
                                         <?php 
-                                        $query = mysqli_query($con, "SELECT a.*, b.status as bill_status FROM admissiontb a LEFT JOIN billtb b ON a.pid = b.pid WHERE a.status = 'Admitted' ORDER BY a.admission_date DESC");
+$query = mysqli_query($con, "SELECT a.*, b.status as bill_status FROM admissiontb a LEFT JOIN billtb b ON a.pid = b.pid ORDER BY a.admission_date DESC");
                                         while($row = mysqli_fetch_array($query)) {
                                             $billStatusClass = ($row['bill_status'] == 'Paid') ? 'success' : 'warning';
                                             echo '<tr>
@@ -612,60 +671,71 @@ if (isset($_POST['delete_nurse'])) {
                             </div>
                         </div>
                     </div>
-                    <div class="tab-pane fade" id="patient-management">
-                        <div class="glass-card p-4">
-                            <h4 class="text-dark mb-4">
-                                <i class="fas fa-users me-2"></i>Patient Management
-                            </h4>
-                            <div class="table-responsive">
-                                <table class="table table-glass">
-                                    <thead>
-                                        <tr>
-                                            <th>Patient ID</th>
-                                            <th>First Name</th>
-                                            <th>Last Name</th>
-                                            <th>Gender</th>
-                                            <th>Contact</th>
-                                            <th>Email</th>
-                                            <th>Age</th>
-                                            <th>Address</th>
-                                            <th>Blood Group</th>
-                                            <th>Emergency Contact</th>
-                                            <th>Emergency Contact Name</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php
-                                        $query = mysqli_query($con, "SELECT * FROM admissiontb ORDER BY admission_date DESC");
-                                        while ($row = mysqli_fetch_array($query)) {
-                                            echo '<tr>
-                                                <td>' . $row['pid'] . '</td>
-                                                <td>' . $row['fname'] . '</td>
-                                                <td>' . $row['lname'] . '</td>
-                                                <td>' . $row['gender'] . '</td>
-                                                <td>' . $row['contact'] . '</td>
-                                                <td>' . $row['email'] . '</td>
-                                                <td>' . $row['age'] . '</td>
-                                                <td>' . $row['address'] . '</td>
-                                                <td>' . $row['blood_group'] . '</td>
-                                                <td>' . $row['emergency_contact'] . '</td>
-                                                <td>' . $row['emergency_contact_name'] . '</td>
-                                                <td>
-                                                    <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#editPatientModal" onclick="editPatient(\'' . $row['pid'] . '\', \'' . $row['fname'] . '\', \'' . $row['lname'] . '\', \'' . $row['gender'] . '\', \'' . $row['email'] . '\', \'' . $row['contact'] . '\', \'' . $row['age'] . '\', \'' . $row['address'] . '\', \'' . $row['blood_group'] . '\', \'' . $row['emergency_contact'] . '\', \'' . $row['emergency_contact_name'] . '\')">Edit</button>
-                                                    <form method="POST" style="display:inline;">
-                                                        <input type="hidden" name="delete_pid" value="' . $row['pid'] . '">
-                                                        <button type="submit" name="delete_patient" class="btn btn-sm btn-danger" onclick="return confirm(\'Are you sure you want to delete this patient?\')">Delete</button>
-                                                    </form>
-                                                </td>
-                                            </tr>';
-                                        }
-                                        ?>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
+<div class="tab-pane fade" id="patient-management">
+    <div class="glass-card p-4">
+        <h4 class="text-dark mb-4">
+            <i class="fas fa-users me-2"></i>Patient Management
+        </h4>
+        <div class="table-responsive">
+            <table class="table table-glass">
+                <thead>
+                    <tr>
+                        <th>Patient ID</th>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Gender</th>
+                        <th>Contact</th>
+                        <th>Email</th>
+                        <th>Age</th>
+                        <th>Address</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <?php
+$query = mysqli_query($con, "
+    SELECT pid, fname, lname, gender, contact, email, age, address, password
+    FROM admissiontb
+    ORDER BY pid DESC
+");
+
+while ($row = mysqli_fetch_assoc($query)) {
+    echo '<tr>
+        <td>' . $row['pid'] . '</td>
+        <td>' . $row['fname'] . '</td>
+        <td>' . $row['lname'] . '</td>
+        <td>' . $row['gender'] . '</td>
+        <td>' . $row['contact'] . '</td>
+        <td>' . $row['email'] . '</td>
+        <td>' . $row['age'] . '</td>
+        <td>' . $row['address'] . '</td>
+        <td>
+            <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#editPatientModal"
+                onclick="editPatient(
+                    \'' . $row['pid'] . '\',
+                    \'' . $row['fname'] . '\',
+                    \'' . $row['lname'] . '\',
+                    \'' . $row['gender'] . '\',
+                    \'' . $row['email'] . '\',
+                    \'' . $row['password'] . '\',
+                    \'' . $row['contact'] . '\',
+                    \'' . $row['age'] . '\',
+                    \'' . $row['address'] . '\'
+                )">Edit</button>
+            <form method="POST" style="display:inline;">
+                <input type="hidden" name="delete_pid" value="' . $row['pid'] . '">
+                <button type="submit" name="delete_patient" class="btn btn-sm btn-danger" 
+                    onclick="return confirm(\'Are you sure you want to delete this patient?\')">Delete</button>
+            </form>
+        </td>
+    </tr>';
+}
+?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
                     <div class="tab-pane fade" id="doctor-management">
                         <div class="glass-card p-4">
                             <h4 class="text-dark mb-4 d-flex justify-content-between align-items-center">
@@ -924,6 +994,10 @@ if (isset($_POST['delete_nurse'])) {
                                                 <input type="email" class="form-control" id="edit_email" name="email" required>
                                             </div>
                                             <div class="col-md-6 mb-3">
+                <label for="edit_password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="edit_password" name="password">
+                                            </div>
+                                            <div class="col-md-6 mb-3">
                                                 <label for="edit_contact" class="form-label">Contact</label>
                                                 <input type="text" class="form-control" id="edit_contact" name="contact" required>
                                             </div>
@@ -934,18 +1008,6 @@ if (isset($_POST['delete_nurse'])) {
                                             <div class="col-md-12 mb-3">
                                                 <label for="edit_address" class="form-label">Address</label>
                                                 <textarea class="form-control" id="edit_address" name="address" rows="2" required></textarea>
-                                            </div>
-                                            <div class="col-md-6 mb-3">
-                                                <label for="edit_blood_group" class="form-label">Blood Group</label>
-                                                <input type="text" class="form-control" id="edit_blood_group" name="blood_group" required>
-                                            </div>
-                                            <div class="col-md-6 mb-3">
-                                                <label for="edit_emergency_contact" class="form-label">Emergency Contact</label>
-                                                <input type="text" class="form-control" id="edit_emergency_contact" name="emergency_contact" required>
-                                            </div>
-                                            <div class="col-md-12 mb-3">
-                                                <label for="edit_emergency_contact_name" class="form-label">Emergency Contact Name</label>
-                                                <input type="text" class="form-control" id="edit_emergency_contact_name" name="emergency_contact_name" required>
                                             </div>
                                         </div>
                                     </div>
@@ -1091,22 +1153,25 @@ if (isset($_POST['deny_invoice'])) {
     }
 }
 ?>
-
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-    function editPatient(pid, fname, lname, gender, email, contact, age, address, blood_group, emergency_contact, emergency_contact_name) {
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+        $('.nav-pills .nav-link').removeClass('active');
+        $(this).addClass('active');
+    });
+
+    function editPatient(pid, fname, lname, gender, email, password, contact, age, address) {
         document.getElementById('edit_pid').value = pid;
         document.getElementById('edit_fname').value = fname;
         document.getElementById('edit_lname').value = lname;
         document.getElementById('edit_gender').value = gender;
         document.getElementById('edit_email').value = email;
+        // Show password value as is for admin
+        document.getElementById('edit_password').value = password;
         document.getElementById('edit_contact').value = contact;
         document.getElementById('edit_age').value = age;
         document.getElementById('edit_address').value = address;
-        document.getElementById('edit_blood_group').value = blood_group;
-        document.getElementById('edit_emergency_contact').value = emergency_contact;
-        document.getElementById('edit_emergency_contact_name').value = emergency_contact_name;
     }
 
     function editDoctor(id, fname, lname, email, contact, specialization, qualification, experience, fee, status) {
@@ -1132,3 +1197,6 @@ if (isset($_POST['deny_invoice'])) {
         document.getElementById('edit_nurse_shift').value = shift;
         document.getElementById('edit_nurse_status').value = status;
     }
+</script>
+</body>
+</html>
