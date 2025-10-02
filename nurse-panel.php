@@ -41,9 +41,6 @@ if (isset($_POST['register_admit_patient'])) {
     $admission_date = date("Y-m-d");
     $admission_time = date("H:i:s");
 
-<<<<<<< HEAD
-    if ($password !== $cpassword) {
-=======
     // Check if room is already occupied
     $room_check_query = "SELECT pid FROM admissiontb WHERE room_number = '$room_number' AND status = 'Admitted'";
     $room_check_result = mysqli_query($con, $room_check_query);
@@ -51,7 +48,6 @@ if (isset($_POST['register_admit_patient'])) {
     if (mysqli_num_rows($room_check_result) > 0) {
         echo "<script>alert('Error: Room $room_number is already occupied. Please select a different room.');</script>";
     } else if ($password !== $cpassword) {
->>>>>>> a5c017c (Initial project setup with updated files)
         echo "<script>alert('Passwords do not match! Please try again.');</script>";
     } else {
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
@@ -91,17 +87,12 @@ if (isset($_POST['add_medicine'])) {
     $medicine_name = mysqli_real_escape_string($con, $_POST['medicine_name']);
     $quantity = (int)$_POST['quantity'];
     $price = (float)$_POST['price'];
-<<<<<<< HEAD
-
-    $query = "INSERT INTO medicinetb (medicine_name, quantity, added_by_nurse, price) VALUES ('$medicine_name', $quantity, '$nurse', $price)";
-=======
     $dosage = mysqli_real_escape_string($con, $_POST['dosage']);
     $frequency = mysqli_real_escape_string($con, $_POST['frequency']);
     $duration = mysqli_real_escape_string($con, $_POST['duration']);
     $medicine_type = mysqli_real_escape_string($con, $_POST['medicine_type']);
 
     $query = "INSERT INTO medicinetb (medicine_name, quantity, added_by_nurse, price, dosage, frequency, duration, medicine_type) VALUES ('$medicine_name', $quantity, '$nurse', $price, '$dosage', '$frequency', '$duration', '$medicine_type')";
->>>>>>> a5c017c (Initial project setup with updated files)
     if (mysqli_query($con, $query)) {
         echo "<script>alert('Medicine added successfully!');</script>";
     } else {
@@ -169,8 +160,6 @@ if (isset($_POST['update_medicine_quantity'])) {
     }
 }
 
-<<<<<<< HEAD
-=======
 if (isset($_POST['update_medicine_details'])) {
     $medicine_id = (int)$_POST['medicine_id'];
     $new_quantity = (int)$_POST['edit_quantity'];
@@ -191,7 +180,6 @@ if (isset($_POST['update_medicine_details'])) {
     }
 }
 
->>>>>>> a5c017c (Initial project setup with updated files)
 if (isset($_GET['delete_medicine'])) {
     $id = (int)$_GET['delete_medicine'];
 
@@ -246,8 +234,6 @@ if (isset($_POST['schedule_round'])) {
     }
 }
 
-<<<<<<< HEAD
-=======
 // Store rounds data for modals
 $today_rounds_data = [];
 $today = date('Y-m-d');
@@ -297,7 +283,6 @@ foreach ($all_rooms as $room) {
     $rooms_data[] = $room_info;
 }
 
->>>>>>> a5c017c (Initial project setup with updated files)
 ?>
 <html lang="en">
 <head>
@@ -422,8 +407,6 @@ foreach ($all_rooms as $room) {
         .round-status-scheduled { background-color: #fff3cd; }
         .round-status-completed { background-color: #d4edda; }
         .round-status-missed { background-color: #f8d7da; }
-<<<<<<< HEAD
-=======
         
         .room-occupied { background-color: #f8d7da; }
         .room-available { background-color: #d4edda; }
@@ -444,7 +427,6 @@ foreach ($all_rooms as $room) {
             transform: translateY(-5px);
             box-shadow: 0 8px 25px rgba(0,0,0,0.15);
         }
->>>>>>> a5c017c (Initial project setup with updated files)
     </style>
 </head>
 
@@ -492,12 +474,9 @@ foreach ($all_rooms as $room) {
                         <a class="nav-link" role="tab" data-toggle="tab" href="#patient-rounds" aria-controls="patient-rounds" aria-selected="false" id="patient-rounds-tab">
                             <i class="fas fa-clock me-2"></i>Schedule Rounds
                         </a>
-<<<<<<< HEAD
-=======
                         <a class="nav-link" role="tab" data-toggle="tab" href="#room-management" aria-controls="room-management" aria-selected="false" id="room-management-tab">
                             <i class="fas fa-bed me-2"></i>Room Management
                         </a>
->>>>>>> a5c017c (Initial project setup with updated files)
                     </div>
                 </div>
             </div>
@@ -542,15 +521,6 @@ foreach ($all_rooms as $room) {
                             </div>
                             <div class="col-md-6 col-lg-3">
                                 <div class="stat-card" style="background: var(--success-gradient);">
-<<<<<<< HEAD
-                                    <i class="fas fa-user-md fa-3x mb-3"></i>
-                                    <h3><?php 
-                                        $query = mysqli_query($con, "SELECT COUNT(DISTINCT username) as total FROM doctortb");
-                                        $row = mysqli_fetch_assoc($query);
-                                        echo $row['total'] ?? 0;
-                                    ?></h3>
-                                    <p>Available Doctors</p>
-=======
                                     <i class="fas fa-bed fa-3x mb-3"></i>
                                     <h3><?php 
                                         $query = mysqli_query($con, "SELECT COUNT(DISTINCT room_number) as total FROM admissiontb WHERE status='Admitted'");
@@ -558,7 +528,6 @@ foreach ($all_rooms as $room) {
                                         echo $row['total'] ?? 0;
                                     ?></h3>
                                     <p>Occupied Rooms</p>
->>>>>>> a5c017c (Initial project setup with updated files)
                                 </div>
                             </div>
                         </div>
@@ -580,17 +549,7 @@ foreach ($all_rooms as $room) {
                                     </thead>
                                     <tbody>
                                         <?php
-<<<<<<< HEAD
-                                        $today = date('Y-m-d');
-                                        $rounds_query = "SELECT pr.*, a.fname, a.lname 
-                                                         FROM patient_roundstb pr 
-                                                         JOIN admissiontb a ON pr.pid = a.pid 
-                                                         WHERE pr.round_date = '$today' 
-                                                         ORDER BY pr.round_time";
-                                        $rounds_result = mysqli_query($con, $rounds_query);
-=======
                                         mysqli_data_seek($rounds_result, 0); // Reset pointer for table display
->>>>>>> a5c017c (Initial project setup with updated files)
                                         while ($round = mysqli_fetch_array($rounds_result)) {
                                             $status_class = "";
                                             if ($round['status'] == 'Completed') {
@@ -611,39 +570,6 @@ foreach ($all_rooms as $room) {
                                                     <a href='nurse-panel.php?delete_round={$round['id']}' class='btn btn-danger btn-sm'>Delete</a>
                                                 </td>
                                             </tr>";
-<<<<<<< HEAD
-                                            echo "
-                                            <div class='modal fade' id='updateRoundModal{$round['id']}' tabindex='-1' role='dialog' aria-labelledby='updateRoundModalLabel' aria-hidden='true'>
-                                                <div class='modal-dialog' role='document'>
-                                                    <div class='modal-content'>
-                                                        <div class='modal-header'>
-                                                            <h5 class='modal-title' id='updateRoundModalLabel'>Update Round for Patient ID: {$round['pid']}</h5>
-                                                            <button type='button' class='close' data-dismiss='modal' aria-label='Close'>
-                                                                <span aria-hidden='true'>&times;</span>
-                                                            </button>
-                                                        </div>
-                                                        <form method='post' action='nurse-panel.php'>
-                                                            <div class='modal-body'>
-                                                                <input type='hidden' name='round_id' value='{$round['id']}'>
-                                                                <div class='form-group'>
-                                                                    <label for='vital_signs'>Vital Signs:</label>
-                                                                    <textarea class='form-control' name='vital_signs' placeholder='Blood pressure, temperature, pulse, etc.'>{$round['vital_signs']}</textarea>
-                                                                </div>
-                                                                <div class='form-group'>
-                                                                    <label for='update_notes'>Notes:</label>
-                                                                    <textarea class='form-control' name='update_notes' placeholder='Observations and findings'>{$round['notes']}</textarea>
-                                                                </div>
-                                                            </div>
-                                                            <div class='modal-footer'>
-                                                                <button type='button' class='btn btn-secondary' data-dismiss='modal'>Close</button>
-                                                                <button type='submit' name='update_round' class='btn btn-primary'>Save Changes</button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>";
-=======
->>>>>>> a5c017c (Initial project setup with updated files)
                                         }
                                         ?>
                                     </tbody>
@@ -718,21 +644,6 @@ foreach ($all_rooms as $room) {
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label for="room_number">Room Number:</label>
-<<<<<<< HEAD
-                                        <select name="room_number" class="form-control" required>
-                                            <option value="">Select Room</option>
-                                            <option value="101">Room 101 - General Ward</option>
-                                            <option value="102">Room 102 - General Ward</option>
-                                            <option value="103">Room 103 - General Ward</option>
-                                            <option value="201">Room 201 - Private Room</option>
-                                            <option value="202">Room 202 - Private Room</option>
-                                            <option value="203">Room 203 - Private Room</option>
-                                            <option value="301">Room 301 - ICU</option>
-                                            <option value="302">Room 302 - ICU</option>
-                                            <option value="401">Room 401 - Emergency</option>
-                                            <option value="402">Room 402 - Emergency</option>
-                                        </select>
-=======
                                         <select name="room_number" id="room_number" class="form-control" required onchange="checkRoomAvailability()">
                                             <option value="">Select Room</option>
                                             <?php
@@ -762,19 +673,15 @@ foreach ($all_rooms as $room) {
                                             ?>
                                         </select>
                                         <small id="roomAvailabilityMessage" class="form-text"></small>
->>>>>>> a5c017c (Initial project setup with updated files)
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label for="doctor_fee">Doctor's Fee:</label>
                                         <input type="text" class="form-control" id="doctor_fee" readonly>
                                     </div>
-<<<<<<< HEAD
-=======
                                     <div class="col-md-6 mb-3">
                                         <label for="room_charge">Room Charge:</label>
                                         <input type="text" class="form-control" id="room_charge" readonly>
                                     </div>
->>>>>>> a5c017c (Initial project setup with updated files)
                                     <div class="col-md-12">
                                         <input type="submit" name="register_admit_patient" value="Register Patient" class="btn btn-primary" id="inputbtn">
                                     </div>
@@ -799,10 +706,7 @@ foreach ($all_rooms as $room) {
                                             <th scope="col">Gender</th>
                                             <th scope="col">Email</th>
                                             <th scope="col">Contact</th>
-<<<<<<< HEAD
-=======
                                             <th scope="col">Room Number</th>
->>>>>>> a5c017c (Initial project setup with updated files)
                                             <th scope="col">Admission Date</th>
                                             <th scope="col">Status</th>
                                         </tr>
@@ -822,10 +726,7 @@ foreach ($all_rooms as $room) {
                                                 <td>{$row['gender']}</td>
                                                 <td>{$row['email']}</td>
                                                 <td>{$row['contact']}</td>
-<<<<<<< HEAD
-=======
                                                 <td>{$row['room_number']}</td>
->>>>>>> a5c017c (Initial project setup with updated files)
                                                 <td>{$row['admission_date']}</td>
                                                 <td>{$row['status']}</td>
                                             </tr>";
@@ -848,30 +749,6 @@ foreach ($all_rooms as $room) {
                                     <div class="card">
                                         <div class="card-body">
                                             <h5>Add Medicine</h5>
-<<<<<<< HEAD
-                                            <form class="form-group" method="post" action="nurse-panel.php">
-                                                <div class="row">
-                                                    <div class="col-md-4 mb-3">
-                                                        <label for="medicine_name">Medicine Name:</label>
-                                                        <input type="text" class="form-control" name="medicine_name" required>
-                                                    </div>
-                                                    <div class="col-md-4 mb-3">
-                                                        <label for="quantity">Quantity:</label>
-                                                        <input type="number" class="form-control" name="quantity" min="1" required>
-                                                    </div>
-                                                    <div class="col-md-4 mb-3">
-                                                        <label for="price">Price per Unit:</label>
-                                                        <input type="number" step="0.01" min="0" class="form-control" name="price" required>
-                                                    </div>
-                                                    <div class="col-md-6 mb-3">
-                                                        <input type="submit" name="add_medicine" value="Add Medicine" class="btn btn-primary" id="inputbtn">
-                                                    </div>
-                                                    <div class="col-md-6 mb-3">
-                                                        <input type="submit" name="add_sample_medicines" value="Add Sample Medicines" class="btn btn-success">
-                                                    </div>
-                                                </div>
-                                            </form>
-=======
 <form class="form-group" method="post" action="nurse-panel.php">
     <div class="row">
         <div class="col-md-3 mb-3">
@@ -912,7 +789,6 @@ foreach ($all_rooms as $room) {
         </div>
     </div>
 </form>
->>>>>>> a5c017c (Initial project setup with updated files)
                                         </div>
                                     </div>
                                 </div>
@@ -924,23 +800,6 @@ foreach ($all_rooms as $room) {
                                         <div class="card-body">
                                             <h5>Medicine Inventory</h5>
                                             <?php                        
-<<<<<<< HEAD
-                                            $medicine_table = "medicinetb";
-                                            if (!empty($medicine_table)) {
-                                                $query = "SELECT * FROM $medicine_table ORDER BY medicine_name";
-                                                $result = mysqli_query($con, $query);
-                                                
-                                                if ($result && mysqli_num_rows($result) > 0) {
-                                                    echo '<table class="table table-hover table-striped">
-                                                            <thead class="thead-dark">
-                                                                <tr>
-                                                                    <th scope="col">ID</th>
-                                                                    <th scope="col">Medicine Name</th>
-                                                                    <th scope="col">Quantity</th>
-                                                                    <th scope="col">Price per Unit</th>
-                                                                    <th scope="col">Added By</th>
-                                                                    <th scope="col">Action</th>
-=======
                                             if (!empty($medicine_table)) {
                                                 mysqli_data_seek($medicine_result, 0); // Reset pointer for table display
                                                 
@@ -958,59 +817,10 @@ foreach ($all_rooms as $room) {
 <th scope="col">Price per Unit</th>
 <th scope="col">Added By</th>
 <th scope="col">Action</th>
->>>>>>> a5c017c (Initial project setup with updated files)
                                                                 </tr>
                                                             </thead>
                                                             <tbody>';
                                                     
-<<<<<<< HEAD
-                                                    while ($row = mysqli_fetch_array($result)) {
-                                                        echo "<tr>
-                                                                <td>{$row['id']}</td>
-                                                                <td>{$row['medicine_name']}</td>
-                                                                <td>{$row['quantity']}</td>
-                                                                <td>₱" . number_format($row['price'], 2) . "</td>
-                                                                <td>{$row['added_by_nurse']}</td>
-                                                                <td>
-                                                                    <button type='button' class='btn btn-warning btn-sm' data-toggle='modal' data-target='#editMedicineModal{$row['id']}'>Edit Qty</button>
-                                                                    <a href='nurse-panel.php?delete_medicine={$row['id']}' class='btn btn-danger btn-sm' onclick='return confirm(\"Are you sure you want to delete this medicine?\");'>Delete</a>
-                                                                </td>
-                                                            </tr>";
-                                                    }
-                                                    
-                                                    echo '</tbody></table>';
-                                                    
-                                                    // Generate modals for editing quantity
-                                                    mysqli_data_seek($result, 0); // Reset result pointer
-                                                    while ($row = mysqli_fetch_array($result)) {
-                                                        echo "
-                                                        <div class='modal fade' id='editMedicineModal{$row['id']}' tabindex='-1' role='dialog' aria-labelledby='editMedicineModalLabel{$row['id']}' aria-hidden='true'>
-                                                            <div class='modal-dialog' role='document'>
-                                                                <div class='modal-content'>
-                                                                    <div class='modal-header'>
-                                                                        <h5 class='modal-title' id='editMedicineModalLabel{$row['id']}'>Edit Quantity for {$row['medicine_name']}</h5>
-                                                                        <button type='button' class='close' data-dismiss='modal' aria-label='Close'>
-                                                                            <span aria-hidden='true'>&times;</span>
-                                                                        </button>
-                                                                    </div>
-                                                                    <form method='post' action='nurse-panel.php'>
-                                                                        <div class='modal-body'>
-                                                                            <input type='hidden' name='medicine_id' value='{$row['id']}'>
-                                                                            <div class='form-group'>
-                                                                                <label for='edit_quantity'>New Quantity:</label>
-                                                                                <input type='number' class='form-control' name='edit_quantity' min='0' value='{$row['quantity']}' required>
-                                                                            </div>
-                                                                        </div>
-                                                                        <div class='modal-footer'>
-                                                                            <button type='button' class='btn btn-secondary' data-dismiss='modal'>Cancel</button>
-                                                                            <button type='submit' name='update_medicine_quantity' class='btn btn-primary'>Update Quantity</button>
-                                                                        </div>
-                                                                    </form>
-                                                                </div>
-                                                            </div>
-                                                        </div>";
-                                                    }
-=======
 while ($row = mysqli_fetch_array($medicine_result)) {
     $quantity_display = ($row['quantity'] == 0) ? '<span class="text-danger font-weight-bold">Out of Stock</span>' : $row['quantity'];
     echo "<tr>
@@ -1031,7 +841,6 @@ while ($row = mysqli_fetch_array($medicine_result)) {
 }
                                                     
                                                     echo '</tbody></table>';
->>>>>>> a5c017c (Initial project setup with updated files)
                                                 } else {
                                                     echo "<div class='alert alert-info'>No medicines found in the $medicine_table table. Add some medicines using the form above.</div>";
                                                 }
@@ -1146,8 +955,6 @@ while ($row = mysqli_fetch_array($medicine_result)) {
                             </div>
                         </div>
                     </div>
-<<<<<<< HEAD
-=======
                     
                     <!-- Room Management Tab -->
                     <div class="tab-pane fade" id="room-management" role="tabpanel" aria-labelledby="room-management-tab">
@@ -1259,13 +1066,10 @@ while ($row = mysqli_fetch_array($medicine_result)) {
                             </div>
                         </div>
                     </div>
->>>>>>> a5c017c (Initial project setup with updated files)
                 </div>
             </div>
         </div>
     </div>
-<<<<<<< HEAD
-=======
     
     <!-- Modals for Today's Rounds -->
     <?php foreach($today_rounds_data as $round): ?>
@@ -1349,7 +1153,6 @@ while ($row = mysqli_fetch_array($medicine_result)) {
     </div>
 </div>
 <?php endforeach; ?>
->>>>>>> a5c017c (Initial project setup with updated files)
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -1366,8 +1169,6 @@ while ($row = mysqli_fetch_array($medicine_result)) {
         var fee = selectedOption.getAttribute('data-fee');
         feeInput.value = fee ? '₱' + fee : '';
     }
-<<<<<<< HEAD
-=======
 
     function checkRoomAvailability() {
         var roomSelect = document.getElementById('room_number');
@@ -1406,7 +1207,6 @@ while ($row = mysqli_fetch_array($medicine_result)) {
             $(this).closest('.modal').modal('hide');
         });
     });
->>>>>>> a5c017c (Initial project setup with updated files)
     </script>
 </body>
 </html>

@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-<!DOCTYPE html>
-=======
  <!DOCTYPE html>
->>>>>>> a5c017c (Initial project setup with updated files)
 <?php
 session_start();
 include('func1.php');
@@ -13,8 +9,6 @@ if (!isset($_SESSION['dname'])) {
 }
 $doctor = $_SESSION['dname'];
 
-<<<<<<< HEAD
-=======
 if (isset($_POST['delete_diagnosis'])) {
     $delete_id = $_POST['delete_diagnosis_id'];
     $delete_query = "DELETE FROM diagnosticstb WHERE id = '$delete_id'";
@@ -26,7 +20,6 @@ if (isset($_POST['delete_diagnosis'])) {
     }
 }
 
->>>>>>> a5c017c (Initial project setup with updated files)
 if (isset($_POST['add_charges'])) {
     $pid = $_POST['pid'];
     $service = $_POST['service'];
@@ -100,10 +93,6 @@ if (isset($_POST['add_diagnosis'])) {
         echo "<script>alert('Error adding diagnosis: " . mysqli_error($con) . "');</script>";
     }
 }
-<<<<<<< HEAD
-=======
-
->>>>>>> a5c017c (Initial project setup with updated files)
 if (isset($_POST['add_service_charge'])) {
     $pid = $_POST['pid'];
     $service_id = $_POST['service_id'];
@@ -176,8 +165,6 @@ if (isset($_POST['mark_ready'])) {
     }
 }
 
-<<<<<<< HEAD
-=======
 // Store data for modals
 $patients_data = [];
 $diagnostics_data = [];
@@ -212,7 +199,6 @@ while ($lab = mysqli_fetch_array($lab_result)) {
     $lab_data[] = $lab;
 }
 
->>>>>>> a5c017c (Initial project setup with updated files)
 ?>
 <html lang="en">
 <head>
@@ -292,10 +278,7 @@ while ($lab = mysqli_fetch_array($lab_result)) {
             transition: all 0.3s ease;
             pointer-events: auto !important;
             z-index: 10;
-<<<<<<< HEAD
-=======
             cursor: pointer !important;
->>>>>>> a5c017c (Initial project setup with updated files)
         }
 
         .nav-pills .nav-link:hover {
@@ -355,8 +338,6 @@ while ($lab = mysqli_fetch_array($lab_result)) {
         .modal-backdrop {
             z-index: 1040 !important;
         }
-<<<<<<< HEAD
-=======
         
         /* Fix for clickable sidebar */
         .nav-pills .nav-link {
@@ -396,7 +377,6 @@ while ($lab = mysqli_fetch_array($lab_result)) {
         .tab-pane.show {
             display: block !important;
         }
->>>>>>> a5c017c (Initial project setup with updated files)
     </style>
 </head>
 
@@ -428,22 +408,6 @@ while ($lab = mysqli_fetch_array($lab_result)) {
             <!-- Sidebar -->
             <div class="col-lg-3 col-md-4">
                 <div class="sidebar">
-<<<<<<< HEAD
-                    <div class="nav flex-column nav-pills" role="tablist">
-                        <a class="nav-link active" role="tab" data-toggle="tab" href="#dashboard" aria-controls="dashboard" aria-selected="true" id="dashboard-tab">
-                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-                        </a>
-                        <a class="nav-link" role="tab" data-toggle="tab" href="#patients" aria-controls="patients" aria-selected="false" id="patients-tab">
-                            <i class="fas fa-procedures me-2"></i>My Assigned Patients
-                        </a>
-                        <a class="nav-link" role="tab" data-toggle="tab" href="#diagnostics" aria-controls="diagnostics" aria-selected="false" id="diagnostics-tab">
-                            <i class="fas fa-stethoscope me-2"></i>Diagnostics
-                        </a>
-                        <a class="nav-link" role="tab" data-toggle="tab" href="#lab-requests" aria-controls="lab-requests" aria-selected="false" id="lab-requests-tab">
-                            <i class="fas fa-flask me-2"></i>Lab Requests
-                        </a>
-                        <a class="nav-link" role="tab" data-toggle="tab" href="#services" aria-controls="services" aria-selected="false" id="services-tab">
-=======
                     <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
                         <a class="nav-link active" id="v-pills-dashboard-tab" data-toggle="pill" href="#v-pills-dashboard" role="tab" aria-controls="v-pills-dashboard" aria-selected="true">
                             <i class="fas fa-tachometer-alt me-2"></i>Dashboard
@@ -458,7 +422,6 @@ while ($lab = mysqli_fetch_array($lab_result)) {
                             <i class="fas fa-flask me-2"></i>Lab Requests
                         </a>
                         <a class="nav-link" id="v-pills-services-tab" data-toggle="pill" href="#v-pills-services" role="tab" aria-controls="v-pills-services" aria-selected="false">
->>>>>>> a5c017c (Initial project setup with updated files)
                             <i class="fas fa-file-medical-alt me-2"></i>Service Reports
                         </a>
                     </div>
@@ -466,14 +429,9 @@ while ($lab = mysqli_fetch_array($lab_result)) {
             </div>
             
             <div class="col-lg-9 col-md-8">
-<<<<<<< HEAD
-                <div class="tab-content">
-                    <div class="tab-pane fade show active" id="dashboard" role="tabpanel" aria-labelledby="dashboard-tab">
-=======
                 <div class="tab-content" id="v-pills-tabContent">
                     <!-- Dashboard Tab -->
                     <div class="tab-pane fade show active" id="v-pills-dashboard" role="tabpanel" aria-labelledby="v-pills-dashboard-tab">
->>>>>>> a5c017c (Initial project setup with updated files)
                         <div class="row g-4 mb-4">
                             <div class="col-md-6 col-lg-3">
                                 <div class="stat-card" style="background: var(--primary-gradient);">
@@ -573,12 +531,8 @@ while ($lab = mysqli_fetch_array($lab_result)) {
                         </div>
                     </div>
                     
-<<<<<<< HEAD
-                    <div class="tab-pane fade" id="patients" role="tabpanel" aria-labelledby="patients-tab">
-=======
                     <!-- Patients Tab -->
                     <div class="tab-pane fade" id="v-pills-patients" role="tabpanel" aria-labelledby="v-pills-patients-tab">
->>>>>>> a5c017c (Initial project setup with updated files)
                         <div class="glass-card p-4">
                             <h4 class="text-dark mb-4">
                                 <i class="fas fa-procedures me-2"></i>My Assigned Patients
@@ -601,17 +555,8 @@ while ($lab = mysqli_fetch_array($lab_result)) {
                                     </thead>
                                     <tbody>
                                         <?php 
-<<<<<<< HEAD
-                                        $con=mysqli_connect("localhost","root","","myhmsdb");
-                                        global $con;
-                                        $dname = $_SESSION['dname'];
-                                        $query = "SELECT pid, fname, lname, age, gender, contact, room_number, admission_date, reason, status FROM admissiontb WHERE assigned_doctor='$dname' AND status != 'Discharged'";
-                                        $result = mysqli_query($con,$query);
-                                        while ($row = mysqli_fetch_array($result)){
-=======
                                         mysqli_data_seek($patients_result, 0);
                                         while ($row = mysqli_fetch_array($patients_result)){
->>>>>>> a5c017c (Initial project setup with updated files)
                                         ?>
                                         <tr>
                                             <td><?php echo $row['pid'];?></td>
@@ -633,17 +578,11 @@ while ($lab = mysqli_fetch_array($lab_result)) {
                                                 <button type="button" class="btn btn-success btn-sm mb-1" data-toggle="modal" data-target="#addServiceModal-<?php echo $row['pid']; ?>">
                                                     <i class="fas fa-plus"></i> Add Service
                                                 </button>
-<<<<<<< HEAD
-                                                <button type="button" class="btn btn-warning btn-sm mb-1" onclick="markReady(<?php echo $row['pid']; ?>)">
-                                                    <i class="fas fa-check"></i> Ready for Discharge
-                                                </button>
-=======
 <?php if ($row['status'] !== 'Ready for Discharge'): ?>
                                                 <button type="button" class="btn btn-warning btn-sm mb-1" onclick="markReady(<?php echo $row['pid']; ?>)">
                                                     <i class="fas fa-check"></i> Ready for Discharge
                                                 </button>
 <?php endif; ?>
->>>>>>> a5c017c (Initial project setup with updated files)
                                                 <a href="prescribe.php?pid=<?php echo $row['pid']; ?>&fname=<?php echo urlencode($row['fname']); ?>&lname=<?php echo urlencode($row['lname']); ?>" class="btn btn-success btn-sm mb-1">
                                                     <i class="fas fa-prescription-bottle-alt"></i> Prescribe Medicine
                                                 </a>
@@ -656,12 +595,8 @@ while ($lab = mysqli_fetch_array($lab_result)) {
                         </div>
                     </div>
                     
-<<<<<<< HEAD
-                    <div class="tab-pane fade" id="diagnostics" role="tabpanel" aria-labelledby="diagnostics-tab">
-=======
                     <!-- Diagnostics Tab -->
                     <div class="tab-pane fade" id="v-pills-diagnostics" role="tabpanel" aria-labelledby="v-pills-diagnostics-tab">
->>>>>>> a5c017c (Initial project setup with updated files)
                         <div class="glass-card p-4">
                             <h4 class="text-dark mb-4">
                                 <i class="fas fa-stethoscope me-2"></i>Patient Diagnostics History
@@ -676,44 +611,11 @@ while ($lab = mysqli_fetch_array($lab_result)) {
                                             <th>Diagnosis</th>
                                             <th>Treatment Plan</th>
                                             <th>Prescription</th>
-<<<<<<< HEAD
-                                            <th>Dosage</th>
-                                            <th>Frequency</th>
-                                            <th>Duration</th>
-=======
->>>>>>> a5c017c (Initial project setup with updated files)
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <?php
-<<<<<<< HEAD
-                                        $diagnostics_query = "SELECT d.*, a.fname, a.lname, p.prescription, p.dosage, p.frequency, p.duration FROM diagnosticstb d 
-                                                            JOIN admissiontb a ON d.pid = a.pid 
-                                                            LEFT JOIN prestb p ON d.pid = p.pid AND d.doctor_name = p.doctor
-                                                            WHERE d.doctor_name = '$doctor' 
-                                                            ORDER BY d.created_date DESC, d.created_time DESC";
-                                        $diagnostics_result = mysqli_query($con, $diagnostics_query);
-                                        while ($diag = mysqli_fetch_array($diagnostics_result)) {
-                                            echo "<tr>
-                                                <td>{$diag['created_date']}<br><small>{$diag['created_time']}</small></td>
-                                                <td>{$diag['fname']} {$diag['lname']}<br><small>ID: {$diag['pid']}</small></td>
-                                                <td>" . substr($diag['symptoms'], 0, 50) . "...</td>
-                                                <td>" . substr($diag['diagnosis'], 0, 50) . "...</td>
-                                                <td>" . substr($diag['treatment_plan'], 0, 50) . "...</td>
-                                                <td>" . (isset($diag['prescription']) ? $diag['prescription'] : 'N/A') . "</td>
-                                                <td>" . (isset($diag['dosage']) ? $diag['dosage'] : 'N/A') . "</td>
-                                                <td>" . (isset($diag['frequency']) ? $diag['frequency'] : 'N/A') . "</td>
-                                                <td>" . (isset($diag['duration']) ? $diag['duration'] : 'N/A') . "</td>
-                                                <td>
-                                                    <button class='btn btn-info btn-sm' data-toggle='modal' data-target='#viewDiagnosisModal-{$diag['id']}'>
-                                                        <i class='fas fa-eye'></i> View
-                                                    </button>
-                                                </td>
-                                            </tr>";
-                                        }
-                                        ?>
-=======
                                         mysqli_data_seek($diagnostics_result, 0);
                                         while ($diag = mysqli_fetch_array($diagnostics_result)) {
                                             $prescription_display = (!empty($diag['prescribed_medicines'])) ? substr($diag['prescribed_medicines'], 0, 30) . '...' : 'no prescription';
@@ -738,19 +640,14 @@ while ($lab = mysqli_fetch_array($lab_result)) {
                                             </tr>';
                                         }
 ?>
->>>>>>> a5c017c (Initial project setup with updated files)
                                     </tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
                     
-<<<<<<< HEAD
-                    <div class="tab-pane fade" id="lab-requests" role="tabpanel" aria-labelledby="lab-requests-tab">
-=======
                     <!-- Lab Requests Tab -->
                     <div class="tab-pane fade" id="v-pills-lab-requests" role="tabpanel" aria-labelledby="v-pills-lab-requests-tab">
->>>>>>> a5c017c (Initial project setup with updated files)
                         <div class="glass-card p-4">
                             <h4 class="text-dark mb-4">
                                 <i class="fas fa-flask me-2"></i>Lab Test Requests
@@ -771,15 +668,7 @@ while ($lab = mysqli_fetch_array($lab_result)) {
                                     </thead>
                                     <tbody>
                                         <?php
-<<<<<<< HEAD
-                                        $lab_query = "SELECT lt.*, a.fname, a.lname FROM labtesttb lt 
-                                                    JOIN admissiontb a ON lt.pid = a.pid 
-                                                    WHERE lt.suggested_by_doctor = '$doctor' 
-                                                    ORDER BY lt.requested_date DESC, lt.requested_time DESC";
-                                        $lab_result = mysqli_query($con, $lab_query);
-=======
                                         mysqli_data_seek($lab_result, 0);
->>>>>>> a5c017c (Initial project setup with updated files)
                                         while ($lab = mysqli_fetch_array($lab_result)) {
                                             $status_class = '';
                                             if ($lab['status'] == 'Completed') $status_class = 'badge-success';
@@ -809,12 +698,8 @@ while ($lab = mysqli_fetch_array($lab_result)) {
                         </div>
                     </div>
                     
-<<<<<<< HEAD
-                    <div class="tab-pane fade" id="services" role="tabpanel" aria-labelledby="services-tab">
-=======
                     <!-- Services Tab -->
                     <div class="tab-pane fade" id="v-pills-services" role="tabpanel" aria-labelledby="v-pills-services-tab">
->>>>>>> a5c017c (Initial project setup with updated files)
                         <div class="glass-card p-4">
                             <h4 class="text-dark mb-4">
                                 <i class="fas fa-file-medical-alt me-2"></i>Service Charges Management
@@ -879,18 +764,8 @@ while ($lab = mysqli_fetch_array($lab_result)) {
         </div>
     </div>
 
-<<<<<<< HEAD
-    <?php
-    $con=mysqli_connect("localhost","root","","myhmsdb");
-    $dname = $_SESSION['dname'];
-    $query = "SELECT pid, fname, lname, age, gender, contact, room_number, admission_date, reason, status FROM admissiontb WHERE assigned_doctor='$dname' AND status != 'Discharged'";
-    $result = mysqli_query($con,$query);
-    while ($row = mysqli_fetch_array($result)){
-    ?>
-=======
     <!-- Modals for Patients -->
     <?php foreach($patients_data as $row): ?>
->>>>>>> a5c017c (Initial project setup with updated files)
     <div class="modal fade" id="diagnosisModal-<?php echo $row['pid']; ?>" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
             <form method="post" action="doctor-panel.php" class="modal-content">
@@ -1044,10 +919,6 @@ while ($lab = mysqli_fetch_array($lab_result)) {
             </form>
         </div>
     </div>
-<<<<<<< HEAD
-    <?php } ?>
-
-=======
     <?php endforeach; ?>
 
     <!-- Modals for Diagnostics -->
@@ -1159,7 +1030,6 @@ while ($lab = mysqli_fetch_array($lab_result)) {
     <?php endforeach; ?>
 
     <!-- Service Charge Modals -->
->>>>>>> a5c017c (Initial project setup with updated files)
     <div class="modal fade" id="editServiceModal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <form method="post" action="doctor-panel.php" class="modal-content">
@@ -1212,134 +1082,8 @@ while ($lab = mysqli_fetch_array($lab_result)) {
         </div>
     </div>
 
-<<<<<<< HEAD
-    <?php
-    $diagnostics_query = "SELECT d.*, a.fname, a.lname FROM diagnosticstb d 
-                        JOIN admissiontb a ON d.pid = a.pid 
-                        WHERE d.doctor_name = '$doctor' 
-                        ORDER BY d.created_date DESC, d.created_time DESC";
-    $diagnostics_result = mysqli_query($con, $diagnostics_query);
-    while ($diag = mysqli_fetch_array($diagnostics_result)) {
-    ?>
-    <div class="modal fade" id="viewDiagnosisModal-<?php echo $diag['id']; ?>" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Diagnosis Details</h5>
-                    <button type="button" class="close" data-dismiss="modal">
-                        <span>&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h6>Patient Information</h6>
-                            <p><strong>Name:</strong> <?php echo $diag['fname'] . ' ' . $diag['lname']; ?></p>
-                            <p><strong>Patient ID:</strong> <?php echo $diag['pid']; ?></p>
-                            <p><strong>Date:</strong> <?php echo $diag['created_date']; ?></p>
-                            <p><strong>Time:</strong> <?php echo $diag['created_time']; ?></p>
-                        </div>
-                        <div class="col-md-6">
-                            <h6>Medical Information</h6>
-                            <p><strong>Vital Signs:</strong> <?php echo $diag['vital_signs']; ?></p>
-                            <p><strong>Physical Examination:</strong> <?php echo $diag['physical_examination']; ?></p>
-                            <p><strong>Medical History:</strong> <?php echo $diag['medical_history']; ?></p>
-                            <p><strong>Tests Ordered:</strong> <?php echo $diag['diagnostic_tests_ordered']; ?></p>
-                        </div>
-                    </div>
-                    <hr>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h6>Symptoms</h6>
-                            <p><?php echo $diag['symptoms']; ?></p>
-                        </div>
-                        <div class="col-md-6">
-                            <h6>Diagnosis</h6>
-                            <p><?php echo $diag['diagnosis']; ?></p>
-                        </div>
-                    </div>
-                    <hr>
-                    <div class="row">
-                        <div class="col-12">
-                            <h6>Treatment Plan</h6>
-                            <p><?php echo $diag['treatment_plan']; ?></p>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <?php } ?>
-
-    <?php
-    $lab_query = "SELECT lt.*, a.fname, a.lname FROM labtesttb lt 
-                JOIN admissiontb a ON lt.pid = a.pid 
-                WHERE lt.suggested_by_doctor = '$doctor' 
-                ORDER BY lt.requested_date DESC, lt.requested_time DESC";
-    $lab_result = mysqli_query($con, $lab_query);
-    while ($lab = mysqli_fetch_array($lab_result)) {
-    ?>
-    <div class="modal fade" id="viewLabResultModal-<?php echo $lab['id']; ?>" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Lab Test Details</h5>
-                    <button type="button" class="close" data-dismiss="modal">
-                        <span>&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p><strong>Patient:</strong> <?php echo $lab['fname'] . ' ' . $lab['lname']; ?></p>
-                            <p><strong>Patient ID:</strong> <?php echo $lab['pid']; ?></p>
-                            <p><strong>Test Name:</strong> <?php echo $lab['test_name']; ?></p>
-                            <p><strong>Priority:</strong> <?php echo $lab['priority']; ?></p>
-                        </div>
-                        <div class="col-md-6">
-                            <p><strong>Requested Date:</strong> <?php echo $lab['requested_date']; ?></p>
-                            <p><strong>Requested Time:</strong> <?php echo $lab['requested_time']; ?></p>
-                            <p><strong>Scheduled Date:</strong> <?php echo $lab['scheduled_date']; ?></p>
-                            <p><strong>Status:</strong> <?php echo $lab['status']; ?></p>
-                        </div>
-                    </div>
-                    <?php if (!empty($lab['results'])) { ?>
-                    <hr>
-                    <div class="row">
-                        <div class="col-12">
-                            <h6>Test Result</h6>
-                            <p><?php echo $lab['results']; ?></p>
-                        </div>
-                    </div>
-                    <?php } ?>
-                    <?php if (!empty($lab['lab_notes'])) { ?>
-                    <hr>
-                    <div class="row">
-                        <div class="col-12">
-                            <h6>Lab Technician Comments</h6>
-                            <p><?php echo $lab['lab_notes']; ?></p>
-                        </div>
-                    </div>
-                    <?php } ?>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <?php } ?>
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
-=======
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
->>>>>>> a5c017c (Initial project setup with updated files)
     
     <script>
         function updateLabPrice(select, pid) {
@@ -1414,8 +1158,6 @@ while ($lab = mysqli_fetch_array($lab_result)) {
             $('#deleteServiceModal').modal('show');
         });
 
-<<<<<<< HEAD
-=======
         // Enhanced tab switching fix
         $(document).ready(function() {
             // Initialize Bootstrap tabs properly
@@ -1449,7 +1191,6 @@ while ($lab = mysqli_fetch_array($lab_result)) {
             });
         });
 
->>>>>>> a5c017c (Initial project setup with updated files)
         $(function () {
             $('[data-toggle="tooltip"]').tooltip()
         });

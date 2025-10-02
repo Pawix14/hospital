@@ -67,11 +67,6 @@ $charges_query = "SELECT pc.*, s.service_name FROM patient_chargstb pc JOIN serv
 $charges_result = mysqli_query($con, $charges_query);
 $payments_query = "SELECT * FROM paymentstb WHERE pid='$pid' ORDER BY payment_date DESC, payment_time DESC";
 $payments_result = mysqli_query($con, $payments_query);
-<<<<<<< HEAD
-$prescriptions_query = "SELECT id, doctor, pid, fname, lname, symptoms, allergy, prescription, price, diagnosis_details, prescribed_medicines, created_at AS created_date FROM prestb WHERE pid='$pid' AND diagnosis_details IS NOT NULL AND diagnosis_details != '' ORDER BY id DESC";
-$prescriptions_result = mysqli_query($con, $prescriptions_query);
-
-=======
 $prescriptions_query = "SELECT id, doctor, pid, fname, lname, symptoms, allergy, prescription, price, diagnosis_details, prescribed_medicines, dosage, frequency, duration, created_at AS created_date FROM prestb WHERE pid='$pid' AND diagnosis_details IS NOT NULL AND diagnosis_details != '' ORDER BY id DESC";
 $prescriptions_result = mysqli_query($con, $prescriptions_query);
 
@@ -93,7 +88,6 @@ while($lab = mysqli_fetch_array($lab_tests_result)) {
 // Reset pointer for table display
 mysqli_data_seek($lab_tests_result, 0);
 
->>>>>>> a5c017c (Initial project setup with updated files)
 ?>
 <html lang="en">
 <head>
@@ -235,8 +229,6 @@ mysqli_data_seek($lab_tests_result, 0);
             padding: 8px 12px;
             font-size: 0.9rem;
         }
-<<<<<<< HEAD
-=======
         
         .modal-backdrop {
             z-index: 1040;
@@ -245,7 +237,6 @@ mysqli_data_seek($lab_tests_result, 0);
         .modal {
             z-index: 1050;
         }
->>>>>>> a5c017c (Initial project setup with updated files)
     </style>
 </head>
 
@@ -470,39 +461,6 @@ mysqli_data_seek($lab_tests_result, 0);
                                                 </button>
                                             </td>
                                         </tr>
-<<<<<<< HEAD
-                                        <div class="modal fade" id="diagModal-<?php echo $diag['id']; ?>" tabindex="-1">
-                                            <div class="modal-dialog modal-lg">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title">Medical Record - <?php echo $diag['created_date']; ?></h5>
-                                                        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <div class="row">
-                                                            <div class="col-md-6">
-                                                                <p><strong>Doctor:</strong> <?php echo $diag['doctor_name']; ?></p>
-                                                                <p><strong>Date:</strong> <?php echo $diag['created_date'] . ' ' . $diag['created_time']; ?></p>
-                                                                <p><strong>Symptoms:</strong></p>
-                                                                <div class="border p-2 mb-3 rounded"><?php echo $diag['symptoms']; ?></div>
-                                                                <p><strong>Vital Signs:</strong></p>
-                                                                <div class="border p-2 mb-3 rounded"><?php echo $diag['vital_signs']; ?></div>
-                                                            </div>
-                                                            <div class="col-md-6">
-                                                                <p><strong>Physical Examination:</strong></p>
-                                                                <div class="border p-2 mb-3 rounded"><?php echo $diag['physical_examination']; ?></div>
-                                                                <p><strong>Diagnosis:</strong></p>
-                                                                <div class="border p-2 mb-3 rounded"><?php echo $diag['diagnosis']; ?></div>
-                                                                <p><strong>Treatment Plan:</strong></p>
-                                                                <div class="border p-2 mb-3 rounded"><?php echo $diag['treatment_plan']; ?></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-=======
->>>>>>> a5c017c (Initial project setup with updated files)
                                         <?php endwhile; ?>
                                     </tbody>
                                 </table>
@@ -561,42 +519,6 @@ mysqli_data_seek($lab_tests_result, 0);
                                                 <?php endif; ?>
                                             </td>
                                         </tr>
-<<<<<<< HEAD
-                                        <?php if($lab['status'] == 'Completed' && $lab['results']): ?>
-                                        <div class="modal fade" id="labModal-<?php echo $lab['id']; ?>" tabindex="-1">
-                                            <div class="modal-dialog modal-lg">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title">Lab Results - <?php echo $lab['test_name']; ?></h5>
-                                                        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <div class="row">
-                                                            <div class="col-md-6">
-                                                                <p><strong>Test:</strong> <?php echo $lab['test_name']; ?></p>
-                                                                <p><strong>Requested by:</strong> <?php echo $lab['suggested_by_doctor']; ?></p>
-                                                                <p><strong>Completed:</strong> <?php echo $lab['completed_date']; ?></p>
-                                                                <p><strong>Priority:</strong> <?php echo $lab['priority'] ?? 'Normal'; ?></p>
-                                                            </div>
-                                                            <div class="col-md-6">
-                                                                <p><strong>Price:</strong> ₱<?php echo number_format($lab['price'], 2); ?></p>
-                                                                <p><strong>Status:</strong> <span class="badge badge-success"><?php echo $lab['status']; ?></span></p>
-                                                            </div>
-                                                        </div>
-                                                        <hr>
-                                                        <p><strong>Test Results:</strong></p>
-                                                        <div class="border p-3 bg-light mb-3 rounded"><?php echo $lab['results']; ?></div>
-                                                        <?php if($lab['lab_notes']): ?>
-                                                        <p><strong>Lab Notes:</strong></p>
-                                                        <div class="border p-3 bg-light rounded"><?php echo $lab['lab_notes']; ?></div>
-                                                        <?php endif; ?>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <?php endif; ?>
-=======
->>>>>>> a5c017c (Initial project setup with updated files)
                                         <?php endwhile; ?>
                                     </tbody>
                                 </table>
@@ -784,32 +706,15 @@ mysqli_data_seek($lab_tests_result, 0);
                                         <tr>
                                             <th>Date</th>
                                             <th>Doctor</th>
-<<<<<<< HEAD
-                                            <th>Medicine Name</th>
-                                            <th>Dosage</th>
-                                            <th>Frequency</th>
-                                            <th>Duration</th>
-                                            <th>Notes</th>
-=======
                                             <th>Diagnosis</th>
                                             <th>Prescribed Medicines</th>
                                             <th>Price</th>
                                             <th>Action</th>
->>>>>>> a5c017c (Initial project setup with updated files)
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <?php while($pres = mysqli_fetch_array($prescriptions_result)): ?>
                                         <tr>
-<<<<<<< HEAD
-                                            <td><?php echo isset($pres['created_date']) ? $pres['created_date'] : 'N/A'; ?></td>
-                                            <td><?php echo isset($pres['doctor']) ? $pres['doctor'] : 'N/A'; ?></td>
-                                            <td><strong><?php echo isset($pres['prescription']) ? $pres['prescription'] : 'N/A'; ?></strong></td>
-                                            <td>N/A</td>
-                                            <td>N/A</td>
-                                            <td>N/A</td>
-                                            <td><?php echo isset($pres['diagnosis_details']) ? $pres['diagnosis_details'] : 'No additional notes'; ?></td>
-=======
                                             <td><?php echo $pres['created_date']; ?></td>
                                             <td><?php echo $pres['doctor']; ?></td>
                                             <td><?php echo substr($pres['diagnosis_details'], 0, 50) . '...'; ?></td>
@@ -837,7 +742,6 @@ mysqli_data_seek($lab_tests_result, 0);
                                                 <i class="fas fa-eye"></i> View Details
                                             </button>
                                         </td>
->>>>>>> a5c017c (Initial project setup with updated files)
                                         </tr>
                                         <?php endwhile; ?>
                                     </tbody>
@@ -852,12 +756,6 @@ mysqli_data_seek($lab_tests_result, 0);
             </div>
         </div>
     </div>
-<<<<<<< HEAD
-
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
-=======
     
     <!-- Modals for Diagnostics Details -->
     <?php foreach($diagnostics_data as $diag): ?>
@@ -1078,6 +976,5 @@ mysqli_data_seek($lab_tests_result, 0);
             });
         });
     </script>
->>>>>>> a5c017c (Initial project setup with updated files)
 </body>
 </html>

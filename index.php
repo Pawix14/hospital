@@ -485,14 +485,6 @@
                         Experience world-class healthcare with our advanced management system at Madridano Health Care Hospital. 
                         Seamless patient care, cutting-edge technology, and compassionate service for your well-being.
                     </p>
-<<<<<<< HEAD
-                    <div class="d-flex gap-3 flex-wrap">
-                        <button class="btn btn-primary btn-lg" onclick="document.getElementById('loginSection').scrollIntoView({behavior: 'smooth'});">
-                            <i class="fas fa-sign-in-alt me-2"></i>Get Started
-                        </button>
-                    </div>
-=======
->>>>>>> a5c017c (Initial project setup with updated files)
                 </div>
                 
                 <div class="col-lg-6" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="200">

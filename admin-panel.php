@@ -477,11 +477,7 @@ if (isset($_POST['delete_nurse'])) {
                             </div>
                             <div class="col-md-6 col-lg-3">
                                 <div class="stat-card" style="background: var(--success-gradient);">
-<<<<<<< HEAD
-                                    <i class="fas fa-dollar-sign fa-3x mb-3"></i>
-=======
                                     <i class="fas fa-hospital-symbol fa-3x mb-3"></i>
->>>>>>> a5c017c (Initial project setup with updated files)
                                     <h3>₱<?php 
                                         $query = mysqli_query($con, "SELECT SUM(total) as revenue FROM billtb WHERE status='Paid'");
                                         $row = mysqli_fetch_assoc($query);
@@ -493,11 +489,7 @@ if (isset($_POST['delete_nurse'])) {
                         </div>
                         <div class="glass-card p-4">
                             <h4 class="text-dark mb-4">
-<<<<<<< HEAD
-                                <i class="fas fa-clock me-2"></i>Recent Admissions
-=======
                                 <i class="fas fa-clock me-2"></i>Recent Admissionst
->>>>>>> a5c017c (Initial project setup with updated files)
                             </h4>
                             <div class="table-responsive">
                                 <table class="table table-glass">
@@ -514,9 +506,6 @@ if (isset($_POST['delete_nurse'])) {
                                         <?php 
                                         $query = mysqli_query($con, "SELECT * FROM admissiontb ORDER BY admission_date DESC LIMIT 5");
                                         while($row = mysqli_fetch_array($query)) {
-<<<<<<< HEAD
-                                            $statusClass = ($row['status'] == 'Admitted') ? 'success' : 'secondary';
-=======
                                             $status = $row['status'];
                                             $badgeClass = 'secondary'; // default gray
                                             if ($status === 'Admitted') {
@@ -526,19 +515,13 @@ if (isset($_POST['delete_nurse'])) {
                                             } elseif ($status === 'Ready for Discharge') {
                                                 $badgeClass = 'warning'; // orange/yellow
                                             }
->>>>>>> a5c017c (Initial project setup with updated files)
                                             echo '<tr>
                                                 <td>'.$row['pid'].'</td>
                                                 <td>'.$row['fname'].' '.$row['lname'].'</td>
                                                 <td>'.$row['contact'].'</td>
                                                 <td>'.$row['admission_date'].'</td>
-<<<<<<< HEAD
-        <td><span class="badge bg-'.$statusClass.'">'.$row['status'].'</span></td>
-    </tr>';
-=======
                                                 <td><span class="badge bg-'.$badgeClass.'">'.$status.'</span></td>
                                             </tr>';
->>>>>>> a5c017c (Initial project setup with updated files)
 }
                                         ?>
                                     </tbody>
@@ -669,28 +652,6 @@ if (isset($_POST['delete_nurse'])) {
                                         </tr>
                                     </thead>
                                     <tbody>
-<<<<<<< HEAD
-                                        <?php 
-$query = mysqli_query($con, "SELECT a.*, b.status as bill_status FROM admissiontb a LEFT JOIN billtb b ON a.pid = b.pid ORDER BY a.admission_date DESC");
-                                        while($row = mysqli_fetch_array($query)) {
-                                            $billStatusClass = ($row['bill_status'] == 'Paid') ? 'success' : 'warning';
-                                            echo '<tr>
-                                                <td>'.$row['pid'].'</td>
-                                                <td>'.$row['fname'].' '.$row['lname'].'</td>
-                                                <td>'.$row['contact'].'</td>
-                                                <td>'.$row['admission_date'].'</td>
-                                                <td><span class="badge bg-'.$billStatusClass.'">'.($row['bill_status'] ?? 'Unpaid').'</span></td>
-                                                <td><span class="badge bg-info">'.$row['status'].'</span></td>
-                                                <td>
-                                                    <form method="POST" style="display:inline;">
-                                                        <input type="hidden" name="discharge_pid" value="'.$row['pid'].'">
-                                                        <button type="submit" name="discharge_patient" class="btn btn-sm btn-primary" onclick="return confirm(\'Are you sure you want to discharge this patient?\')">
-                                                            <i class="fas fa-sign-out-alt"></i> Discharge
-                                                        </button>
-                                                    </form>
-                                                </td>
-                                            </tr>';
-=======
                                         <?php
 $query = mysqli_query($con, "SELECT a.*, b.status as bill_status FROM admissiontb a LEFT JOIN billtb b ON a.pid = b.pid ORDER BY a.admission_date DESC");
                                         while($row = mysqli_fetch_array($query)) {
@@ -720,7 +681,6 @@ $query = mysqli_query($con, "SELECT a.*, b.status as bill_status FROM admissiont
                                                      </form>
                                                  </td>
                                              </tr>';
->>>>>>> a5c017c (Initial project setup with updated files)
                                         }
                                         ?>
                                     </tbody>
