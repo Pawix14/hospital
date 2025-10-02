@@ -67,9 +67,33 @@ $charges_query = "SELECT pc.*, s.service_name FROM patient_chargstb pc JOIN serv
 $charges_result = mysqli_query($con, $charges_query);
 $payments_query = "SELECT * FROM paymentstb WHERE pid='$pid' ORDER BY payment_date DESC, payment_time DESC";
 $payments_result = mysqli_query($con, $payments_query);
+<<<<<<< HEAD
 $prescriptions_query = "SELECT id, doctor, pid, fname, lname, symptoms, allergy, prescription, price, diagnosis_details, prescribed_medicines, created_at AS created_date FROM prestb WHERE pid='$pid' AND diagnosis_details IS NOT NULL AND diagnosis_details != '' ORDER BY id DESC";
 $prescriptions_result = mysqli_query($con, $prescriptions_query);
 
+=======
+$prescriptions_query = "SELECT id, doctor, pid, fname, lname, symptoms, allergy, prescription, price, diagnosis_details, prescribed_medicines, dosage, frequency, duration, created_at AS created_date FROM prestb WHERE pid='$pid' AND diagnosis_details IS NOT NULL AND diagnosis_details != '' ORDER BY id DESC";
+$prescriptions_result = mysqli_query($con, $prescriptions_query);
+
+// Store diagnostics data for modals
+$diagnostics_data = [];
+while($diag = mysqli_fetch_array($diagnostics_result)) {
+    $diagnostics_data[] = $diag;
+}
+
+// Reset pointer for table display
+mysqli_data_seek($diagnostics_result, 0);
+
+// Store lab test data for modals
+$lab_tests_data = [];
+while($lab = mysqli_fetch_array($lab_tests_result)) {
+    $lab_tests_data[] = $lab;
+}
+
+// Reset pointer for table display
+mysqli_data_seek($lab_tests_result, 0);
+
+>>>>>>> a5c017c (Initial project setup with updated files)
 ?>
 <html lang="en">
 <head>
@@ -211,6 +235,17 @@ $prescriptions_result = mysqli_query($con, $prescriptions_query);
             padding: 8px 12px;
             font-size: 0.9rem;
         }
+<<<<<<< HEAD
+=======
+        
+        .modal-backdrop {
+            z-index: 1040;
+        }
+        
+        .modal {
+            z-index: 1050;
+        }
+>>>>>>> a5c017c (Initial project setup with updated files)
     </style>
 </head>
 
@@ -435,6 +470,7 @@ $prescriptions_result = mysqli_query($con, $prescriptions_query);
                                                 </button>
                                             </td>
                                         </tr>
+<<<<<<< HEAD
                                         <div class="modal fade" id="diagModal-<?php echo $diag['id']; ?>" tabindex="-1">
                                             <div class="modal-dialog modal-lg">
                                                 <div class="modal-content">
@@ -465,6 +501,8 @@ $prescriptions_result = mysqli_query($con, $prescriptions_query);
                                                 </div>
                                             </div>
                                         </div>
+=======
+>>>>>>> a5c017c (Initial project setup with updated files)
                                         <?php endwhile; ?>
                                     </tbody>
                                 </table>
@@ -523,6 +561,7 @@ $prescriptions_result = mysqli_query($con, $prescriptions_query);
                                                 <?php endif; ?>
                                             </td>
                                         </tr>
+<<<<<<< HEAD
                                         <?php if($lab['status'] == 'Completed' && $lab['results']): ?>
                                         <div class="modal fade" id="labModal-<?php echo $lab['id']; ?>" tabindex="-1">
                                             <div class="modal-dialog modal-lg">
@@ -556,6 +595,8 @@ $prescriptions_result = mysqli_query($con, $prescriptions_query);
                                             </div>
                                         </div>
                                         <?php endif; ?>
+=======
+>>>>>>> a5c017c (Initial project setup with updated files)
                                         <?php endwhile; ?>
                                     </tbody>
                                 </table>
@@ -743,16 +784,24 @@ $prescriptions_result = mysqli_query($con, $prescriptions_query);
                                         <tr>
                                             <th>Date</th>
                                             <th>Doctor</th>
+<<<<<<< HEAD
                                             <th>Medicine Name</th>
                                             <th>Dosage</th>
                                             <th>Frequency</th>
                                             <th>Duration</th>
                                             <th>Notes</th>
+=======
+                                            <th>Diagnosis</th>
+                                            <th>Prescribed Medicines</th>
+                                            <th>Price</th>
+                                            <th>Action</th>
+>>>>>>> a5c017c (Initial project setup with updated files)
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <?php while($pres = mysqli_fetch_array($prescriptions_result)): ?>
                                         <tr>
+<<<<<<< HEAD
                                             <td><?php echo isset($pres['created_date']) ? $pres['created_date'] : 'N/A'; ?></td>
                                             <td><?php echo isset($pres['doctor']) ? $pres['doctor'] : 'N/A'; ?></td>
                                             <td><strong><?php echo isset($pres['prescription']) ? $pres['prescription'] : 'N/A'; ?></strong></td>
@@ -760,6 +809,35 @@ $prescriptions_result = mysqli_query($con, $prescriptions_query);
                                             <td>N/A</td>
                                             <td>N/A</td>
                                             <td><?php echo isset($pres['diagnosis_details']) ? $pres['diagnosis_details'] : 'No additional notes'; ?></td>
+=======
+                                            <td><?php echo $pres['created_date']; ?></td>
+                                            <td><?php echo $pres['doctor']; ?></td>
+                                            <td><?php echo substr($pres['diagnosis_details'], 0, 50) . '...'; ?></td>
+                                            <td>
+                                                <?php 
+                                                $medicines = explode(',', $pres['prescribed_medicines']);
+                                                $dosages = isset($pres['dosage']) ? explode(',', $pres['dosage']) : [];
+                                                $frequencies = isset($pres['frequency']) ? explode(',', $pres['frequency']) : [];
+                                                $durations = isset($pres['duration']) ? explode(',', $pres['duration']) : [];
+                                                $count = count($medicines);
+                                                $details = [];
+                                                for ($i = 0; $i < $count; $i++) {
+                                                    $med = trim($medicines[$i]);
+                                                    $dos = isset($dosages[$i]) ? trim($dosages[$i]) : '';
+                                                    $freq = isset($frequencies[$i]) ? trim($frequencies[$i]) : '';
+                                                    $dur = isset($durations[$i]) ? trim($durations[$i]) : '';
+                                                    $details[] = $med . ($dos ? " ($dos" : "") . ($freq ? ", $freq" : "") . ($dur ? ", $dur)" : ($dos ? ")" : ""));
+                                                }
+                                                echo implode('<br>', $details);
+                                                ?>
+                                            </td>
+                                        <td>₱<?php echo number_format($pres['price'], 2); ?></td>
+                                        <td>
+                                            <button class="btn btn-info btn-sm" data-toggle="modal" data-target="#presModal-<?php echo $pres['id']; ?>">
+                                                <i class="fas fa-eye"></i> View Details
+                                            </button>
+                                        </td>
+>>>>>>> a5c017c (Initial project setup with updated files)
                                         </tr>
                                         <?php endwhile; ?>
                                     </tbody>
@@ -774,9 +852,232 @@ $prescriptions_result = mysqli_query($con, $prescriptions_query);
             </div>
         </div>
     </div>
+<<<<<<< HEAD
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
+=======
+    
+    <!-- Modals for Diagnostics Details -->
+    <?php foreach($diagnostics_data as $diag): ?>
+    <div class="modal fade" id="diagModal-<?php echo $diag['id']; ?>" tabindex="-1" role="dialog" aria-labelledby="diagModalLabel-<?php echo $diag['id']; ?>" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="diagModalLabel-<?php echo $diag['id']; ?>">Diagnostic Details</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Date:</strong> <?php echo $diag['created_date']; ?></p>
+                            <p><strong>Time:</strong> <?php echo $diag['created_time']; ?></p>
+                            <p><strong>Doctor:</strong> <?php echo $diag['doctor_name']; ?></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Patient ID:</strong> <?php echo $diag['pid']; ?></p>
+                            <p><strong>Patient Name:</strong> <?php echo $fname . ' ' . $lname; ?></p>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-12">
+                            <h6>Diagnosis</h6>
+                            <div class="border p-3 bg-light rounded">
+                                <?php echo $diag['diagnosis']; ?>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Treatment Plan</h6>
+                            <div class="border p-3 bg-light rounded">
+                                <?php echo $diag['treatment_plan']; ?>
+                            </div>
+                        </div>
+                    </div>
+                    <?php if(!empty($diag['notes'])): ?>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Additional Notes</h6>
+                            <div class="border p-3 bg-light rounded">
+                                <?php echo $diag['notes']; ?>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php endforeach; ?>
+    
+    <!-- Modals for Lab Results -->
+    <?php foreach($lab_tests_data as $lab): ?>
+    <div class="modal fade" id="labModal-<?php echo $lab['id']; ?>" tabindex="-1" role="dialog" aria-labelledby="labModalLabel-<?php echo $lab['id']; ?>" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="labModalLabel-<?php echo $lab['id']; ?>">Lab Test Results - <?php echo $lab['test_name']; ?></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Test Name:</strong> <?php echo $lab['test_name']; ?></p>
+                            <p><strong>Requested By:</strong> <?php echo $lab['suggested_by_doctor']; ?></p>
+                            <p><strong>Status:</strong> <?php echo $lab['status']; ?></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Requested Date:</strong> <?php echo $lab['requested_date']; ?></p>
+                            <p><strong>Completed Date:</strong> <?php echo $lab['completed_date'] ?? 'Not completed'; ?></p>
+                            <p><strong>Price:</strong> ₱<?php echo number_format($lab['price'], 2); ?></p>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-12">
+                            <h6>Test Results</h6>
+                            <div class="border p-3 bg-light rounded">
+                                <?php echo $lab['results'] ?? 'Results not available yet.'; ?>
+                            </div>
+                        </div>
+                    </div>
+                    <?php if(!empty($lab['notes'])): ?>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Additional Notes</h6>
+                            <div class="border p-3 bg-light rounded">
+                                <?php echo $lab['notes']; ?>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php endforeach; ?>
+    
+    <!-- Modals for Prescriptions -->
+    <?php mysqli_data_seek($prescriptions_result, 0); ?>
+    <?php while($pres = mysqli_fetch_array($prescriptions_result)): ?>
+    <div class="modal fade" id="presModal-<?php echo $pres['id']; ?>" tabindex="-1" role="dialog" aria-labelledby="presModalLabel-<?php echo $pres['id']; ?>" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="presModalLabel-<?php echo $pres['id']; ?>">Prescription Details</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Date:</strong> <?php echo $pres['created_date']; ?></p>
+                            <p><strong>Doctor:</strong> <?php echo $pres['doctor']; ?></p>
+                            <p><strong>Patient ID:</strong> <?php echo $pres['pid']; ?></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Patient Name:</strong> <?php echo $pres['fname'] . ' ' . $pres['lname']; ?></p>
+                            <p><strong>Price:</strong> ₱<?php echo number_format($pres['price'], 2); ?></p>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-12">
+                            <h6>Diagnosis Details</h6>
+                            <div class="border p-3 bg-light rounded">
+                                <?php echo $pres['diagnosis_details']; ?>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Prescribed Medicines</h6>
+                            <div class="border p-3 bg-light rounded">
+                                <?php 
+                                $medicines = explode(',', $pres['prescribed_medicines']);
+                                $dosages = isset($pres['dosage']) ? explode(',', $pres['dosage']) : [];
+                                $frequencies = isset($pres['frequency']) ? explode(',', $pres['frequency']) : [];
+                                $durations = isset($pres['duration']) ? explode(',', $pres['duration']) : [];
+                                $count = count($medicines);
+                                $details = [];
+                                for ($i = 0; $i < $count; $i++) {
+                                    $med = trim($medicines[$i]);
+                                    $dos = isset($dosages[$i]) ? trim($dosages[$i]) : '';
+                                    $freq = isset($frequencies[$i]) ? trim($frequencies[$i]) : '';
+                                    $dur = isset($durations[$i]) ? trim($durations[$i]) : '';
+                                    $details[] = $med . ($dos ? " (Dosage: " . htmlspecialchars($dos) : "") . ($freq ? ", Frequency: " . htmlspecialchars($freq) : "") . ($dur ? ", Duration: " . htmlspecialchars($dur) . ")" : ($dos ? ")" : ""));
+                                }
+                                echo implode('<br>', $details);
+                                ?>
+                            </div>
+                        </div>
+                    </div>
+                    <?php if(!empty($pres['symptoms'])): ?>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Symptoms</h6>
+                            <div class="border p-3 bg-light rounded">
+                                <?php echo $pres['symptoms']; ?>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+                    <?php if(!empty($pres['allergy'])): ?>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Allergies</h6>
+                            <div class="border p-3 bg-light rounded">
+                                <?php echo $pres['allergy']; ?>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php endwhile; ?>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Initialize Bootstrap components
+            $('[data-toggle="tab"]').tab();
+            
+            // Fix for modal glitching
+            $('.modal').on('show.bs.modal', function () {
+                $('body').addClass('modal-open');
+            });
+            
+            $('.modal').on('hidden.bs.modal', function () {
+                $('body').removeClass('modal-open');
+                $('.modal-backdrop').remove();
+            });
+            
+            // Ensure modals close properly
+            $('.modal .close, .modal [data-dismiss="modal"]').on('click', function() {
+                $(this).closest('.modal').modal('hide');
+            });
+        });
+    </script>
+>>>>>>> a5c017c (Initial project setup with updated files)
 </body>
 </html>

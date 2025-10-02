@@ -15,8 +15,12 @@ $is_nurse = false;
 if (isset($_SESSION['dname'])) {
     $doctor = $_SESSION['dname'];
 } elseif (isset($_SESSION['username'])) {
+<<<<<<< HEAD
     // Nurse logged in
     $doctor = $_SESSION['username']; // Use nurse username as doctor field for prescription
+=======
+    $doctor = $_SESSION['username']; 
+>>>>>>> a5c017c (Initial project setup with updated files)
     $is_nurse = true;
 } else {
     header("Location: index.php");
@@ -33,6 +37,7 @@ if(isset($_GET['pid']) && isset($_GET['fname']) && isset($_GET['lname'])) {
         $lname = $_POST['lname'];
         $pid = $_POST['pid'];
 
+<<<<<<< HEAD
         if ($is_nurse) {
             // Nurse prescription fields
             $medicine_name = $_POST['medicine_name'];
@@ -68,6 +73,42 @@ if(isset($_GET['pid']) && isset($_GET['fname']) && isset($_GET['lname'])) {
             $price = $_POST['price'];
 
             $medicine_names = [];
+=======
+if ($is_nurse) {
+    $medicine_name = $_POST['medicine_name'];
+    $quantity = $_POST['quantity'];
+    $follow_up = $_POST['follow_up'];
+    $symptoms = $_POST['symptoms'] ?? '';
+    $price_query = "SELECT price FROM medicinetb WHERE medicine_name = '$medicine_name' LIMIT 1";
+    $price_result = mysqli_query($con, $price_query);
+    $price_row = mysqli_fetch_assoc($price_result);
+    $price_per_unit = $price_row['price'] ?? 0;
+
+    $price = $quantity * $price_per_unit;
+    $allergy = "N/A";
+    $prescription = $medicine_name;
+
+    $query = mysqli_query($con, "INSERT INTO prestb(doctor, pid, fname, lname, symptoms, allergy, prescription, price) VALUES ('$doctor', '$pid', '$fname', '$lname', '$symptoms', '$allergy', '$prescription', '$price')");
+    if ($query) {
+        $update_qty_query = "UPDATE medicinetb SET quantity = quantity - $quantity WHERE medicine_name = '$medicine_name' AND quantity >= $quantity";
+        mysqli_query($con, $update_qty_query);
+
+        echo "<script>alert('Prescribed successfully!');</script>";
+    } else {
+        echo "<script>alert('Unable to process your request. Try again!');</script>";
+    }
+} else {
+            $diagnosis_details = isset($_POST['diagnosis_details']) ? $_POST['diagnosis_details'] : '';
+            $allergy = $_POST['allergy'];
+            $medicines = $_POST['medicines'];
+            $medicine_quantities = $_POST['medicine_quantities'];
+            $price = $_POST['price'];
+
+            $medicine_names = [];
+            $dosages = [];
+            $frequencies = [];
+            $durations = [];
+>>>>>>> a5c017c (Initial project setup with updated files)
             $total_price = 0;
             $insufficient_stock = false;
             foreach ($medicines as $med_id) {
@@ -81,11 +122,18 @@ if(isset($_GET['pid']) && isset($_GET['fname']) && isset($_GET['lname'])) {
                     $medicine_names[] = $med_row['medicine_name'];
                     $total_price += $med_row['price'] * $quantity_prescribed;
                 }
+<<<<<<< HEAD
+=======
+                $dosages[] = isset($_POST['dosage'][$med_id]) ? $_POST['dosage'][$med_id] : '';
+                $frequencies[] = isset($_POST['frequency'][$med_id]) ? $_POST['frequency'][$med_id] : '';
+                $durations[] = isset($_POST['duration'][$med_id]) ? $_POST['duration'][$med_id] : '';
+>>>>>>> a5c017c (Initial project setup with updated files)
             }
             if ($insufficient_stock) {
                 echo "<script>alert('Insufficient stock for one or more medicines. Please adjust quantities.');</script>";
             } else {
                 $prescribed_medicines = implode(', ', $medicine_names);
+<<<<<<< HEAD
                 $symptoms = $_POST['symptoms'] ?? '';  // Fix undefined variable in doctor block
 
                 // Prepare prescription details with dosage, frequency, and duration
@@ -103,11 +151,26 @@ if(isset($_GET['pid']) && isset($_GET['fname']) && isset($_GET['lname'])) {
                 $query = mysqli_query($con, "INSERT INTO prestb(doctor, pid, fname, lname, allergy, prescription, price, symptoms, diagnosis_details, prescribed_medicines, dosage, frequency, duration) VALUES ('$doctor', '$pid', '$fname', '$lname', '$allergy', '$prescription_str', '$total_price', '$symptoms', '$diagnosis_details', '$prescribed_medicines', '" . implode(',', $dosages) . "', '" . implode(',', $frequencies) . "', '" . implode(',', $durations) . "')");
                 if ($query) {
                     // Decrement medicine quantity in medicinetb for doctor prescription
+=======
+                $dosage_str = implode(',', $dosages);
+                $frequency_str = implode(',', $frequencies);
+                $duration_str = implode(',', $durations);
+                $symptoms = $_POST['symptoms'] ?? ''; 
+
+                $query = mysqli_query($con, "INSERT INTO prestb(doctor, pid, fname, lname, allergy, prescription, price, symptoms, diagnosis_details, prescribed_medicines, dosage, frequency, duration) VALUES ('$doctor', '$pid', '$fname', '$lname', '$allergy', '$prescribed_medicines', '$total_price', '$symptoms', '$diagnosis_details', '$prescribed_medicines', '$dosage_str', '$frequency_str', '$duration_str')");
+                if ($query) {
+>>>>>>> a5c017c (Initial project setup with updated files)
                     foreach ($medicines as $med_id) {
                         $quantity_prescribed = isset($medicine_quantities[$med_id]) ? intval($medicine_quantities[$med_id]) : 0;
                         $update_qty_query = "UPDATE medicinetb SET quantity = quantity - $quantity_prescribed WHERE id = '$med_id' AND quantity >= $quantity_prescribed";
                         mysqli_query($con, $update_qty_query);
                     }
+<<<<<<< HEAD
+=======
+                    $update_bill_query = "UPDATE billtb SET medicine_fees = medicine_fees + $total_price, total = consultation_fees + lab_fees + medicine_fees + service_charges + room_charges WHERE pid = '$pid'";
+                    mysqli_query($con, $update_bill_query);
+
+>>>>>>> a5c017c (Initial project setup with updated files)
                     echo "<script>alert('Prescribed successfully!');</script>";
                 } else {
                     echo "<script>alert('Unable to process your request. Try again!');</script>";
@@ -399,6 +462,7 @@ if(isset($_GET['pid']) && isset($_GET['fname']) && isset($_GET['lname'])) {
                         </div>
                         <div class="card-body">
                             <form class="form-group" name="prescribeform" method="post" action="prescribe.php">
+<<<<<<< HEAD
                                 <h5 class="section-title"><i class="fa fa-stethoscope"></i> Symptoms & Diagnosis</h5>
                                 
                                 <div class="row mb-4">
@@ -418,6 +482,30 @@ if(isset($_GET['pid']) && isset($_GET['fname']) && isset($_GET['lname'])) {
                                         <textarea id="diagnosis_details" cols="86" rows="4" name="diagnosis_details" class="form-control" placeholder="Enter detailed diagnosis notes and observations" required></textarea>
                                     </div>
                                 </div>
+=======
+                    <!-- Removed Symptoms & Diagnosis section as per user request -->
+                    <!--
+                    <h5 class="section-title"><i class="fa fa-stethoscope"></i> Symptoms & Diagnosis</h5>
+                                
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <label class="required-field">Symptoms:</label>
+                        </div>
+                        <div class="col-md-9">
+<textarea id="symptoms" cols="86" rows="3" name="symptoms" class="form-control" placeholder="e.g. Fever, cough, headache" required></textarea>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <label class="required-field">Diagnosis Details:</label>
+                        </div>
+                        <div class="col-md-9">
+<textarea id="diagnosis_details" cols="86" rows="4" name="diagnosis_details" class="form-control" placeholder="e.g. Viral infection, mild dehydration" required></textarea>
+                        </div>
+                    </div>
+                    -->
+>>>>>>> a5c017c (Initial project setup with updated files)
 
                                 <h5 class="section-title"><i class="fa fa-heartbeat"></i> Patient Information</h5>
                                 
@@ -447,6 +535,7 @@ if(isset($_GET['pid']) && isset($_GET['fname']) && isset($_GET['lname'])) {
                                     <div class="col-md-9">
                                 <div id="medicine-quantity-container">
                                     <?php
+<<<<<<< HEAD
                                     $medicine_query = "SELECT id, medicine_name, price, quantity FROM medicinetb WHERE quantity > 0";
                                     $medicine_result = mysqli_query($con, $medicine_query);
                                     $modern_prices = [
@@ -485,6 +574,75 @@ if(isset($_GET['pid']) && isset($_GET['fname']) && isset($_GET['lname'])) {
                                         echo '</div>';
                                         echo '</div>';
                                     }
+=======
+$medicine_query = "SELECT id, medicine_name, price, quantity, medicine_type FROM medicinetb";
+$medicine_result = mysqli_query($con, $medicine_query);
+$modern_prices = [
+    'Paracetamol' => 10.50,
+    'Ibuprofen' => 15.75,
+    'Amoxicillin' => 15.20,
+    'Aspirin' => 30.40,
+    'Insulin' => 45.00,
+    'Vitamin D' => 25.30,
+    'Antihistamine' => 50.60,
+    'Cough Syrup' => 70.00,
+    'Bandages' => 30.10,
+    'Antiseptic Cream' => 20.50
+];
+$default_dosages = [
+    'Paracetamol' => '500mg',
+    'Ibuprofen' => '200mg',
+    'Amoxicillin' => '500mg',
+    'Aspirin' => '75mg',
+    'Insulin' => '10 units',
+    'Vitamin D' => '1000 IU',
+    'Antihistamine' => '10mg',
+    'Cough Syrup' => '10ml',
+    'Bandages' => '',
+    'Antiseptic Cream' => ''
+];
+$default_frequencies = [
+    'Paracetamol' => '3 times a day',
+    'Ibuprofen' => '3 times a day',
+    'Amoxicillin' => '2 times a day',
+    'Aspirin' => '1 time a day',
+    'Insulin' => 'As needed',
+    'Vitamin D' => '1 time a day',
+    'Antihistamine' => '2 times a day',
+    'Cough Syrup' => '3 times a day',
+    'Bandages' => '',
+    'Antiseptic Cream' => ''
+];
+while ($med = mysqli_fetch_array($medicine_result)) {
+    $price = $med['price'];
+    if (array_key_exists($med['medicine_name'], $modern_prices)) {
+        $price = $modern_prices[$med['medicine_name']];
+    }
+        $disabled = ($med['quantity'] <= 0) ? 'disabled' : '';
+        $out_of_stock_label = ($med['quantity'] <= 0) ? ' <span class="text-danger font-weight-bold">(Out of Stock)</span>' : '';
+        $show_dosage_fields = ($med['medicine_type'] == 'oral') ? '' : 'style="display:none;"';
+        echo '<div class="form-group row align-items-center mb-2">';
+        echo '<div class="col-md-4">';
+        $default_dosage = $default_dosages[$med['medicine_name']] ?? '';
+        $default_frequency = $default_frequencies[$med['medicine_name']] ?? '';
+        echo '<input type="checkbox" class="form-check-input medicine-checkbox" id="med_' . $med['id'] . '" name="medicines[]" value="' . $med['id'] . '" data-price="' . $price . '" data-name="' . htmlspecialchars($med['medicine_name']) . '" data-dosage="' . $default_dosage . '" data-frequency="' . $default_frequency . '" ' . $disabled . '>';
+        echo '<label class="form-check-label" for="med_' . $med['id'] . '">' . htmlspecialchars($med['medicine_name']) . ' - ₱' . number_format($price, 2) . ' (Available: ' . $med['quantity'] . ')' . $out_of_stock_label . '</label>';
+        echo '</div>';
+        echo '<div class="col-md-2">';
+        echo '<input type="number" class="form-control medicine-quantity" name="medicine_quantities[' . $med['id'] . ']" min="1" max="' . $med['quantity'] . '" value="1" disabled placeholder="Qty" ' . $disabled . '>';
+        echo '</div>';
+        echo '<div class="col-md-2" ' . $show_dosage_fields . '>';
+        echo '<input type="text" class="form-control" name="dosage[' . $med['id'] . ']" placeholder="Dosage" value="' . $default_dosage . '" disabled ' . $disabled . '>';
+        echo '</div>';
+        echo '<div class="col-md-2" ' . $show_dosage_fields . '>';
+        echo '<input type="text" class="form-control" name="frequency[' . $med['id'] . ']" placeholder="Frequency" value="' . $default_frequency . '" disabled ' . $disabled . '>';
+        echo '</div>';
+        echo '<div class="col-md-2" ' . $show_dosage_fields . '>';
+        echo '<input type="text" class="form-control" name="duration[' . $med['id'] . ']" placeholder="Duration" disabled ' . $disabled . '>';
+        echo '</div>';
+        echo '</div>';
+}
+>>>>>>> a5c017c (Initial project setup with updated files)
                                     ?>
                                 </div>
                                 <small class="form-text text-muted">Select medicines and specify quantities.</small>
@@ -587,7 +745,13 @@ if(isset($_GET['pid']) && isset($_GET['fname']) && isset($_GET['lname'])) {
                     if (this.checked) {
                         quantityInput.disabled = false;
                         dosageInput.disabled = false;
+<<<<<<< HEAD
                         frequencyInput.disabled = false;
+=======
+                        dosageInput.value = this.getAttribute('data-dosage');
+                        frequencyInput.disabled = false;
+                        frequencyInput.value = this.getAttribute('data-frequency');
+>>>>>>> a5c017c (Initial project setup with updated files)
                         durationInput.disabled = false;
                     } else {
                         quantityInput.disabled = true;
