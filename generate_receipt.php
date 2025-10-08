@@ -232,7 +232,7 @@ if ($generate_receipt) {
     $update_query = "UPDATE billtb SET receipt_generated=1 WHERE pid='$pid'";
     mysqli_query($con, $update_query);
 }
-`
+
 // Output PDF inline
 $pdf->Output('receipt_' . $pid . '_' . date('Ymd') . '.pdf', 'I');
 ?>
