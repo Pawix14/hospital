@@ -971,8 +971,6 @@ while ($row = mysqli_fetch_array($medicine_result)) {
                                     $room_number = $room['room_number'];
                                     $is_occupied = $room['is_occupied'];
                                     $patient_info = $room['patient_info'];
-                                    
-                                    // Determine room type and price
                                     $room_type = "";
                                     $room_price = 0;
                                     $room_class = "";

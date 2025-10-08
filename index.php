@@ -176,44 +176,6 @@
             box-shadow: var(--shadow-heavy);
             border-color: rgba(255, 255, 255, 0.3);
         }
-        .login-tabs {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 5px;
-            margin-bottom: 2rem;
-        }
-
-        .login-tabs .nav-link {
-            color: rgba(255, 255, 255, 0.7);
-            border: none;
-            border-radius: 10px;
-            padding: 12px 20px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .login-tabs .nav-link.active {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-
-        .login-tabs .nav-link::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-            transition: left 0.5s;
-        }
-
-        .login-tabs .nav-link:hover::before {
-            left: 100%;
-        }
         .form-control {
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
@@ -379,7 +341,49 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        .login-icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
     </style>
+    <style>
+        .password-toggle {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .password-strength {
+            height: 4px;
+            border-radius: 2px;
+            margin-top: 5px;
+            transition: all 0.3s ease;
+        }
+
+.strength-weak { background: #ff4757; width: 25%; }
+.strength-fair { background: #ffa502; width: 50%; }
+.strength-good { background: #2ed573; width: 75%; }
+.strength-strong { background: #1e90ff; width: 100%; }
+</style>
 
     <script>
         var check = function() {
@@ -490,172 +494,73 @@
                 <div class="col-lg-6" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="200">
                     <div class="glass-card p-4" id="loginSection">
                         <div class="text-center mb-4">
-                            <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3" 
-                                 style="width: 80px; height: 80px; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px);">
+                            <div class="login-icon">
                                 <i class="fas fa-hospital-symbol fa-2x text-white"></i>
                             </div>
                             <h3 class="text-white fw-bold mb-2">Welcome Back</h3>
-                            <p class="text-white-50">Choose your role to access the system</p>
+                            <p class="text-white-50">Enter your credentials to access the system</p>
                         </div>
                         
-                        <ul class="nav nav-pills nav-justified login-tabs" id="loginTabs" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="patient-tab" data-bs-toggle="pill" data-bs-target="#patient" type="button" role="tab">
-                                    <i class="fas fa-user me-2"></i>Patient
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="nurse-tab" data-bs-toggle="pill" data-bs-target="#nurse" type="button" role="tab">
-                                    <i class="fas fa-user-nurse me-2"></i>Nurse
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="doctor-tab" data-bs-toggle="pill" data-bs-target="#doctor" type="button" role="tab">
-                                    <i class="fas fa-user-md me-2"></i>Doctor
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="lab-tab" data-bs-toggle="pill" data-bs-target="#lab" type="button" role="tab">
-                                    <i class="fas fa-flask me-2"></i>Lab
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="admin-tab" data-bs-toggle="pill" data-bs-target="#admin" type="button" role="tab">
-                                    <i class="fas fa-user-shield me-2"></i>Admin
-                                </button>
-                            </li>
-                        </ul>
-                        <!-- Tab Content -->
-                        <div class="tab-content mt-4" id="loginTabContent">
-                            <!-- Patient Login -->
-                            <div class="tab-pane fade show active" id="patient" role="tabpanel">
-                                <form method="post" action="func.php" class="needs-validation" novalidate>
-                                    <div class="mb-3">
-                                        <div class="input-group">
-                                            <span class="input-group-text bg-transparent border-end-0" style="border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.7);">
-                                                <i class="fas fa-envelope"></i>
-                                            </span>
-                                            <input type="email" class="form-control border-start-0" placeholder="Enter your email" name="email" required>
-                                        </div>
-                                    </div>
-                                    <div class="mb-4">
-                                        <div class="input-group">
-                                            <span class="input-group-text bg-transparent border-end-0" style="border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.7);">
-                                                <i class="fas fa-lock"></i>
-                                            </span>
-                                            <input type="password" class="form-control border-start-0" placeholder="Enter your password" name="password2" required>
-                                        </div>
-                                    </div>
-                                    <button type="submit" name="patsub" class="btn btn-primary w-100 mb-3">
-                                        <i class="fas fa-sign-in-alt me-2"></i>Login as Patient
-                                    </button>
-                                </form>
-                                <div class="text-center">
-                                    <p class="text-white-50 small mb-2">Don't have an account?</p>
-                                    <a href="#" onclick="return showPatientAlert();" class="text-white text-decoration-none">
-                                        <i class="fas fa-user-plus me-1"></i>Contact a nurse for registration
-                                    </a>
+                        <!-- Unified Login Form -->
+                        <form method="post" action="func.php" class="needs-validation" novalidate>
+                            <div class="mb-3">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-transparent border-end-0" style="border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.7);">
+                                        <i class="fas fa-user"></i>
+                                    </span>
+                                    <input type="text" class="form-control border-start-0" placeholder="Enter username or email" name="username" required>
+                                </div>
+                                <div class="form-text text-white-50">
+                                    Use your username or email to login
                                 </div>
                             </div>
-
-                            <!-- Nurse Login -->
-                            <div class="tab-pane fade" id="nurse" role="tabpanel">
-                                <form method="post" action="func.php" class="needs-validation" novalidate>
-                                    <div class="mb-3">
-                                        <div class="input-group">
-                                            <span class="input-group-text bg-transparent border-end-0" style="border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.7);">
-                                                <i class="fas fa-user"></i>
-                                            </span>
-                                            <input type="text" class="form-control border-start-0" placeholder="Enter username" name="username" required>
-                                        </div>
-                                    </div>
-                                    <div class="mb-4">
-                                        <div class="input-group">
-                                            <span class="input-group-text bg-transparent border-end-0" style="border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.7);">
-                                                <i class="fas fa-lock"></i>
-                                            </span>
-                                            <input type="password" class="form-control border-start-0" placeholder="Enter password" name="password" required>
-                                        </div>
-                                    </div>
-                                    <button type="submit" name="nurse_login" class="btn btn-primary w-100">
-                                        <i class="fas fa-user-nurse me-2"></i>Login as Nurse
-                                    </button>
-                                </form>
+                        <div class="mb-4">
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-end-0" style="border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.7);">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                                <input type="password" class="form-control border-start-0" placeholder="Enter password" name="password" id="password" required>
+                                <button type="button" class="password-toggle" id="togglePassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
                             </div>
-
-                            <!-- Doctor Login -->
-                            <div class="tab-pane fade" id="doctor" role="tabpanel">
-                                <form method="post" action="func1.php" class="needs-validation" novalidate>
-                                    <div class="mb-3">
-                                        <div class="input-group">
-                                            <span class="input-group-text bg-transparent border-end-0" style="border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.7);">
-                                                <i class="fas fa-user-md"></i>
-                                            </span>
-                                            <input type="text" class="form-control border-start-0" placeholder="Enter username" name="username3" required>
-                                        </div>
-                                    </div>
-                                    <div class="mb-4">
-                                        <div class="input-group">
-                                            <span class="input-group-text bg-transparent border-end-0" style="border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.7);">
-                                                <i class="fas fa-lock"></i>
-                                            </span>
-                                            <input type="password" class="form-control border-start-0" placeholder="Enter password" name="password3" required>
-                                        </div>
-                                    </div>
-                                    <button type="submit" name="docsub1" class="btn btn-primary w-100">
-                                        <i class="fas fa-stethoscope me-2"></i>Login as Doctor
-                                    </button>
-                                </form>
-                            </div>
-
-                            <!-- Lab User Login -->
-                            <div class="tab-pane fade" id="lab" role="tabpanel">
-                                <form method="post" action="func.php" class="needs-validation" novalidate>
-                                    <div class="mb-3">
-                                        <div class="input-group">
-                                            <span class="input-group-text bg-transparent border-end-0" style="border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.7);">
-                                                <i class="fas fa-flask"></i>
-                                            </span>
-                                            <input type="text" class="form-control border-start-0" placeholder="Enter username" name="username" required>
-                                        </div>
-                                    </div>
-                                    <div class="mb-4">
-                                        <div class="input-group">
-                                            <span class="input-group-text bg-transparent border-end-0" style="border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.7);">
-                                                <i class="fas fa-lock"></i>
-                                            </span>
-                                            <input type="password" class="form-control border-start-0" placeholder="Enter password" name="password" required>
-                                        </div>
-                                    </div>
-                                    <button type="submit" name="lab_login" class="btn btn-primary w-100">
-                                        <i class="fas fa-microscope me-2"></i>Login as Lab User
-                                    </button>
-                                </form>
-                            </div>
-
-                            <!-- Admin Login -->
-                            <div class="tab-pane fade" id="admin" role="tabpanel">
-                                <form method="post" action="func.php" class="needs-validation" novalidate>
-                                    <div class="mb-3">
-                                        <div class="input-group">
-                                            <span class="input-group-text bg-transparent border-end-0" style="border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.7);">
-                                                <i class="fas fa-user-shield"></i>
-                                            </span>
-                                            <input type="text" class="form-control border-start-0" placeholder="Enter admin username" name="username1" required>
-                                        </div>
-                                    </div>
-                                    <div class="mb-4">
-                                        <div class="input-group">
-                                            <span class="input-group-text bg-transparent border-end-0" style="border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.7);">
-                                                <i class="fas fa-lock"></i>
-                                            </span>
-                                            <input type="password" class="form-control border-start-0" placeholder="Enter admin password" name="password2" required>
-                                        </div>
-                                    </div>
-                                    <button type="submit" name="adsub" class="btn btn-primary w-100">
-                                        <i class="fas fa-crown me-2"></i>Login as Admin
-                                    </button>
-                                </form>
+                            <div class="password-strength" id="passwordStrength"></div>
+                        </div>
+                            <button type="submit" name="login" class="btn btn-primary w-100 mb-3">
+                                <i class="fas fa-sign-in-alt me-2"></i>Login to System
+                            </button>
+                        </form>
+                        
+                        <div class="text-center">
+                            <p class="text-white-50 small mb-2">Don't have an account?</p>
+                            <a href="#" onclick="return showPatientAlert();" class="text-white text-decoration-none">
+                                <i class="fas fa-user-plus me-1"></i>Contact a nurse for registration
+                            </a>
+                        </div>
+                        
+                        <div class="mt-4 pt-3 border-top border-white-10">
+                            <p class="text-white-50 small text-center mb-2">System Access Information</p>
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <small class="text-white-50">
+                                        <i class="fas fa-user-md me-1"></i>Doctors
+                                    </small>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-white-50">
+                                        <i class="fas fa-user-nurse me-1"></i>Nurses
+                                    </small>
+                                </div>
+                                <div class="col-6 mt-2">
+                                    <small class="text-white-50">
+                                        <i class="fas fa-flask me-1"></i>Lab Staff
+                                    </small>
+                                </div>
+                                <div class="col-6 mt-2">
+                                    <small class="text-white-50">
+                                        <i class="fas fa-user-shield me-1"></i>Admins
+                                    </small>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -715,6 +620,51 @@
                 navbar.style.background = 'rgba(255, 255, 255, 0.1)';
                 navbar.style.backdropFilter = 'blur(20px)';
             }
+        });
+        // Password toggle functionality
+document.getElementById('togglePassword').addEventListener('click', function() {
+    const passwordInput = document.getElementById('password');
+    const icon = this.querySelector('i');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+        });
+
+        // Password strength indicator (for registration if added later)
+        function checkPasswordStrength(password) {
+            const strengthBar = document.getElementById('passwordStrength');
+            if (!strengthBar) return;
+            
+            let strength = 0;
+            if (password.length >= 8) strength++;
+            if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength++;
+            if (password.match(/\d/)) strength++;
+            if (password.match(/[^a-zA-Z\d]/)) strength++;
+            
+            strengthBar.className = 'password-strength';
+            if (password.length === 0) {
+                strengthBar.style.width = '0%';
+            } else if (strength <= 1) {
+                strengthBar.classList.add('strength-weak');
+            } else if (strength === 2) {
+                strengthBar.classList.add('strength-fair');
+            } else if (strength === 3) {
+                strengthBar.classList.add('strength-good');
+            } else {
+                strengthBar.classList.add('strength-strong');
+            }
+        }
+
+        // Add event listener for password strength (if needed)
+        document.getElementById('password')?.addEventListener('input', function(e) {
+            checkPasswordStrength(e.target.value);
         });
     </script>
 </body>

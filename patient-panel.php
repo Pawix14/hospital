@@ -627,6 +627,11 @@ mysqli_data_seek($lab_tests_result, 0);
                                             <?php if(!empty($bill_data['payment_date'])): ?>
                                             <p><strong>Payment Date:</strong> <?php echo $bill_data['payment_date']; ?></p>
                                             <?php endif; ?>
+                                            <?php if($bill_data['status'] == 'Paid'): ?>
+                                            <?php if($bill_data['status'] == 'Paid'): ?>
+                                                <a href="generate_receipt.php?pid=<?php echo $pid; ?>" class="btn btn-primary btn-block mt-2" target="_blank"><i class="fas fa-receipt"></i> Show Receipt</a>
+                                            <?php endif; ?>
+                                            <?php endif; ?>
                                             <?php if($bill_data['status'] != 'Paid'): ?>
                                             <form method="post" action="patient-panel.php" class="mt-3">
                                                 <div class="form-group">

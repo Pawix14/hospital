@@ -155,6 +155,20 @@ if (isset($_POST['delete_nurse'])) {
         echo "<script>alert('Nurse deleted successfully!');</script>";
     }
 }
+if (isset($_POST['update_payment'])) {
+    $pid = $_POST['pid'];
+    $status = $_POST['payment_status'];
+    
+    $update_query = "UPDATE billtb SET status='$status' WHERE pid='$pid'";
+    if (mysqli_query($con, $update_query)) {
+        // Auto-generate receipt when marked as paid
+        if ($status == 'Paid') {
+            $receipt_update = "UPDATE billtb SET receipt_generated=1 WHERE pid='$pid'";
+            mysqli_query($con, $receipt_update);
+        }
+        echo "<script>alert('Payment status updated successfully!');</script>";
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -277,6 +291,23 @@ if (isset($_POST['delete_nurse'])) {
         .welcome-header p {
             color: rgba(255, 255, 255, 0.8);
         }
+        .password-toggle, .toggle-password {
+    background: none;
+    border: none;
+    color: #6c757d;
+    cursor: pointer;
+}
+
+.password-strength {
+    height: 4px;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+.strength-weak { background: #dc3545; }
+.strength-fair { background: #fd7e14; }
+.strength-good { background: #20c997; }
+.strength-strong { background: #198754; }
     </style>
 </head>
 
@@ -336,9 +367,16 @@ if (isset($_POST['delete_nurse'])) {
                             <a class="nav-link" role="tab" data-toggle="tab" href="#prescriptions" aria-controls="prescriptions" aria-selected="false" id="prescriptions-tab">
                                 <i class="fa fa-medkit me-2"></i>Prescriptions
                             </a>
+                            <a class="nav-link" role="tab" data-toggle="tab" href="#password-management" aria-controls="password-management" aria-selected="false" id="password-management-tab">
+                                <i class="fas fa-key me-2"></i>Password Management
+                             </a>
+                             <a class="nav-link" role="tab" data-toggle="tab" href="#emergency-management" aria-controls="emergency-management" aria-selected="false" id="emergency-management-tab">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Emergency Requests
+                            </a>
                         </div>
                 </div>
             </div>
+            
             <div class="col-lg-9 col-md-8">
                 <div class="tab-content">
                     <div class="tab-pane fade" id="invoice-requests" role="tabpanel" aria-labelledby="invoice-requests-tab">
@@ -585,11 +623,11 @@ if (isset($_POST['delete_nurse'])) {
                                             <th>Total</th>
                                             <th>Status</th>
                                             <th>Actions</th>
+                                            <th>Receipt</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <?php 
-                                        // Fetch medicine fees per patient from prestb
                                         $medicine_fees_result = mysqli_query($con, "SELECT pid, SUM(price) AS total_medicine_fees FROM prestb WHERE diagnosis_details IS NOT NULL AND diagnosis_details != '' GROUP BY pid");
                                         $medicine_fees_map = [];
                                         while ($mf_row = mysqli_fetch_assoc($medicine_fees_result)) {
@@ -599,8 +637,6 @@ if (isset($_POST['delete_nurse'])) {
                                         $query = mysqli_query($con, "SELECT b.*, a.fname, a.lname FROM billtb b JOIN admissiontb a ON b.pid = a.pid ORDER BY b.pid DESC");
                                         while($row = mysqli_fetch_array($query)) {
                                             $statusClass = ($row['status'] == 'Paid') ? 'success' : 'warning';
-
-                                            // Override medicine fees and total with calculated values
                                             $calculated_medicine_fees = $medicine_fees_map[$row['pid']] ?? 0;
                                             $calculated_total = 
                                                 ($row['consultation_fees'] ?? 0) + 
@@ -624,6 +660,18 @@ if (isset($_POST['delete_nurse'])) {
                                                     <input type="hidden" name="payment_status" value="Paid">
                                                     <button type="submit" name="update_payment" class="btn btn-sm btn-success">Mark Paid</button>
                                                 </form>';
+                                            }
+                                            echo '</td>
+                                            <td>';
+                                            if($row['status'] == 'Paid') {
+                                                $receipt_generated = $row['receipt_generated'] ?? 0;
+                                                if($receipt_generated == 1) {
+                                                    echo '<a href="generate_receipt.php?pid='.$row['pid'].'" class="btn btn-sm btn-success" target="_blank">Show Receipt</a>';
+                                                } else {
+                                                    echo '<a href="generate_receipt.php?pid='.$row['pid'].'&generate=true" class="btn btn-sm btn-info" target="_blank">Generate Receipt</a>';
+                                                }
+                                            } else {
+                                                echo '<span class="text-muted">Not Available</span>';
                                             }
                                             echo '</td></tr>';
                                         }
@@ -657,13 +705,13 @@ $query = mysqli_query($con, "SELECT a.*, b.status as bill_status FROM admissiont
                                         while($row = mysqli_fetch_array($query)) {
                                             $billStatusClass = ($row['bill_status'] == 'Paid') ? 'success' : 'warning';
                                             $status = $row['status'];
-                                            $badgeClass = 'secondary'; // default gray
+                                            $badgeClass = 'secondary'; 
                                             if ($status === 'Admitted') {
-                                                $badgeClass = 'success'; // green
+                                                $badgeClass = 'success'; 
                                             } elseif ($status === 'Discharged') {
-                                                $badgeClass = 'secondary'; // gray
+                                                $badgeClass = 'secondary'; 
                                             } elseif ($status === 'Ready for Discharge') {
-                                                $badgeClass = 'warning'; // orange/yellow
+                                                $badgeClass = 'warning';
                                             }
                                             echo '<tr>
                                                 <td>' . $row['pid'] . '</td>
@@ -734,7 +782,6 @@ while ($row = mysqli_fetch_assoc($query)) {
                     \'' . $row['lname'] . '\',
                     \'' . $row['gender'] . '\',
                     \'' . $row['email'] . '\',
-                    \'' . $row['password'] . '\',
                     \'' . $row['contact'] . '\',
                     \'' . $row['age'] . '\',
                     \'' . $row['address'] . '\'
@@ -808,6 +855,7 @@ while ($row = mysqli_fetch_assoc($query)) {
                             </div>
                         </div>
                     </div>
+                    
 
                     <!-- Add Doctor Modal -->
                     <div class="modal fade" id="addDoctorModal" tabindex="-1" aria-labelledby="addDoctorModalLabel" aria-hidden="true">
@@ -1011,10 +1059,6 @@ while ($row = mysqli_fetch_assoc($query)) {
                                                 <input type="email" class="form-control" id="edit_email" name="email" required>
                                             </div>
                                             <div class="col-md-6 mb-3">
-                <label for="edit_password" class="form-label">Password</label>
-                <input type="password" class="form-control" id="edit_password" name="password">
-                                            </div>
-                                            <div class="col-md-6 mb-3">
                                                 <label for="edit_contact" class="form-label">Contact</label>
                                                 <input type="text" class="form-control" id="edit_contact" name="contact" required>
                                             </div>
@@ -1153,6 +1197,357 @@ while ($row = mysqli_fetch_assoc($query)) {
             </div>
         </div>
     </div>
+        <div class="tab-pane fade" id="password-management" role="tabpanel" aria-labelledby="password-management-tab">
+            <div class="glass-card p-4">
+                <h4 class="text-dark mb-4">
+                    <i class="fas fa-key me-2"></i>User Password Management
+                </h4>
+                
+                <!-- Patient Password Management -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="mb-0"><i class="fas fa-user me-2"></i> Patient Passwords</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Patient ID</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php
+                                    $patient_query = mysqli_query($con, "SELECT pid, fname, lname, email FROM admissiontb ORDER BY pid DESC");
+                                    while ($patient = mysqli_fetch_array($patient_query)) {
+                                        echo '<tr>
+                                            <td>' . $patient['pid'] . '</td>
+                                            <td>' . $patient['fname'] . ' ' . $patient['lname'] . '</td>
+                                            <td>' . $patient['email'] . '</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-warning" data-toggle="modal" data-target="#changePasswordModal" 
+                                                        onclick="setPasswordChange(\'patient\', \'' . $patient['pid'] . '\', \'' . $patient['fname'] . ' ' . $patient['lname'] . '\')">
+                                                    <i class="fas fa-edit"></i> Change Password
+                                                </button>
+                                            </td>
+                                        </tr>';
+                                    }
+                                    ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Staff Password Management -->
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="mb-0"><i class="fas fa-users me-2"></i> Staff Passwords</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Doctors -->
+                            <div class="col-md-6 mb-3">
+                                <h6><i class="fas fa-user-md me-2"></i> Doctors</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Username</th>
+                                                <th>Name</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php
+                                            $doctor_query = mysqli_query($con, "SELECT id, username, fname, lname FROM doctortb ORDER BY id DESC");
+                                            while ($doctor = mysqli_fetch_array($doctor_query)) {
+                                                echo '<tr>
+                                                    <td>' . $doctor['username'] . '</td>
+                                                    <td>' . $doctor['fname'] . ' ' . $doctor['lname'] . '</td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-warning" data-toggle="modal" data-target="#changePasswordModal" 
+                                                                onclick="setPasswordChange(\'doctor\', \'' . $doctor['id'] . '\', \'' . $doctor['fname'] . ' ' . $doctor['lname'] . '\')">
+                                                            <i class="fas fa-edit"></i> Change
+                                                        </button>
+                                                    </td>
+                                                </tr>';
+                                            }
+                                            ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Nurses -->
+                            <div class="col-md-6 mb-3">
+                                <h6><i class="fas fa-user-nurse me-2"></i> Nurses</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Username</th>
+                                                <th>Name</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php
+                                            $nurse_query = mysqli_query($con, "SELECT id, username, fname, lname FROM nursetb ORDER BY id DESC");
+                                            while ($nurse = mysqli_fetch_array($nurse_query)) {
+                                                echo '<tr>
+                                                    <td>' . $nurse['username'] . '</td>
+                                                    <td>' . $nurse['fname'] . ' ' . $nurse['lname'] . '</td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-warning" data-toggle="modal" data-target="#changePasswordModal" 
+                                                                onclick="setPasswordChange(\'nurse\', \'' . $nurse['id'] . '\', \'' . $nurse['fname'] . ' ' . $nurse['lname'] . '\')">
+                                                            <i class="fas fa-edit"></i> Change
+                                                        </button>
+                                                    </td>
+                                                </tr>';
+                                            }
+                                            ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Lab Staff -->
+                            <div class="col-md-6 mb-3">
+                                <h6><i class="fas fa-flask me-2"></i> Lab Staff</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Username</th>
+                                                <th>Name</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php
+                                            $lab_query = mysqli_query($con, "SELECT id, username, fname, lname FROM labtb ORDER BY id DESC");
+                                            while ($lab = mysqli_fetch_array($lab_query)) {
+                                                echo '<tr>
+                                                    <td>' . $lab['username'] . '</td>
+                                                    <td>' . $lab['fname'] . ' ' . $lab['lname'] . '</td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-warning" data-toggle="modal" data-target="#changePasswordModal" 
+                                                                onclick="setPasswordChange(\'lab\', \'' . $lab['id'] . '\', \'' . $lab['fname'] . ' ' . $lab['lname'] . '\')">
+                                                            <i class="fas fa-edit"></i> Change
+                                                        </button>
+                                                    </td>
+                                                </tr>';
+                                            }
+                                            ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Admins -->
+                            <div class="col-md-6 mb-3">
+                                <h6><i class="fas fa-user-shield me-2"></i> Administrators</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Username</th>
+                                                <th>Email</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php
+                                            $admin_query = mysqli_query($con, "SELECT username, email FROM adminusertb ORDER BY username");
+                                            while ($admin = mysqli_fetch_array($admin_query)) {
+                                                echo '<tr>
+                                                    <td>' . $admin['username'] . '</td>
+                                                    <td>' . $admin['email'] . '</td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-warning" data-toggle="modal" data-target="#changePasswordModal" 
+                                                                onclick="setPasswordChange(\'admin\', \'' . $admin['username'] . '\', \'' . $admin['username'] . '\')">
+                                                            <i class="fas fa-edit"></i> Change
+                                                        </button>
+                                                    </td>
+                                                </tr>';
+                                            }
+                                            ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+                <!-- Password Change Modal -->
+                <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form method="POST" action="admin-panel.php" id="passwordChangeForm">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <input type="hidden" name="user_type" id="user_type">
+                                    <input type="hidden" name="user_id" id="user_id">
+                                    
+                                    <div class="form-group">
+                                        <label for="new_password">New Password</label>
+                                        <div class="input-group">
+                                            <input type="password" class="form-control" id="new_password" name="new_password" required 
+                                                pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
+                                                title="Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character">
+                                            <div class="input-group-append">
+                                                <button type="button" class="btn btn-outline-secondary toggle-password" data-target="new_password">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <small class="form-text text-muted">
+                                            Password must be at least 8 characters with uppercase, lowercase, number, and special character
+                                        </small>
+                                        <div class="password-strength mt-2" id="newPasswordStrength"></div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="confirm_password">Confirm Password</label>
+                                        <div class="input-group">
+                                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                                            <div class="input-group-append">
+                                                <button type="button" class="btn btn-outline-secondary toggle-password" data-target="confirm_password">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="invalid-feedback" id="passwordMatchError">
+                                            Passwords do not match
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                    <button type="submit" name="change_password" class="btn btn-primary">Change Password</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+<div class="tab-pane fade" id="emergency-management" role="tabpanel" aria-labelledby="emergency-management-tab">
+    <div class="glass-card p-4">
+        <h4 class="text-dark mb-4">
+            <i class="fas fa-exclamation-triangle me-2"></i>Emergency Access Requests
+        </h4>
+        
+        <?php
+        $emergency_query = mysqli_query($con, "SELECT * FROM emergency_access_logs ORDER BY created_at DESC");
+        $pending_count = mysqli_num_rows(mysqli_query($con, "SELECT * FROM emergency_access_logs WHERE status='pending'"));
+        ?>
+        
+        <?php if ($pending_count > 0): ?>
+            <div class="alert alert-warning">
+                <i class="fas fa-bell me-2"></i>
+                <strong><?php echo $pending_count; ?> pending emergency request(s) need attention!</strong>
+            </div>
+        <?php endif; ?>
+        
+        <div class="table-responsive">
+            <table class="table table-glass">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Staff</th>
+                        <th>Role</th>
+                        <th>Contact</th>
+                        <th>Reason</th>
+                        <th>Status</th>
+                        <th>Auto-Login</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php while ($request = mysqli_fetch_array($emergency_query)): ?>
+                    <tr>
+                        <td>
+                            <?php echo date('M j, g:i A', strtotime($request['created_at'])); ?>
+                            <br><small class="text-muted"><?php echo $request['ip_address']; ?></small>
+                        </td>
+                        <td><strong><?php echo $request['staff_username']; ?></strong></td>
+                        <td><?php echo ucfirst($request['staff_role']); ?></td>
+                        <td><?php echo $request['contact_info']; ?></td>
+                        <td>
+                            <?php echo $request['reason']; ?>
+                            <?php if ($request['additional_info']): ?>
+                                <br><small class="text-muted"><?php echo $request['additional_info']; ?></small>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <span class="badge bg-<?php 
+                                echo $request['status'] == 'pending' ? 'warning' : 
+                                     ($request['status'] == 'approved' ? 'success' : 'secondary'); 
+                            ?>">
+                                <?php echo ucfirst($request['status']); ?>
+                            </span>
+                        </td>
+                        <td>
+                            <?php if ($request['status'] == 'approved' && !$request['auto_login_used'] && strtotime($request['token_expires']) > time()): ?>
+                                <small class="text-success">
+                                    <i class="fas fa-check-circle"></i> Ready<br>
+                                    <small>Expires: <?php echo date('g:i A', strtotime($request['token_expires'])); ?></small>
+                                </small>
+                            <?php elseif ($request['status'] == 'approved' && $request['auto_login_used']): ?>
+                                <small class="text-muted">
+                                    <i class="fas fa-check-circle"></i> Used<br>
+                                    <?php echo date('M j, g:i A', strtotime($request['handled_at'])); ?>
+                                </small>
+                            <?php elseif ($request['status'] == 'approved' && strtotime($request['token_expires']) <= time()): ?>
+                                <small class="text-danger">
+                                    <i class="fas fa-clock"></i> Expired
+                                </small>
+                            <?php else: ?>
+                                <small class="text-muted">-</small>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <?php if ($request['status'] == 'pending'): ?>
+                                <form method="POST" style="display:inline;">
+                                    <input type="hidden" name="request_id" value="<?php echo $request['id']; ?>">
+                                    <button type="submit" name="approve_emergency" class="btn btn-sm btn-success" 
+                                            onclick="return confirm('Approve emergency access for <?php echo $request['staff_username']; ?>? This will allow one-time 2FA bypass.')">
+                                        <i class="fas fa-check"></i> Approve
+                                    </button>
+                                </form>
+                                <form method="POST" style="display:inline;">
+                                    <input type="hidden" name="request_id" value="<?php echo $request['id']; ?>">
+                                    <button type="submit" name="deny_emergency" class="btn btn-sm btn-danger" 
+                                            onclick="return confirm('Deny emergency access for <?php echo $request['staff_username']; ?>?')">
+                                        <i class="fas fa-times"></i> Deny
+                                    </button>
+                                </form>
+                            <?php else: ?>
+                                <small class="text-muted">
+                                    Handled by: <?php echo $request['handled_by'] ?? 'System'; ?>
+                                    <?php if ($request['handled_at']): ?>
+                                        <br><?php echo date('M j, g:i A', strtotime($request['handled_at'])); ?>
+                                    <?php endif; ?>
+                                </small>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
 <?php
 if (isset($_POST['approve_invoice'])) {
@@ -1162,11 +1557,62 @@ if (isset($_POST['approve_invoice'])) {
         echo "<script>alert('Invoice request approved successfully!');</script>";
     }
 }
-if (isset($_POST['deny_invoice'])) {
-    $invoice_id = $_POST['invoice_id'];
-    $update_query = "UPDATE invoicetb SET status='Denied' WHERE id='$invoice_id'";
-    if (mysqli_query($con, $update_query)) {
-        echo "<script>alert('Invoice request denied.');</script>";
+    if (isset($_POST['deny_invoice'])) {
+        $invoice_id = $_POST['invoice_id'];
+        $update_query = "UPDATE invoicetb SET status='Denied' WHERE id='$invoice_id'";
+        if (mysqli_query($con, $update_query)) {
+            echo "<script>alert('Invoice request denied.');</script>";
+        }
+    }
+if (isset($_POST['approve_emergency']) || isset($_POST['deny_emergency'])) {
+    $request_id = $_POST['request_id'];
+    $admin_username = $_SESSION['username'];
+    $action = isset($_POST['approve_emergency']) ? 'approved' : 'denied';
+    
+    if ($action == 'approved') {
+        // Generate one-time token for auto-login
+        $one_time_token = bin2hex(random_bytes(32));
+        $token_expires = date('Y-m-d H:i:s', strtotime('+1 hour')); // Token valid for 1 hour
+        
+        $query = "UPDATE emergency_access_logs SET 
+                  status = 'approved', 
+                  handled_by = '$admin_username', 
+                  handled_at = NOW(),
+                  one_time_token = '$one_time_token',
+                  token_expires = '$token_expires',
+                  auto_login_used = 0
+                  WHERE id = '$request_id'";
+                  
+        error_log("DEBUG: Approving emergency request ID: " . $request_id . " with token: " . $one_time_token);
+    } else {
+        $query = "UPDATE emergency_access_logs SET 
+                  status = 'denied', 
+                  handled_by = '$admin_username', 
+                  handled_at = NOW()
+                  WHERE id = '$request_id'";
+    }
+    
+    if (mysqli_query($con, $query)) {
+        if ($action == 'approved') {
+            // Get request details to verify
+            $request_query = mysqli_query($con, "SELECT * FROM emergency_access_logs WHERE id = '$request_id'");
+            $request = mysqli_fetch_assoc($request_query);
+            
+            error_log("DEBUG: Emergency request approved - User: " . $request['staff_username'] . ", Token: " . $request['one_time_token']);
+            
+            echo "<script>
+                alert('Emergency request approved!\\\\nUser: {$request['staff_username']}\\\\nThey can now login once without 2FA within 1 hour.');
+            </script>";
+        } else {
+            echo "<script>alert('Emergency request denied!');</script>";
+        }
+        
+        // Refresh the page to show updated status
+        echo "<script>window.location.href = 'admin-panel.php#emergency-management';</script>";
+        exit();
+    } else {
+        echo "<script>alert('Error updating emergency request!');</script>";
+        error_log("ERROR: Failed to update emergency request: " . mysqli_error($con));
     }
 }
 ?>
@@ -1178,14 +1624,12 @@ if (isset($_POST['deny_invoice'])) {
         $(this).addClass('active');
     });
 
-    function editPatient(pid, fname, lname, gender, email, password, contact, age, address) {
+    function editPatient(pid, fname, lname, gender, email, contact, age, address) {
         document.getElementById('edit_pid').value = pid;
         document.getElementById('edit_fname').value = fname;
         document.getElementById('edit_lname').value = lname;
         document.getElementById('edit_gender').value = gender;
         document.getElementById('edit_email').value = email;
-        // Show password value as is for admin
-        document.getElementById('edit_password').value = password;
         document.getElementById('edit_contact').value = contact;
         document.getElementById('edit_age').value = age;
         document.getElementById('edit_address').value = address;
@@ -1214,6 +1658,88 @@ if (isset($_POST['deny_invoice'])) {
         document.getElementById('edit_nurse_shift').value = shift;
         document.getElementById('edit_nurse_status').value = status;
     }
+    // Password Management Functions
+document.querySelectorAll('.toggle-password').forEach(button => {
+    button.addEventListener('click', function() {
+        const targetId = this.getAttribute('data-target');
+        const passwordInput = document.getElementById(targetId);
+        const icon = this.querySelector('i');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    });
+});
+
+    function checkNewPasswordStrength(password) {
+        const strengthBar = document.getElementById('newPasswordStrength');
+        if (!strengthBar) return;
+        
+        let strength = 0;
+        if (password.length >= 8) strength++;
+        if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength++;
+        if (password.match(/\d/)) strength++;
+        if (password.match(/[^a-zA-Z\d]/)) strength++;
+        
+        strengthBar.className = 'password-strength';
+        if (password.length === 0) {
+            strengthBar.style.width = '0%';
+            strengthBar.style.backgroundColor = 'transparent';
+        } else if (strength <= 1) {
+            strengthBar.classList.add('strength-weak');
+        } else if (strength === 2) {
+            strengthBar.classList.add('strength-fair');
+        } else if (strength === 3) {
+            strengthBar.classList.add('strength-good');
+        } else {
+            strengthBar.classList.add('strength-strong');
+        }
+    }
+
+    function validatePasswordMatch() {
+        const password = document.getElementById('new_password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+        const errorDiv = document.getElementById('passwordMatchError');
+        
+        if (confirmPassword && password !== confirmPassword) {
+            errorDiv.style.display = 'block';
+            return false;
+        } else {
+            errorDiv.style.display = 'none';
+            return true;
+        }
+    }
+
+    function setPasswordChange(userType, userId, userName) {
+        document.getElementById('user_type').value = userType;
+        document.getElementById('user_id').value = userId;
+        document.getElementById('changePasswordModalLabel').textContent = 'Change Password for ' + userName;
+        
+        // Reset form
+        document.getElementById('passwordChangeForm').reset();
+        document.getElementById('newPasswordStrength').style.width = '0%';
+        document.getElementById('passwordMatchError').style.display = 'none';
+    }
+
+    // Event listeners
+    document.getElementById('new_password')?.addEventListener('input', function(e) {
+        checkNewPasswordStrength(e.target.value);
+    });
+
+    document.getElementById('confirm_password')?.addEventListener('input', validatePasswordMatch);
+
+    document.getElementById('passwordChangeForm')?.addEventListener('submit', function(e) {
+        if (!validatePasswordMatch()) {
+            e.preventDefault();
+            alert('Please make sure passwords match!');
+        }
+    });
 </script>
 </body>
 </html>
