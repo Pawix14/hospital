@@ -671,22 +671,25 @@ mysqli_data_seek($lab_tests_result, 0);
                                             <th>Notes</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        <?php while($payment = mysqli_fetch_array($payments_result)): ?>
-                                        <tr>
-                                            <td><?php echo $payment['payment_date']; ?></td>
-                                            <td>₱<?php echo number_format($payment['amount'], 2); ?></td>
-                                            <td><?php echo $payment['payment_method']; ?></td>
-                                            <td><?php echo $payment['processed_by']; ?></td>
-                                            <td>
-                                                <span class="badge badge-<?php echo (!empty($payment['status']) && $payment['status'] == 'Approved') ? 'success' : ((!empty($payment['status']) && $payment['status'] == 'Pending') ? 'warning' : 'danger'); ?>">
-                                                    <?php echo !empty($payment['status']) ? $payment['status'] : 'Pending'; ?>
-                                                </span>
-                                            </td>
-                                            <td><?php echo $payment['notes'] ?? 'No notes'; ?></td>
-                                        </tr>
-                                        <?php endwhile; ?>
-                                    </tbody>
+                                <tbody>
+                                    <?php while($payment = mysqli_fetch_array($payments_result)): ?>
+                                    <tr>
+                                        <td><?php echo $payment['payment_date']; ?></td>
+                                        <td>₱<?php echo number_format($payment['amount'], 2); ?></td>
+                                        <td><?php echo $payment['payment_method']; ?></td>
+                                        <td><?php echo $payment['processed_by']; ?></td>
+                                        <td>
+                                            <span class="badge badge-<?php 
+                                                echo ($payment['status'] == 'Approved') ? 'success' : 
+                                                    (($payment['status'] == 'Pending') ? 'warning' : 'secondary'); 
+                                            ?>">
+                                                <?php echo !empty($payment['status']) ? $payment['status'] : 'Pending'; ?>
+                                            </span>
+                                        </td>
+                                        <td><?php echo $payment['notes'] ?? 'No notes'; ?></td>
+                                    </tr>
+                                    <?php endwhile; ?>
+                                </tbody>
                                 </table>
                             </div>
                             <?php else: ?>

@@ -1,13 +1,13 @@
  <!DOCTYPE html>
 <?php
 session_start();
-include('func1.php');
+include('func.php');
 $con = mysqli_connect("localhost", "root", "", "myhmsdb");
-if (!isset($_SESSION['dname'])) {
-    header("Location: login.php");
+if (!isset($_SESSION['username'])) {
+    header("Location: index.php");
     exit();
 }
-$doctor = $_SESSION['dname'];
+$doctor = $_SESSION['username'];
 
 if (isset($_POST['delete_diagnosis'])) {
     $delete_id = $_POST['delete_diagnosis_id'];
@@ -171,7 +171,7 @@ $diagnostics_data = [];
 $lab_data = [];
 
 // Get patients data
-$dname = $_SESSION['dname'];
+$dname = $_SESSION['username'];
 $query = "SELECT pid, fname, lname, age, gender, contact, room_number, admission_date, reason, status FROM admissiontb WHERE assigned_doctor='$dname' AND status != 'Discharged'";
 $patients_result = mysqli_query($con,$query);
 while ($row = mysqli_fetch_array($patients_result)) {
@@ -430,7 +430,6 @@ while ($lab = mysqli_fetch_array($lab_result)) {
             
             <div class="col-lg-9 col-md-8">
                 <div class="tab-content" id="v-pills-tabContent">
-                    <!-- Dashboard Tab -->
                     <div class="tab-pane fade show active" id="v-pills-dashboard" role="tabpanel" aria-labelledby="v-pills-dashboard-tab">
                         <div class="row g-4 mb-4">
                             <div class="col-md-6 col-lg-3">
@@ -438,7 +437,7 @@ while ($lab = mysqli_fetch_array($lab_result)) {
                                     <i class="fas fa-procedures fa-3x mb-3"></i>
                                     <h3>
                                         <?php
-                                        $dname = $_SESSION['dname'];
+                                        $dname = $_SESSION['username'];
                                         $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM admissiontb WHERE assigned_doctor='$dname' AND status != 'Discharged'");
                                         $row = mysqli_fetch_assoc($result);
                                         echo $row['total'];

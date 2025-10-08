@@ -25,7 +25,12 @@ $create_rounds_table = "CREATE TABLE IF NOT EXISTS patient_roundstb (
 
 mysqli_query($con, $create_rounds_table);
 
+// Initialize validation variables
+$validation_errors = [];
+$form_data = [];
+
 if (isset($_POST['register_admit_patient'])) {
+    // Get form data
     $fname = mysqli_real_escape_string($con, $_POST['fname']);
     $lname = mysqli_real_escape_string($con, $_POST['lname']);
     $gender = mysqli_real_escape_string($con, $_POST['gender']);
@@ -41,18 +46,104 @@ if (isset($_POST['register_admit_patient'])) {
     $admission_date = date("Y-m-d");
     $admission_time = date("H:i:s");
 
-    // Check if room is already occupied
-    $room_check_query = "SELECT pid FROM admissiontb WHERE room_number = '$room_number' AND status = 'Admitted'";
-    $room_check_result = mysqli_query($con, $room_check_query);
-    
-    if (mysqli_num_rows($room_check_result) > 0) {
-        echo "<script>alert('Error: Room $room_number is already occupied. Please select a different room.');</script>";
-    } else if ($password !== $cpassword) {
-        echo "<script>alert('Passwords do not match! Please try again.');</script>";
+    // Store form data for repopulation
+    $form_data = [
+        'fname' => $fname,
+        'lname' => $lname,
+        'gender' => $gender,
+        'email' => $email,
+        'contact' => $contact,
+        'age' => $age,
+        'address' => $address,
+        'reason' => $reason,
+        'assigned_doctor' => $assigned_doctor,
+        'room_number' => $room_number
+    ];
+
+    // Validate Email
+    if (empty($email)) {
+        $validation_errors['email'] = "Email is required.";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $validation_errors['email'] = "Please enter a valid email address.";
     } else {
+        // Check if email already exists
+        $email_check_query = "SELECT pid FROM admissiontb WHERE email = '$email'";
+        $email_check_result = mysqli_query($con, $email_check_query);
+        if (mysqli_num_rows($email_check_result) > 0) {
+            $validation_errors['email'] = "This email is already registered. Please use a different email.";
+        }
+    }
+
+    // Validate Password
+    if (empty($password)) {
+        $validation_errors['password'] = "Password is required.";
+    } else {
+        // Password strength validation
+        if (strlen($password) < 8) {
+            $validation_errors['password'] = "Password must be at least 8 characters long.";
+        } elseif (!preg_match('/[A-Z]/', $password)) {
+            $validation_errors['password'] = "Password must contain at least one uppercase letter.";
+        } elseif (!preg_match('/[a-z]/', $password)) {
+            $validation_errors['password'] = "Password must contain at least one lowercase letter.";
+        } elseif (!preg_match('/[0-9]/', $password)) {
+            $validation_errors['password'] = "Password must contain at least one number.";
+        } elseif (!preg_match('/[!@#$%^&*(),.?":{}|<>]/', $password)) {
+            $validation_errors['password'] = "Password must contain at least one special character.";
+        }
+    }
+
+    // Validate Confirm Password
+    if (empty($cpassword)) {
+        $validation_errors['cpassword'] = "Please confirm your password.";
+    } elseif ($password !== $cpassword) {
+        $validation_errors['cpassword'] = "Passwords do not match.";
+    }
+
+    // Validate Contact Number (Philippine format)
+    if (empty($contact)) {
+        $validation_errors['contact'] = "Contact number is required.";
+    } elseif (!preg_match('/^(09|\+639)\d{9}$/', $contact)) {
+        $validation_errors['contact'] = "Please enter a valid Philippine mobile number (09XXXXXXXXX or +639XXXXXXXXX).";
+    }
+
+    // Validate Age
+    if ($age < 1 || $age > 120) {
+        $validation_errors['age'] = "Please enter a valid age (1-120).";
+    }
+
+    // Validate Required Fields
+    $required_fields = [
+        'fname' => 'First name',
+        'lname' => 'Last name',
+        'gender' => 'Gender',
+        'assigned_doctor' => 'Assigned doctor',
+        'room_number' => 'Room number',
+        'address' => 'Address',
+        'reason' => 'Reason for admission'
+    ];
+
+    foreach ($required_fields as $field => $label) {
+        if (empty($_POST[$field])) {
+            $validation_errors[$field] = "$label is required.";
+        }
+    }
+
+    // Check if room is already occupied (only if no validation errors)
+    if (empty($validation_errors)) {
+        $room_check_query = "SELECT pid FROM admissiontb WHERE room_number = '$room_number' AND status = 'Admitted'";
+        $room_check_result = mysqli_query($con, $room_check_query);
+        
+        if (mysqli_num_rows($room_check_result) > 0) {
+            $validation_errors['room_number'] = "Room $room_number is already occupied. Please select a different room.";
+        }
+    }
+
+    // If no validation errors, proceed with registration
+    if (empty($validation_errors)) {
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-$reg_query = "INSERT INTO admissiontb (fname, lname, gender, email, contact, password, admission_date, assigned_doctor, room_number, age, address, reason, status) VALUES ('$fname', '$lname', '$gender', '$email', '$contact', '$hashed_password', '$admission_date', '$assigned_doctor', '$room_number', $age, '$address', '$reason', 'Admitted')";
+        $reg_query = "INSERT INTO admissiontb (fname, lname, gender, email, contact, password, admission_date, assigned_doctor, room_number, age, address, reason, status) VALUES ('$fname', '$lname', '$gender', '$email', '$contact', '$hashed_password', '$admission_date', '$assigned_doctor', '$room_number', $age, '$address', '$reason', 'Admitted')";
+        
         if (mysqli_query($con, $reg_query)) {
             $pid = mysqli_insert_id($con);
 
@@ -76,13 +167,23 @@ $reg_query = "INSERT INTO admissiontb (fname, lname, gender, email, contact, pas
             $bill_query = "INSERT INTO billtb (pid, consultation_fees, room_charges, lab_fees, medicine_fees, service_charges, total, status) VALUES ('$pid', '$consultation_fee', '$room_charge', 0, 0, 0, '$total', 'Unpaid')";
             mysqli_query($con, $bill_query);
 
-            echo "<script>alert('Patient registered and admitted successfully!\\nPatient ID: $pid\\nRoom: $room_number\\nAssigned Doctor: $assigned_doctor\\nPatient can now login with email: $email');</script>";
+            echo "<script>
+                alert('Patient registered and admitted successfully!\\\\nPatient ID: $pid\\\\nRoom: $room_number\\\\nAssigned Doctor: $assigned_doctor\\\\nPatient can now login with email: $email');
+                // Clear form data after successful submission
+                window.location.href = 'nurse-panel.php#register-patient';
+            </script>";
+            
+            // Clear form data after successful submission
+            $form_data = [];
         } else {
             echo "<script>alert('Error registering patient: " . mysqli_error($con) . "');</script>";
         }
+    } else {
+        // Show validation errors
+        $error_messages = implode("\\n", $validation_errors);
+        echo "<script>alert('Please fix the following errors:\\n$error_messages');</script>";
     }
 }
-
 if (isset($_POST['add_medicine'])) {
     $medicine_name = mysqli_real_escape_string($con, $_POST['medicine_name']);
     $quantity = (int)$_POST['quantity'];
@@ -578,73 +679,144 @@ foreach ($all_rooms as $room) {
                         </div>
                     </div>
                     
-                    <!-- Register Patient Tab -->
                     <div class="tab-pane fade" id="register-patient" role="tabpanel" aria-labelledby="register-patient-tab">
                         <div class="glass-card p-4">
                             <h4 class="text-dark mb-4">
                                 <i class="fas fa-hospital-user me-2"></i>Register New Patient
                             </h4>
-                            <form class="form-group" method="post" action="nurse-panel.php">
+                            <form class="form-group" method="post" action="nurse-panel.php#register-patient" id="patientRegistrationForm">
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label for="fname">First Name:</label>
-                                        <input type="text" class="form-control" name="fname" required>
+                                        <input type="text" class="form-control <?php echo isset($validation_errors['fname']) ? 'is-invalid' : ''; ?>" 
+                                            name="fname" value="<?php echo htmlspecialchars($form_data['fname'] ?? ''); ?>" required>
+                                        <?php if (isset($validation_errors['fname'])): ?>
+                                            <div class="invalid-feedback"><?php echo $validation_errors['fname']; ?></div>
+                                        <?php endif; ?>
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label for="lname">Last Name:</label>
-                                        <input type="text" class="form-control" name="lname" required>
+                                        <input type="text" class="form-control <?php echo isset($validation_errors['lname']) ? 'is-invalid' : ''; ?>" 
+                                            name="lname" value="<?php echo htmlspecialchars($form_data['lname'] ?? ''); ?>" required>
+                                        <?php if (isset($validation_errors['lname'])): ?>
+                                            <div class="invalid-feedback"><?php echo $validation_errors['lname']; ?></div>
+                                        <?php endif; ?>
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label for="gender">Gender:</label>
-                                        <select name="gender" class="form-control" required>
-                                            <option value="Male">Male</option>
-                                            <option value="Female">Female</option>
+                                        <select name="gender" class="form-control <?php echo isset($validation_errors['gender']) ? 'is-invalid' : ''; ?>" required>
+                                            <option value="">Select Gender</option>
+                                            <option value="Male" <?php echo (($form_data['gender'] ?? '') == 'Male') ? 'selected' : ''; ?>>Male</option>
+                                            <option value="Female" <?php echo (($form_data['gender'] ?? '') == 'Female') ? 'selected' : ''; ?>>Female</option>
                                         </select>
+                                        <?php if (isset($validation_errors['gender'])): ?>
+                                            <div class="invalid-feedback"><?php echo $validation_errors['gender']; ?></div>
+                                        <?php endif; ?>
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label for="email">Email:</label>
-                                        <input type="email" class="form-control" name="email" required>
+                                        <input type="email" class="form-control <?php echo isset($validation_errors['email']) ? 'is-invalid' : ''; ?>" 
+                                            name="email" value="<?php echo htmlspecialchars($form_data['email'] ?? ''); ?>" required>
+                                        <?php if (isset($validation_errors['email'])): ?>
+                                            <div class="invalid-feedback"><?php echo $validation_errors['email']; ?></div>
+                                        <?php endif; ?>
+                                        <small class="form-text text-muted">We'll never share your email with anyone else.</small>
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label for="contact">Contact:</label>
-                                        <input type="text" class="form-control" name="contact" required>
+                                        <input type="text" class="form-control <?php echo isset($validation_errors['contact']) ? 'is-invalid' : ''; ?>" 
+                                            name="contact" value="<?php echo htmlspecialchars($form_data['contact'] ?? ''); ?>" 
+                                            placeholder="09XXXXXXXXX or +639XXXXXXXXX" required>
+                                        <?php if (isset($validation_errors['contact'])): ?>
+                                            <div class="invalid-feedback"><?php echo $validation_errors['contact']; ?></div>
+                                        <?php endif; ?>
+                                        <small class="form-text text-muted">Philippine mobile number format: 09XXXXXXXXX or +639XXXXXXXXX</small>
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label for="age">Age:</label>
-                                        <input type="number" class="form-control" name="age" min="1" max="120" required>
+                                        <input type="number" class="form-control <?php echo isset($validation_errors['age']) ? 'is-invalid' : ''; ?>" 
+                                            name="age" min="1" max="120" value="<?php echo htmlspecialchars($form_data['age'] ?? ''); ?>" required>
+                                        <?php if (isset($validation_errors['age'])): ?>
+                                            <div class="invalid-feedback"><?php echo $validation_errors['age']; ?></div>
+                                        <?php endif; ?>
                                     </div>
                                     <div class="col-md-12 mb-3">
                                         <label for="address">Address:</label>
-                                        <textarea class="form-control" name="address" rows="3" required></textarea>
+                                        <textarea class="form-control <?php echo isset($validation_errors['address']) ? 'is-invalid' : ''; ?>" 
+                                                name="address" rows="3" required><?php echo htmlspecialchars($form_data['address'] ?? ''); ?></textarea>
+                                        <?php if (isset($validation_errors['address'])): ?>
+                                            <div class="invalid-feedback"><?php echo $validation_errors['address']; ?></div>
+                                        <?php endif; ?>
                                     </div>
                                     <div class="col-md-12 mb-3">
                                         <label for="reason">Reason for Admission:</label>
-                                        <textarea class="form-control" name="reason" rows="3" placeholder="Describe the medical condition or reason for admission" required></textarea>
+                                        <textarea class="form-control <?php echo isset($validation_errors['reason']) ? 'is-invalid' : ''; ?>" 
+                                                name="reason" rows="3" placeholder="Describe the medical condition or reason for admission" required><?php echo htmlspecialchars($form_data['reason'] ?? ''); ?></textarea>
+                                        <?php if (isset($validation_errors['reason'])): ?>
+                                            <div class="invalid-feedback"><?php echo $validation_errors['reason']; ?></div>
+                                        <?php endif; ?>
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label for="password">Password:</label>
-                                        <input type="password" class="form-control" name="password" required>
+                                        <div class="input-group">
+                                            <input type="password" class="form-control <?php echo isset($validation_errors['password']) ? 'is-invalid' : ''; ?>" 
+                                                name="password" id="password" required>
+                                            <div class="input-group-append">
+                                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </div>
+                                            <?php if (isset($validation_errors['password'])): ?>
+                                                <div class="invalid-feedback"><?php echo $validation_errors['password']; ?></div>
+                                            <?php endif; ?>
+                                        </div>
+                                        <small class="form-text text-muted">
+                                            Password must contain:
+                                            <ul class="small pl-3 mb-0">
+                                                <li id="length" class="text-muted">At least 8 characters</li>
+                                                <li id="uppercase" class="text-muted">One uppercase letter</li>
+                                                <li id="lowercase" class="text-muted">One lowercase letter</li>
+                                                <li id="number" class="text-muted">One number</li>
+                                                <li id="special" class="text-muted">One special character</li>
+                                            </ul>
+                                        </small>
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label for="cpassword">Confirm Password:</label>
-                                        <input type="password" class="form-control" name="cpassword" required>
+                                        <div class="input-group">
+                                            <input type="password" class="form-control <?php echo isset($validation_errors['cpassword']) ? 'is-invalid' : ''; ?>" 
+                                                name="cpassword" id="cpassword" required>
+                                            <div class="input-group-append">
+                                                <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </div>
+                                            <?php if (isset($validation_errors['cpassword'])): ?>
+                                                <div class="invalid-feedback"><?php echo $validation_errors['cpassword']; ?></div>
+                                            <?php endif; ?>
+                                        </div>
+                                        <small class="form-text text-muted" id="passwordMatchMessage"></small>
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label for="assigned_doctor">Assign Doctor:</label>
-                                        <select name="assigned_doctor" id="assigned_doctor" class="form-control" required onchange="updateDoctorFee()">
+                                        <select name="assigned_doctor" id="assigned_doctor" class="form-control <?php echo isset($validation_errors['assigned_doctor']) ? 'is-invalid' : ''; ?>" required onchange="updateDoctorFee()">
                                             <option value="">Select Doctor</option>
                                             <?php
                                             $doctor_query = "SELECT username, consultation_fee FROM doctortb";
                                             $doctor_result = mysqli_query($con, $doctor_query);
                                             while ($doctor = mysqli_fetch_array($doctor_result)) {
-                                                echo "<option value='{$doctor['username']}' data-fee='{$doctor['consultation_fee']}'>{$doctor['username']} - Fee: ₱{$doctor['consultation_fee']}</option>";
+                                                $selected = (($form_data['assigned_doctor'] ?? '') == $doctor['username']) ? 'selected' : '';
+                                                echo "<option value='{$doctor['username']}' data-fee='{$doctor['consultation_fee']}' $selected>{$doctor['username']} - Fee: ₱{$doctor['consultation_fee']}</option>";
                                             }
                                             ?>
                                         </select>
+                                        <?php if (isset($validation_errors['assigned_doctor'])): ?>
+                                            <div class="invalid-feedback"><?php echo $validation_errors['assigned_doctor']; ?></div>
+                                        <?php endif; ?>
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label for="room_number">Room Number:</label>
-                                        <select name="room_number" id="room_number" class="form-control" required onchange="checkRoomAvailability()">
+                                        <select name="room_number" id="room_number" class="form-control <?php echo isset($validation_errors['room_number']) ? 'is-invalid' : ''; ?>" required onchange="checkRoomAvailability()">
                                             <option value="">Select Room</option>
                                             <?php
                                             foreach ($rooms_data as $room) {
@@ -668,10 +840,14 @@ foreach ($all_rooms as $room) {
                                                 
                                                 $disabled = $room['is_occupied'] ? 'disabled' : '';
                                                 $status = $room['is_occupied'] ? ' (Occupied)' : ' (Available)';
-                                                echo "<option value='$room_number' $disabled data-price='$room_price'>Room $room_number - $room_type - ₱$room_price$status</option>";
+                                                $selected = (($form_data['room_number'] ?? '') == $room_number) ? 'selected' : '';
+                                                echo "<option value='$room_number' $disabled $selected data-price='$room_price'>Room $room_number - $room_type - ₱$room_price$status</option>";
                                             }
                                             ?>
                                         </select>
+                                        <?php if (isset($validation_errors['room_number'])): ?>
+                                            <div class="invalid-feedback"><?php echo $validation_errors['room_number']; ?></div>
+                                        <?php endif; ?>
                                         <small id="roomAvailabilityMessage" class="form-text"></small>
                                     </div>
                                     <div class="col-md-6 mb-3">
@@ -689,6 +865,7 @@ foreach ($all_rooms as $room) {
                             </form>
                         </div>
                     </div>
+
                     
                     <!-- Patient List Tab -->
                     <div class="tab-pane fade" id="patient-list" role="tabpanel" aria-labelledby="patient-list-tab">
@@ -1184,12 +1361,31 @@ while ($row = mysqli_fetch_array($medicine_result)) {
         }
     }
 
-    // Initialize room availability check on page load
     document.addEventListener('DOMContentLoaded', function() {
         checkRoomAvailability();
     });
-
-    // Fix for modal glitching
+    function setupPasswordToggle(passwordFieldId, toggleButtonId) {
+    const passwordField = document.getElementById(passwordFieldId);
+    const toggleButton = document.getElementById(toggleButtonId);
+    const eyeIcon = toggleButton.querySelector('i');
+    
+    toggleButton.addEventListener('click', function() {
+        // Toggle the type attribute
+        const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordField.setAttribute('type', type);
+        
+        // Toggle the eye icon
+        if (type === 'text') {
+            eyeIcon.classList.remove('fa-eye');
+            eyeIcon.classList.add('fa-eye-slash');
+            toggleButton.setAttribute('title', 'Hide password');
+        } else {
+            eyeIcon.classList.remove('fa-eye-slash');
+            eyeIcon.classList.add('fa-eye');
+            toggleButton.setAttribute('title', 'Show password');
+        }
+    });
+}
     $(document).ready(function() {
         $('.modal').on('show.bs.modal', function () {
             $('body').addClass('modal-open');
@@ -1205,6 +1401,85 @@ while ($row = mysqli_fetch_array($medicine_result)) {
             $(this).closest('.modal').modal('hide');
         });
     });
+    document.getElementById('password').addEventListener('input', function() {
+    const password = this.value;
+    const requirements = {
+        length: password.length >= 8,
+        uppercase: /[A-Z]/.test(password),
+        lowercase: /[a-z]/.test(password),
+        number: /[0-9]/.test(password),
+        special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+    };
+    for (const [key, met] of Object.entries(requirements)) {
+        const element = document.getElementById(key);
+        if (met) {
+            element.classList.remove('text-muted');
+            element.classList.add('text-success');
+        } else {
+            element.classList.remove('text-success');
+            element.classList.add('text-muted');
+        }
+    }
+});
+    document.getElementById('cpassword').addEventListener('input', function() {
+    const password = document.getElementById('password').value;
+    const confirmPassword = this.value;
+    const messageElement = document.getElementById('passwordMatchMessage');
+    
+    if (confirmPassword === '') {
+        messageElement.textContent = '';
+        messageElement.className = 'form-text text-muted';
+    } else if (password === confirmPassword) {
+        messageElement.textContent = 'Passwords match!';
+        messageElement.className = 'form-text text-success';
+    } else {
+        messageElement.textContent = 'Passwords do not match!';
+        messageElement.className = 'form-text text-danger';
+    }
+});
+    document.getElementById('patientRegistrationForm').addEventListener('submit', function(e) {
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('cpassword').value;
+    
+    // Basic client-side validation
+    if (password !== confirmPassword) {
+        e.preventDefault();
+        alert('Passwords do not match. Please check your entries.');
+        return false;
+    }
+    
+    // Check password strength
+    const requirements = {
+        length: password.length >= 8,
+        uppercase: /[A-Z]/.test(password),
+        lowercase: /[a-z]/.test(password),
+        number: /[0-9]/.test(password),
+        special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+    };
+    
+    const allMet = Object.values(requirements).every(met => met);
+    if (!allMet) {
+        e.preventDefault();
+        alert('Please ensure your password meets all the requirements.');
+        return false;
+    }
+    
+    return true;
+});
+document.addEventListener('DOMContentLoaded', function() {
+    setupPasswordToggle('password', 'togglePassword');
+    setupPasswordToggle('cpassword', 'toggleConfirmPassword');
+    
+    updateDoctorFee();
+    checkRoomAvailability();
+    
+    // If there are validation errors, scroll to the form
+    <?php if (!empty($validation_errors)): ?>
+        document.getElementById('register-patient-tab').click();
+        window.location.hash = 'register-patient';
+    <?php endif; ?>
+});
+
     </script>
 </body>
 </html>

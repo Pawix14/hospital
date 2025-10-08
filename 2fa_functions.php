@@ -7,7 +7,6 @@ function generate2FACode() {
 }
 
 function send2FAEmail($email, $code, $username) {
-    // Include SMTP configuration
     include('smtp_config.php');
     
     require_once('PHPMailer/PHPMailer.php');
@@ -17,7 +16,6 @@ function send2FAEmail($email, $code, $username) {
     $mail = new PHPMailer\PHPMailer\PHPMailer(true);
     
     try {
-        // Server settings
         $mail->isSMTP();
         $mail->Host       = SMTP_HOST;
         $mail->SMTPAuth   = SMTP_AUTH;
@@ -25,8 +23,6 @@ function send2FAEmail($email, $code, $username) {
         $mail->Password   = SMTP_PASSWORD;
         $mail->SMTPSecure = SMTP_SECURE;
         $mail->Port       = SMTP_PORT;
-        
-        // ✅ ADD THE SSL FIX THAT WORKED
         $mail->SMTPOptions = array(
             'ssl' => array(
                 'verify_peer' => false,
@@ -34,12 +30,8 @@ function send2FAEmail($email, $code, $username) {
                 'allow_self_signed' => true
             )
         );
-        
-        // Recipients
         $mail->setFrom(SMTP_FROM_EMAIL, SMTP_FROM_NAME);
         $mail->addAddress($email, $username);
-        
-        // Content
         $mail->isHTML(true);
         $mail->Subject = 'Your Verification Code - Madridano Hospital';
         
@@ -71,8 +63,6 @@ function send2FAEmail($email, $code, $username) {
         </body>
         </html>
         ";
-        
-        // Plain text version
         $mail->AltBody = "Madridano Hospital\nHello $username,\nYour verification code is: $code\nThis code will expire in 10 minutes.";
         
         $mail->send();
@@ -141,10 +131,7 @@ function validate2FACode($con, $username, $entered_code, $role) {
         $row = mysqli_fetch_assoc($result);
         $stored_code = $row['two_factor_code'];
         $expires = $row['two_factor_expires'];
-        
-        // Check if code matches and hasn't expired
         if($stored_code && $stored_code === $entered_code && strtotime($expires) > time()) {
-            // Clear the used code
             mysqli_query($con, "UPDATE $table SET two_factor_code = NULL, two_factor_expires = NULL WHERE $id_field = '$username'");
             return true;
         }

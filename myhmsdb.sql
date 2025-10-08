@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 08, 2025 at 08:08 AM
+-- Generation Time: Oct 08, 2025 at 04:36 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -214,8 +214,8 @@ CREATE TABLE `doctortb` (
 INSERT INTO `doctortb` (`id`, `username`, `password`, `fname`, `lname`, `email`, `contact`, `specialization`, `qualification`, `experience_years`, `consultation_fee`, `status`, `created_date`, `created_by`, `two_factor_enabled`, `two_factor_code`, `two_factor_expires`, `backup_codes`) VALUES
 (1, 'dr_smith', 'doctor123', 'John', 'Smith', 'john.smith@hospital.com', '1234567890', 'Cardiology', 'MD Cardiology', 10, 200.00, 'Active', '2025-09-17', 'admin', 1, NULL, NULL, NULL),
 (2, 'dr_johnson', 'doctor123', 'Sarah', 'Johnson', 'sarah.johnson@hospital.com', '1234567891', 'Pediatrics', 'MD Pediatrics', 8, 150.00, 'Active', '2025-09-17', 'admin', 1, NULL, NULL, NULL),
-(3, 'dr_williams', 'doctor123', 'Michael', 'Williams', 'michael.williams@hospital.com', '1234567892', 'General Medicine', 'MBBS', 5, 100.00, 'Active', '2025-09-17', 'admin', 1, NULL, NULL, NULL),
-(7, 'pawix_12', 'paolo123', 'Gabriel', 'Madridano', 'pmadridano2@gmail.com', '09940213443', 'Cardiology', 'Ok', 13, 800.00, 'Active', '2025-09-17', 'admin', 1, NULL, NULL, NULL);
+(3, 'dr_williams', 'doctor123', 'Michael', 'Williams', 'michael.williams@hospital.com', '1234567892', 'General Medicine', 'MBBS', 5, 100.00, 'On Leave', '2025-09-17', 'admin', 1, NULL, NULL, NULL),
+(7, 'pawix_12', 'paolo123', 'Gabriel', 'Madridano', 'pmadridano2@gmail.com', '09940213443', 'Cardiology', 'Ok', 13, 800.00, 'Active', '2025-09-17', 'admin', 1, '950985', '2025-10-08 16:39:53', NULL);
 
 -- --------------------------------------------------------
 
@@ -249,7 +249,8 @@ INSERT INTO `emergency_access_logs` (`id`, `staff_username`, `staff_role`, `reas
 (1, 'lab1', 'lab', 'Lost access to email', '0994021344', '', '::1', 'approved', 'admin', '2025-10-08 13:15:27', '2025-10-08 05:13:44', NULL, NULL, 0, 0),
 (2, 'lab2', 'lab', 'Urgent patient care required', '0994021344', '', '::1', 'approved', 'admin', '2025-10-08 13:30:35', '2025-10-08 05:29:05', '485fd95fa37f33435e6ccb951623fecc7ea808a31b8737c2403c4867b18f8a73', '2025-10-08 08:30:35', 0, 0),
 (3, 'lab2', 'lab', 'Not receiving verification codes', '0994021344', '', '::1', 'denied', 'admin', '2025-10-08 13:51:29', '2025-10-08 05:34:20', NULL, NULL, 0, 0),
-(4, 'nurse1', 'nurse', 'Not receiving verification codes', '0994021344', '', '::1', 'approved', 'admin', '2025-10-08 13:44:34', '2025-10-08 05:44:19', '590739cd321c6a652fe74d13b969b69f631cadb2c592c9b9b26719eed61e65b9', '2025-10-08 08:44:34', 0, 1);
+(4, 'nurse1', 'nurse', 'Not receiving verification codes', '0994021344', '', '::1', 'approved', 'admin', '2025-10-08 13:44:34', '2025-10-08 05:44:19', '590739cd321c6a652fe74d13b969b69f631cadb2c592c9b9b26719eed61e65b9', '2025-10-08 08:44:34', 0, 1),
+(5, 'pawix_12', 'doctor', 'Not receiving verification codes', '09940213443', '', '::1', 'approved', 'admin', '2025-10-08 22:30:39', '2025-10-08 14:30:07', '60de96133e1b28d6c4470696a1a950182d0bb15e83fef81916aa92a7feac015a', '2025-10-08 17:30:39', 0, 1);
 
 -- --------------------------------------------------------
 
@@ -406,7 +407,7 @@ CREATE TABLE `nursetb` (
 --
 
 INSERT INTO `nursetb` (`id`, `username`, `password`, `email`, `fname`, `lname`, `contact`, `department`, `shift`, `status`, `created_date`, `created_by`, `two_factor_enabled`, `two_factor_code`, `two_factor_expires`, `backup_codes`) VALUES
-(1, 'nurse1', 'nurse123', 'pmadridano2@gmail.com', 'Mary', 'Wilson', '1234567893', 'General Ward', 'Day', 'Active', '2025-09-17', 'admin', 1, '967579', '2025-10-08 08:03:00', NULL),
+(1, 'nurse1', 'nurse123', 'pmadridano2@gmail.com', 'Mary', 'Wilson', '1234567893', 'General Ward', 'Day', 'Active', '2025-09-17', 'admin', 1, NULL, NULL, NULL),
 (2, 'nurse2', 'nurse123', 'pmadridano2@gmail.com', 'Lisa', 'Brown', '1234567894', 'ICU', 'Night', 'Active', '2025-09-17', 'admin', 1, NULL, NULL, NULL),
 (3, 'nurse3', 'nurse123', 'nurse3@hospital.com', 'Jennifer', 'Davis', '1234567895', 'Emergency', 'Day', 'Active', '2025-09-17', 'admin', 1, NULL, NULL, NULL),
 (6, 'testnurse', 'nurse123', 'testnurse@gmail.com', 'Test ', 'Nurse', '0844456', 'ICU', 'Morning', 'Active', '2025-09-17', 'admin', 1, NULL, NULL, NULL);
@@ -506,12 +507,12 @@ CREATE TABLE `paymentstb` (
 --
 
 INSERT INTO `paymentstb` (`id`, `pid`, `amount`, `payment_method`, `payment_date`, `payment_time`, `processed_by`, `transaction_id`, `notes`, `status`) VALUES
-(1, 1, 400.00, 'Bank Transfer', '2025-09-17', '19:41:48', 'Patient Self-Service', NULL, 'Payment request submitted by patient', 'Pending'),
-(2, 1, 590.00, 'Cash', '2025-09-17', '19:45:34', 'Patient Self-Service', NULL, 'Payment request submitted by patient', 'Pending'),
-(3, 2, 950.00, 'Credit Card', '2025-09-17', '20:28:57', 'Patient Self-Service', NULL, 'Payment request submitted by patient', 'Pending'),
-(4, 4, 1000.00, 'Credit Card', '2025-10-01', '15:37:11', 'Patient Self-Service', NULL, 'Payment request submitted by patient', 'Pending'),
-(5, 4, 1000.00, 'Credit Card', '2025-10-01', '15:38:24', 'Patient Self-Service', NULL, 'Payment request submitted by patient', 'Pending'),
-(6, 3, 1402.00, 'Cash', '2025-10-08', '10:45:39', 'Patient Self-Service', NULL, 'Payment request submitted by patient', 'Pending');
+(1, 1, 400.00, 'Bank Transfer', '2025-09-17', '19:41:48', 'Patient Self-Service', NULL, 'Payment request submitted by patient', 'Approved'),
+(2, 1, 590.00, 'Cash', '2025-09-17', '19:45:34', 'Patient Self-Service', NULL, 'Payment request submitted by patient', 'Approved'),
+(3, 2, 950.00, 'Credit Card', '2025-09-17', '20:28:57', 'Patient Self-Service', NULL, 'Payment request submitted by patient', 'Approved'),
+(4, 4, 1000.00, 'Credit Card', '2025-10-01', '15:37:11', 'Patient Self-Service', NULL, 'Payment request submitted by patient', 'Approved'),
+(5, 4, 1000.00, 'Credit Card', '2025-10-01', '15:38:24', 'Patient Self-Service', NULL, 'Payment request submitted by patient', 'Approved'),
+(6, 3, 1402.00, 'Cash', '2025-10-08', '10:45:39', 'Patient Self-Service', NULL, 'Payment request submitted by patient', 'Approved');
 
 -- --------------------------------------------------------
 
@@ -729,7 +730,7 @@ ALTER TABLE `doctortb`
 -- AUTO_INCREMENT for table `emergency_access_logs`
 --
 ALTER TABLE `emergency_access_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `invoicetb`

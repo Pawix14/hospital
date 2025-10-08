@@ -161,6 +161,10 @@ if (isset($_POST['update_payment'])) {
     
     $update_query = "UPDATE billtb SET status='$status' WHERE pid='$pid'";
     if (mysqli_query($con, $update_query)) {
+        // ALSO update the payment requests table
+        $update_payments = "UPDATE paymentstb SET status='Approved' WHERE pid='$pid' AND status='Pending'";
+        mysqli_query($con, $update_payments);
+        
         // Auto-generate receipt when marked as paid
         if ($status == 'Paid') {
             $receipt_update = "UPDATE billtb SET receipt_generated=1 WHERE pid='$pid'";
@@ -169,6 +173,49 @@ if (isset($_POST['update_payment'])) {
         echo "<script>alert('Payment status updated successfully!');</script>";
     }
 }
+        if (isset($_POST['toggle_2fa'])) {
+            $user_type = $_POST['user_type'];
+            $user_id = $_POST['user_id'];
+            $current_status = $_POST['current_status'];
+            $new_status = $current_status ? 0 : 1;
+            
+            switch($user_type) {
+                case 'patient':
+                    $table = 'admissiontb';
+                    $id_field = 'pid';
+                    break;
+                case 'doctor':
+                    $table = 'doctortb';
+                    $id_field = 'id';
+                    break;
+                case 'nurse':
+                    $table = 'nursetb';
+                    $id_field = 'id';
+                    break;
+                case 'lab':
+                    $table = 'labtb';
+                    $id_field = 'id';
+                    break;
+                case 'admin':
+                    $table = 'adminusertb';
+                    $id_field = 'username';
+                    break;
+                default:
+                    echo "<script>alert('Invalid user type!');</script>";
+                    break;
+            }
+            
+            if (isset($table)) {
+                $update_query = "UPDATE $table SET two_factor_enabled = '$new_status' WHERE $id_field = '$user_id'";
+                if (mysqli_query($con, $update_query)) {
+                    $status_text = $new_status ? 'enabled' : 'disabled';
+                    echo "<script>alert('2FA successfully $status_text for user!');</script>";
+                    echo "<script>window.location.href = 'admin-panel.php#password-management';</script>";
+                } else {
+                    echo "<script>alert('Error updating 2FA status!');</script>";
+                }
+            }
+        }
 ?>
 
 <!DOCTYPE html>
@@ -1197,12 +1244,215 @@ while ($row = mysqli_fetch_assoc($query)) {
             </div>
         </div>
     </div>
-        <div class="tab-pane fade" id="password-management" role="tabpanel" aria-labelledby="password-management-tab">
-            <div class="glass-card p-4">
-                <h4 class="text-dark mb-4">
-                    <i class="fas fa-key me-2"></i>User Password Management
-                </h4>
-                
+<div class="tab-pane fade" id="password-management" role="tabpanel" aria-labelledby="password-management-tab">
+    <div class="glass-card p-4">
+        <h4 class="text-dark mb-4">
+            <i class="fas fa-key me-2"></i>User Password & 2FA Management
+        </h4>
+        
+        <!-- 2FA Management Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="fas fa-shield-alt me-2"></i> Two-Factor Authentication Management</h6>
+                <small>Toggle 2FA for users</small>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Doctors 2FA -->
+                    <div class="col-md-6 mb-4">
+                        <h6><i class="fas fa-user-md me-2"></i> Doctors</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Name</th>
+                                        <th>2FA Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php
+                                    $doctor_query = mysqli_query($con, "SELECT id, username, fname, lname, two_factor_enabled FROM doctortb ORDER BY id DESC");
+                                    while ($doctor = mysqli_fetch_array($doctor_query)) {
+                                        $status = $doctor['two_factor_enabled'];
+                                        $status_badge = $status ? 
+                                            '<span class="badge bg-success">Enabled</span>' : 
+                                            '<span class="badge bg-secondary">Disabled</span>';
+                                        $btn_class = $status ? 'btn-warning' : 'btn-success';
+                                        $btn_text = $status ? 'Disable' : 'Enable';
+                                        $btn_icon = $status ? 'fa-times' : 'fa-check';
+                                        
+                                        echo '<tr>
+                                            <td>' . $doctor['username'] . '</td>
+                                            <td>' . $doctor['fname'] . ' ' . $doctor['lname'] . '</td>
+                                            <td>' . $status_badge . '</td>
+                                            <td>
+                                                <form method="POST" style="display:inline;">
+                                                    <input type="hidden" name="user_type" value="doctor">
+                                                    <input type="hidden" name="user_id" value="' . $doctor['id'] . '">
+                                                    <input type="hidden" name="current_status" value="' . $status . '">
+                                                    <button type="submit" name="toggle_2fa" class="btn btn-sm ' . $btn_class . '" 
+                                                            onclick="return confirm(\'' . ($status ? 'Disable' : 'Enable') . ' 2FA for ' . $doctor['username'] . '?\')">
+                                                        <i class="fas ' . $btn_icon . ' me-1"></i>' . $btn_text . '
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>';
+                                    }
+                                    ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Nurses 2FA -->
+                    <div class="col-md-6 mb-4">
+                        <h6><i class="fas fa-user-nurse me-2"></i> Nurses</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Name</th>
+                                        <th>2FA Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php
+                                    $nurse_query = mysqli_query($con, "SELECT id, username, fname, lname, two_factor_enabled FROM nursetb ORDER BY id DESC");
+                                    while ($nurse = mysqli_fetch_array($nurse_query)) {
+                                        $status = $nurse['two_factor_enabled'];
+                                        $status_badge = $status ? 
+                                            '<span class="badge bg-success">Enabled</span>' : 
+                                            '<span class="badge bg-secondary">Disabled</span>';
+                                        $btn_class = $status ? 'btn-warning' : 'btn-success';
+                                        $btn_text = $status ? 'Disable' : 'Enable';
+                                        $btn_icon = $status ? 'fa-times' : 'fa-check';
+                                        
+                                        echo '<tr>
+                                            <td>' . $nurse['username'] . '</td>
+                                            <td>' . $nurse['fname'] . ' ' . $nurse['lname'] . '</td>
+                                            <td>' . $status_badge . '</td>
+                                            <td>
+                                                <form method="POST" style="display:inline;">
+                                                    <input type="hidden" name="user_type" value="nurse">
+                                                    <input type="hidden" name="user_id" value="' . $nurse['id'] . '">
+                                                    <input type="hidden" name="current_status" value="' . $status . '">
+                                                    <button type="submit" name="toggle_2fa" class="btn btn-sm ' . $btn_class . '" 
+                                                            onclick="return confirm(\'' . ($status ? 'Disable' : 'Enable') . ' 2FA for ' . $nurse['username'] . '?\')">
+                                                        <i class="fas ' . $btn_icon . ' me-1"></i>' . $btn_text . '
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>';
+                                    }
+                                    ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Lab Staff 2FA -->
+                    <div class="col-md-6 mb-4">
+                        <h6><i class="fas fa-flask me-2"></i> Lab Staff</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Name</th>
+                                        <th>2FA Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php
+                                    $lab_query = mysqli_query($con, "SELECT id, username, fname, lname, two_factor_enabled FROM labtb ORDER BY id DESC");
+                                    while ($lab = mysqli_fetch_array($lab_query)) {
+                                        $status = $lab['two_factor_enabled'];
+                                        $status_badge = $status ? 
+                                            '<span class="badge bg-success">Enabled</span>' : 
+                                            '<span class="badge bg-secondary">Disabled</span>';
+                                        $btn_class = $status ? 'btn-warning' : 'btn-success';
+                                        $btn_text = $status ? 'Disable' : 'Enable';
+                                        $btn_icon = $status ? 'fa-times' : 'fa-check';
+                                        
+                                        echo '<tr>
+                                            <td>' . $lab['username'] . '</td>
+                                            <td>' . $lab['fname'] . ' ' . $lab['lname'] . '</td>
+                                            <td>' . $status_badge . '</td>
+                                            <td>
+                                                <form method="POST" style="display:inline;">
+                                                    <input type="hidden" name="user_type" value="lab">
+                                                    <input type="hidden" name="user_id" value="' . $lab['id'] . '">
+                                                    <input type="hidden" name="current_status" value="' . $status . '">
+                                                    <button type="submit" name="toggle_2fa" class="btn btn-sm ' . $btn_class . '" 
+                                                            onclick="return confirm(\'' . ($status ? 'Disable' : 'Enable') . ' 2FA for ' . $lab['username'] . '?\')">
+                                                        <i class="fas ' . $btn_icon . ' me-1"></i>' . $btn_text . '
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>';
+                                    }
+                                    ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Admins 2FA -->
+                    <div class="col-md-6 mb-4">
+                        <h6><i class="fas fa-user-shield me-2"></i> Administrators</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>2FA Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php
+                                    $admin_query = mysqli_query($con, "SELECT username, email, two_factor_enabled FROM adminusertb ORDER BY username");
+                                    while ($admin = mysqli_fetch_array($admin_query)) {
+                                        $status = $admin['two_factor_enabled'];
+                                        $status_badge = $status ? 
+                                            '<span class="badge bg-success">Enabled</span>' : 
+                                            '<span class="badge bg-secondary">Disabled</span>';
+                                        $btn_class = $status ? 'btn-warning' : 'btn-success';
+                                        $btn_text = $status ? 'Disable' : 'Enable';
+                                        $btn_icon = $status ? 'fa-times' : 'fa-check';
+                                        
+                                        echo '<tr>
+                                            <td>' . $admin['username'] . '</td>
+                                            <td>' . $admin['email'] . '</td>
+                                            <td>' . $status_badge . '</td>
+                                            <td>
+                                                <form method="POST" style="display:inline;">
+                                                    <input type="hidden" name="user_type" value="admin">
+                                                    <input type="hidden" name="user_id" value="' . $admin['username'] . '">
+                                                    <input type="hidden" name="current_status" value="' . $status . '">
+                                                    <button type="submit" name="toggle_2fa" class="btn btn-sm ' . $btn_class . '" 
+                                                            onclick="return confirm(\'' . ($status ? 'Disable' : 'Enable') . ' 2FA for ' . $admin['username'] . '?\')">
+                                                        <i class="fas ' . $btn_icon . ' me-1"></i>' . $btn_text . '
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>';
+                                    }
+                                    ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
                 <!-- Patient Password Management -->
                 <div class="card mb-4">
                     <div class="card-header bg-primary text-white">

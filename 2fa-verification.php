@@ -21,7 +21,6 @@ include('2fa_functions.php');
 $error = '';
 $success = '';
 
-// Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['verify_code'])) {
         $entered_code = trim($_POST['verification_code'] ?? '');
@@ -31,23 +30,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (empty($entered_code) || empty($username) || empty($role)) {
             $error = "Please enter the verification code.";
         } elseif (validate2FACode($con, $username, $entered_code, $role)) {
-            // 2FA successful - complete login
             $_SESSION['username'] = $username;
             $_SESSION['role'] = $role;
-            
-            // Regenerate session ID to prevent fixation
             session_regenerate_id(true);
-            
-            // Clear 2FA session data
             unset($_SESSION['2fa_pending'], $_SESSION['2fa_username'], $_SESSION['2fa_role'], $_SESSION['2fa_attempts']);
-            
             header("Location: {$role}-panel.php");
             exit();
         } else {
             $_SESSION['2fa_attempts'] = ($_SESSION['2fa_attempts'] ?? 0) + 1;
             $error = "Invalid verification code. Please try again.";
-            
-            // Lock after 3 failed attempts
             if ($_SESSION['2fa_attempts'] >= 3) {
                 session_destroy();
                 header("Location: index.php?error=2fa_locked");
@@ -56,11 +47,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
     
-    // Handle resend code
     if (isset($_POST['resend_code'])) {
-        // Rate limiting: max 3 resends per session
         $_SESSION['resend_count'] = ($_SESSION['resend_count'] ?? 0) + 1;
-        
         if ($_SESSION['resend_count'] > 3) {
             $error = "Too many resend attempts. Please contact administrator.";
         } else {
@@ -181,14 +169,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Auto-submit when 6 digits are entered
         document.querySelector('input[name="verification_code"]').addEventListener('input', function(e) {
             if (this.value.length === 6) {
                 document.getElementById('2faForm').querySelector('button[name="verify_code"]').focus();
             }
         });
-        
-        // Prevent form resubmission on refresh
         if (window.history.replaceState) {
             window.history.replaceState(null, null, window.location.href);
         }
