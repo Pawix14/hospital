@@ -104,12 +104,25 @@ while ($fallback_med = mysqli_fetch_assoc($fallback_medicine_result)) {
     }
 }
 
+$insurance_coverage_percent = 0;
+$insurance_coverage_amount = 0;
+$insurance_query = "SELECT coverage_percent FROM patient_insurancetb WHERE patient_id=$pid AND status='active' ORDER BY start_date DESC LIMIT 1";
+$insurance_result = mysqli_query($con, $insurance_query);
+if ($insurance_result && mysqli_num_rows($insurance_result) > 0) {
+    $insurance_row = mysqli_fetch_assoc($insurance_result);
+    $insurance_coverage_percent = floatval($insurance_row['coverage_percent']);
+}
+
 $calculated_total = 
     ($bill_data['consultation_fees'] ?? 0) + 
     ($bill_data['lab_fees'] ?? 0) + 
     $calculated_medicine_fees + 
     ($bill_data['room_charges'] ?? 0) + 
     ($bill_data['service_charges'] ?? 0);
+
+if ($insurance_coverage_percent > 0) {
+    $insurance_coverage_amount = ($insurance_coverage_percent / 100) * $calculated_total;
+}
 
 class ProfessionalReceiptPDF extends TCPDF {
     
@@ -174,9 +187,6 @@ $pdf->SetAutoPageBreak(TRUE, 15);
 
 $pdf->AddPage();
 
-// Use proper UTF-8 compatible peso sign
-$peso_sign = "₱";
-
 // PATIENT INFORMATION SECTION
 $pdf->addSectionHeader('PATIENT INFORMATION');
 
@@ -226,7 +236,7 @@ $pdf->SetFillColor(255, 255, 255);
 if (($bill_data['consultation_fees'] ?? 0) > 0) {
     $pdf->Cell(120, 7, 'Consultation Fees', 1, 0);
     $pdf->Cell(30, 7, '1', 1, 0, 'C');
-    $pdf->Cell(40, 7, $peso_sign . ' ' . number_format($bill_data['consultation_fees'], 2), 1, 1, 'R');
+    $pdf->Cell(40, 7, number_format($bill_data['consultation_fees'], 2), 1, 1, 'R');
 }
 
 // Lab Tests
@@ -237,14 +247,14 @@ if (($bill_data['lab_fees'] ?? 0) > 0) {
     // First show the total lab fees line
     $pdf->Cell(120, 7, 'Laboratory Tests', 1, 0);
     $pdf->Cell(30, 7, '1', 1, 0, 'C');
-    $pdf->Cell(40, 7, $peso_sign . ' ' . number_format($bill_data['lab_fees'], 2), 1, 1, 'R');
+    $pdf->Cell(40, 7, number_format($bill_data['lab_fees'], 2), 1, 1, 'R');
     
     // Then show individual tests as sub-items
     while ($lab = mysqli_fetch_assoc($lab_details_result)) {
         $pdf->Cell(10, 7, '', 0, 0); // Indentation
         $pdf->Cell(110, 7, '• ' . $lab['test_name'], 1, 0);
         $pdf->Cell(30, 7, '1', 1, 0, 'C');
-        $pdf->Cell(40, 7, $peso_sign . ' ' . number_format($lab['price'], 2), 1, 1, 'R');
+        $pdf->Cell(40, 7, number_format($lab['price'], 2), 1, 1, 'R');
     }
 }
 
@@ -252,7 +262,7 @@ if (($bill_data['lab_fees'] ?? 0) > 0) {
 if (count($medicine_details) > 0 || $calculated_medicine_fees > 0) {
     $pdf->Cell(120, 7, 'Medicines & Prescriptions', 1, 0);
     $pdf->Cell(30, 7, count($medicine_details), 1, 0, 'C');
-    $pdf->Cell(40, 7, $peso_sign . ' ' . number_format($calculated_medicine_fees, 2), 1, 1, 'R');
+    $pdf->Cell(40, 7, number_format($calculated_medicine_fees, 2), 1, 1, 'R');
     
     // Show individual medicines as sub-items
     if (count($medicine_details) > 0) {
@@ -264,7 +274,7 @@ if (count($medicine_details) > 0 || $calculated_medicine_fees > 0) {
             }
             $pdf->Cell(110, 7, $medicine_text, 1, 0);
             $pdf->Cell(30, 7, '1', 1, 0, 'C');
-            $price_display = ($medicine['price'] > 0) ? $peso_sign . ' ' . number_format($medicine['price'], 2) : 'Included';
+            $price_display = ($medicine['price'] > 0) ? number_format($medicine['price'], 2) : 'Included';
             $pdf->Cell(40, 7, $price_display, 1, 1, 'R');
         }
     } else {
@@ -272,7 +282,7 @@ if (count($medicine_details) > 0 || $calculated_medicine_fees > 0) {
         $pdf->Cell(10, 7, '', 0, 0);
         $pdf->Cell(110, 7, '• Prescribed Medications', 1, 0);
         $pdf->Cell(30, 7, '1', 1, 0, 'C');
-        $pdf->Cell(40, 7, $peso_sign . ' ' . number_format($calculated_medicine_fees, 2), 1, 1, 'R');
+        $pdf->Cell(40, 7, number_format($calculated_medicine_fees, 2), 1, 1, 'R');
     }
 }
 
@@ -296,7 +306,7 @@ if (($bill_data['room_charges'] ?? 0) > 0) {
 
     $pdf->Cell(120, 7, $room_info, 1, 0);
     $pdf->Cell(30, 7, '1', 1, 0, 'C');
-    $pdf->Cell(40, 7, $peso_sign . ' ' . number_format($bill_data['room_charges'], 2), 1, 1, 'R');
+    $pdf->Cell(40, 7, number_format($bill_data['room_charges'], 2), 1, 1, 'R');
 }
 
 // Service Charges
@@ -310,14 +320,14 @@ if (($bill_data['service_charges'] ?? 0) > 0) {
     // First show the total service charges line
     $pdf->Cell(120, 7, 'Service Charges', 1, 0);
     $pdf->Cell(30, 7, '1', 1, 0, 'C');
-    $pdf->Cell(40, 7, $peso_sign . ' ' . number_format($bill_data['service_charges'], 2), 1, 1, 'R');
+    $pdf->Cell(40, 7, number_format($bill_data['service_charges'], 2), 1, 1, 'R');
     
     // Then show individual services as sub-items
     while ($service = mysqli_fetch_assoc($service_details_result)) {
         $pdf->Cell(10, 7, '', 0, 0); // Indentation
         $pdf->Cell(110, 7, '• ' . $service['service_name'], 1, 0);
         $pdf->Cell(30, 7, $service['quantity'], 1, 0, 'C');
-        $pdf->Cell(40, 7, $peso_sign . ' ' . number_format($service['total_price'], 2), 1, 1, 'R');
+        $pdf->Cell(40, 7, number_format($service['total_price'], 2), 1, 1, 'R');
     }
 }
 
@@ -325,19 +335,25 @@ if (($bill_data['service_charges'] ?? 0) > 0) {
 if (($bill_data['other_charges'] ?? 0) > 0) {
     $pdf->Cell(120, 7, 'Other Charges', 1, 0);
     $pdf->Cell(30, 7, '1', 1, 0, 'C');
-    $pdf->Cell(40, 7, $peso_sign . ' ' . number_format($bill_data['other_charges'], 2), 1, 1, 'R');
+    $pdf->Cell(40, 7, number_format($bill_data['other_charges'], 2), 1, 1, 'R');
 }
 
 // TOTAL SECTION
 $pdf->SetFont('helvetica', 'B', 11);
 $pdf->Cell(120, 8, 'SUBTOTAL', 1, 0, 'R');
 $pdf->Cell(30, 8, '', 1, 0, 'C');
-$pdf->Cell(40, 8, $peso_sign . ' ' . number_format($calculated_total, 2), 1, 1, 'R');
+$pdf->Cell(40, 8, number_format($calculated_total, 2), 1, 1, 'R');
+
+if ($insurance_coverage_percent > 0) {
+    $pdf->Cell(120, 8, 'INSURANCE COVERAGE (' . number_format($insurance_coverage_percent, 2) . '%)', 1, 0, 'R');
+    $pdf->Cell(30, 8, '', 1, 0, 'C');
+    $pdf->Cell(40, 8, '-' . number_format($insurance_coverage_amount, 2), 1, 1, 'R');
+}
 
 if (($bill_data['discount'] ?? 0) > 0) {
     $pdf->Cell(120, 8, 'DISCOUNT', 1, 0, 'R');
     $pdf->Cell(30, 8, '', 1, 0, 'C');
-    $pdf->Cell(40, 8, '-' . $peso_sign . ' ' . number_format($bill_data['discount'], 2), 1, 1, 'R');
+    $pdf->Cell(40, 8, '-' . number_format($bill_data['discount'], 2), 1, 1, 'R');
 }
 
 $pdf->SetFont('helvetica', 'B', 12);
@@ -345,7 +361,7 @@ $pdf->SetFillColor(74, 107, 220);
 $pdf->SetTextColor(255, 255, 255);
 $pdf->Cell(120, 10, 'TOTAL AMOUNT PAID', 1, 0, 'R', true);
 $pdf->Cell(30, 10, '', 1, 0, 'C', true);
-$pdf->Cell(40, 10, $peso_sign . ' ' . number_format($calculated_total - ($bill_data['discount'] ?? 0), 2), 1, 1, 'R', true);
+$pdf->Cell(40, 10, '₱ ' . number_format($calculated_total - $insurance_coverage_amount - ($bill_data['discount'] ?? 0), 2), 1, 1, 'R', true);
 
 $pdf->SetTextColor(0, 0, 0);
 $pdf->Ln(10);

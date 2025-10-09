@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <?php
 session_start();
@@ -8,7 +9,7 @@ if (!isset($_SESSION['pid'])) {
     header("Location: index.php");
     exit();
 }
-$pid = $_SESSION['pid'];
+$pid = (int)$_SESSION['pid']; // Cast to int for safety
 $username = $_SESSION['username'] ?? '';
 $email = $_SESSION['email'] ?? '';
 $fname = $_SESSION['fname'] ?? '';
@@ -19,11 +20,11 @@ $contact = $_SESSION['contact'] ?? '';
 if (isset($_POST['request_invoice'])) {
     $invoice_number = 'INV-' . $pid . '-' . date('Ymd') . '-' . rand(1000, 9999);
     $total_amount = $_POST['total_amount'];
-    $invoice_query = "INSERT INTO invoicetb (pid, invoice_number, generated_date, generated_time, generated_by, total_amount, status) VALUES ('$pid', '$invoice_number', CURDATE(), CURTIME(), 'Patient Request', '$total_amount', 'Generated')";
+    $invoice_query = "INSERT INTO invoicetb (pid, invoice_number, generated_date, generated_time, generated_by, total_amount, status) VALUES ($pid, '$invoice_number', CURDATE(), CURTIME(), 'Patient Request', '$total_amount', 'Generated')";
     if (mysqli_query($con, $invoice_query)) {
         echo "<script>alert('Invoice requested successfully! Invoice Number: $invoice_number');</script>";
     } else {
-        echo "<script>alert('Error requesting invoice!');</script>";
+        echo "<script>alert('Error requesting invoice! " . mysqli_error($con) . "');</script>";
     }
 }
 
@@ -31,23 +32,32 @@ if (isset($_POST['request_payment'])) {
     $amount = $_POST['payment_amount'];
     $payment_method = $_POST['payment_method'];
     
-    $payment_query = "INSERT INTO paymentstb (pid, amount, payment_method, payment_date, payment_time, processed_by, notes) VALUES ('$pid', '$amount', '$payment_method', CURDATE(), CURTIME(), 'Patient Self-Service', 'Payment request submitted by patient')";
+    $payment_query = "INSERT INTO paymentstb (pid, amount, payment_method, payment_date, payment_time, processed_by, notes) VALUES ($pid, '$amount', '$payment_method', CURDATE(), CURTIME(), 'Patient Self-Service', 'Payment request submitted by patient')";
     
     if (mysqli_query($con, $payment_query)) {
         echo "<script>alert('Payment request submitted successfully! Please wait for admin approval.');</script>";
     } else {
-        echo "<script>alert('Error submitting payment request!');</script>";
+        echo "<script>alert('Error submitting payment request! " . mysqli_error($con) . "');</script>";
     }
 }
-$admission_query = "SELECT * FROM admissiontb WHERE pid='$pid'";
+$admission_query = "SELECT * FROM admissiontb WHERE pid=$pid";
 $admission_result = mysqli_query($con, $admission_query);
+if (!$admission_result) {
+    echo "<script>alert('Error fetching admission data: " . mysqli_error($con) . "');</script>";
+}
 $admission_data = mysqli_fetch_array($admission_result);
-$bill_query = "SELECT * FROM billtb WHERE pid='$pid'";
+$bill_query = "SELECT * FROM billtb WHERE pid=$pid";
 $bill_result = mysqli_query($con, $bill_query);
+if (!$bill_result) {
+    echo "<script>alert('Error fetching bill data: " . mysqli_error($con) . "');</script>";
+}
 $bill_data = mysqli_fetch_assoc($bill_result);
 
-$medicine_fees_query = "SELECT SUM(price) AS total_medicine_fees FROM prestb WHERE pid='$pid'";
+$medicine_fees_query = "SELECT SUM(price) AS total_medicine_fees FROM prestb WHERE pid=$pid";
 $medicine_fees_result = mysqli_query($con, $medicine_fees_query);
+if (!$medicine_fees_result) {
+    echo "<script>alert('Error fetching medicine fees: " . mysqli_error($con) . "');</script>";
+}
 $medicine_fees_row = mysqli_fetch_assoc($medicine_fees_result);
 $calculated_medicine_fees = $medicine_fees_row['total_medicine_fees'] ?? 0;
 if ($bill_data) {
@@ -59,25 +69,59 @@ if ($bill_data) {
         ($bill_data['room_charges'] ?? 0) + 
         ($bill_data['service_charges'] ?? 0);
 }
-$diagnostics_query = "SELECT * FROM diagnosticstb WHERE pid='$pid' ORDER BY created_date DESC, created_time DESC";
+$insurance_coverage_percent = 0;
+$insurance_query = "SELECT coverage_percent FROM patient_insurancetb WHERE patient_id=$pid AND status='active' ORDER BY start_date DESC LIMIT 1";
+$insurance_result = mysqli_query($con, $insurance_query);
+if ($insurance_result && mysqli_num_rows($insurance_result) > 0) {
+    $insurance_row = mysqli_fetch_assoc($insurance_result);
+    $insurance_coverage_percent = floatval($insurance_row['coverage_percent']);
+}
+
+$coverage_amount = 0;
+$adjusted_total = $bill_data['total'] ?? 0;
+if ($insurance_coverage_percent > 0 && isset($bill_data['total'])) {
+    $coverage_amount = ($insurance_coverage_percent / 100) * $bill_data['total'];
+    $adjusted_total = $bill_data['total'] - $coverage_amount;
+}
+$diagnostics_query = "SELECT * FROM diagnosticstb WHERE pid=$pid ORDER BY created_date DESC, created_time DESC";
 $diagnostics_result = mysqli_query($con, $diagnostics_query);
-$lab_tests_query = "SELECT * FROM labtesttb WHERE pid='$pid' ORDER BY requested_date DESC, requested_time DESC";
+if (!$diagnostics_result) {
+    echo "<script>alert('Error fetching diagnostics data: " . mysqli_error($con) . "');</script>";
+}
+$lab_tests_query = "SELECT * FROM labtesttb WHERE pid=$pid ORDER BY requested_date DESC, requested_time DESC";
 $lab_tests_result = mysqli_query($con, $lab_tests_query);
-$charges_query = "SELECT pc.*, s.service_name FROM patient_chargstb pc JOIN servicestb s ON pc.service_id = s.id WHERE pc.pid='$pid' ORDER BY pc.added_date DESC, pc.added_time DESC";
+if (!$lab_tests_result) {
+    echo "<script>alert('Error fetching lab tests data: " . mysqli_error($con) . "');</script>";
+}
+$charges_query = "SELECT pc.*, s.service_name FROM patient_chargstb pc JOIN servicestb s ON pc.service_id = s.id WHERE pc.pid=$pid ORDER BY pc.added_date DESC, pc.added_time DESC";
 $charges_result = mysqli_query($con, $charges_query);
-$payments_query = "SELECT * FROM paymentstb WHERE pid='$pid' ORDER BY payment_date DESC, payment_time DESC";
+if (!$charges_result) {
+    echo "<script>alert('Error fetching charges data: " . mysqli_error($con) . "');</script>";
+}
+$payments_query = "SELECT * FROM paymentstb WHERE pid=$pid ORDER BY payment_date DESC, payment_time DESC";
 $payments_result = mysqli_query($con, $payments_query);
-$prescriptions_query = "SELECT id, doctor, pid, fname, lname, symptoms, allergy, prescription, price, diagnosis_details, prescribed_medicines, dosage, frequency, duration, created_at AS created_date FROM prestb WHERE pid='$pid' ORDER BY id DESC";
+if (!$payments_result) {
+    echo "<script>alert('Error fetching payments data: " . mysqli_error($con) . "');</script>";
+}
+$prescriptions_query = "SELECT id, doctor, pid, fname, lname, symptoms, allergy, prescription, price, diagnosis_details, prescribed_medicines, dosage, frequency, duration, created_at AS created_date FROM prestb WHERE pid=$pid ORDER BY id DESC";
 $prescriptions_result = mysqli_query($con, $prescriptions_query);
+if (!$prescriptions_result) {
+    echo "<script>alert('Error fetching prescriptions data: " . mysqli_error($con) . "');</script>";
+}
+echo "<script>console.log('Prescriptions rows: " . mysqli_num_rows($prescriptions_result) . "');</script>";
+
 $diagnostics_data = [];
 while($diag = mysqli_fetch_array($diagnostics_result)) {
     $diagnostics_data[] = $diag;
 }
+echo "<script>console.log('Diagnostics rows: " . mysqli_num_rows($diagnostics_result) . "');</script>";
 mysqli_data_seek($diagnostics_result, 0);
+
 $lab_tests_data = [];
 while($lab = mysqli_fetch_array($lab_tests_result)) {
     $lab_tests_data[] = $lab;
 }
+echo "<script>console.log('Lab tests rows: " . mysqli_num_rows($lab_tests_result) . "');</script>";
 mysqli_data_seek($lab_tests_result, 0);
 
 ?>
@@ -221,11 +265,72 @@ mysqli_data_seek($lab_tests_result, 0);
             padding: 8px 12px;
             font-size: 0.9rem;
         }
-        
+
+        .stat-card-enhanced {
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card-enhanced .icon-container {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            opacity: 0.8;
+        }
+
+        .stat-card-enhanced .icon-container i {
+            font-size: 2rem;
+        }
+
+        .stat-card-enhanced:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+
+
+        .activity-feed {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-item .badge {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+        }
+
+        .quick-action-btn {
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .quick-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
         .modal-backdrop {
             z-index: 1040;
         }
-        
+
         .modal {
             z-index: 1050;
         }
@@ -252,12 +357,11 @@ mysqli_data_seek($lab_tests_result, 0);
 
     <div class="container-fluid" style="padding-top: 100px;">
         <div class="welcome-header">
-            <h2>Welcome, <?php echo $fname . ' ' . $lname; ?>!</h2>
+            <h2>Welcome, <?php
+             echo $fname . ' ' . $lname; ?>!</h2>
             <p>Patient Dashboard - Access your medical records, bills, and health information</p>
         </div>
-
         <div class="row">
-            <!-- Sidebar -->
             <div class="col-lg-3 col-md-4">
                 <div class="sidebar">
                     <div class="nav flex-column nav-pills" role="tablist">
@@ -287,83 +391,206 @@ mysqli_data_seek($lab_tests_result, 0);
                         </a>
                     </div>
                 </div>
-            </div>
-            
+            </div>     
             <div class="col-lg-9 col-md-8">
                 <div class="tab-content">
                     <div class="tab-pane fade show active" id="dashboard" role="tabpanel" aria-labelledby="dashboard-tab">
+                        <div class="glass-card p-4 mb-4">
+                            <h5 class="text-dark mb-3">Quick Actions</h5>
+                            <div class="row g-2">
+                                <div class="col-auto">
+                                    <a href="#diagnostics" data-toggle="tab" role="tab" aria-controls="diagnostics" aria-selected="false" class="btn btn-outline-primary btn-sm quick-action-btn" id="quick-diagnostics-tab">
+                                        <i class="fas fa-file-medical me-1"></i>View Medical Records
+                                    </a>
+                                </div>
+                                <div class="col-auto">
+                                    <a href="#lab-results" data-toggle="tab" role="tab" aria-controls="lab-results" aria-selected="false" class="btn btn-outline-success btn-sm quick-action-btn" id="quick-lab-results-tab">
+                                        <i class="fas fa-flask me-1"></i>Lab Results
+                                    </a>
+                                </div>
+                                <div class="col-auto">
+                                    <a href="#prescriptions" data-toggle="tab" role="tab" aria-controls="prescriptions" aria-selected="false" class="btn btn-outline-warning btn-sm quick-action-btn" id="quick-prescriptions-tab">
+                                        <i class="fas fa-medkit me-1"></i>My Prescriptions
+                                    </a>
+                                </div>
+                                <div class="col-auto">
+                                    <a href="#billing" data-toggle="tab" role="tab" aria-controls="billing" aria-selected="false" class="btn btn-outline-info btn-sm quick-action-btn" id="quick-billing-tab">
+                                        <i class="fas fa-money-bill me-1"></i>Billing & Payment
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                         <div class="row g-4 mb-4">
                             <div class="col-md-6 col-lg-3">
-                                <div class="stat-card" style="background: var(--primary-gradient);">
-                                    <i class="fas fa-user-injured fa-3x mb-3"></i>
-                                    <h3><?php echo ($admission_data && $admission_data['status'] == 'Admitted') ? 'Admitted' : 'Not Admitted'; ?></h3>
-                                    <p>Current Status</p>
+                                <div class="stat-card-enhanced" style="background: var(--primary-gradient);">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h3><?php echo ($admission_data && $admission_data['status'] == 'Admitted') ? 'Admitted' : 'Outpatient'; ?></h3>
+                                            <p>Current Status</p>
+                                        </div>
+                                        <div class="icon-container">
+                                            <i class="fas fa-user-injured"></i>
+                                        </div>
+                                    </div>
+                                    <small class="text-white-50">Patient admission status</small>
                                 </div>
                             </div>
                             <div class="col-md-6 col-lg-3">
-                                <div class="stat-card" style="background: var(--secondary-gradient);">
-                                    <i class="fas fa-file-medical fa-3x mb-3"></i>
-                                    <h3><?php echo mysqli_num_rows($diagnostics_result); ?></h3>
-                                    <p>Medical Records</p>
+                                <div class="stat-card-enhanced" style="background: var(--secondary-gradient);">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h3><?php echo mysqli_num_rows($diagnostics_result); ?></h3>
+                                            <p>Medical Records</p>
+                                        </div>
+                                        <div class="icon-container">
+                                            <i class="fas fa-file-medical"></i>
+                                        </div>
+                                    </div>
+                                    <small class="text-white-50">Total diagnostic records</small>
                                 </div>
                             </div>
                             <div class="col-md-6 col-lg-3">
-                                <div class="stat-card" style="background: var(--warning-gradient);">
-                                    <i class="fas fa-pills fa-3x mb-3"></i>
-                                    <h3><?php echo mysqli_num_rows($prescriptions_result); ?></h3>
-                                    <p>Prescriptions</p>
+                                <div class="stat-card-enhanced" style="background: var(--warning-gradient);">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h3><?php echo mysqli_num_rows($prescriptions_result); ?></h3>
+                                            <p>Prescriptions</p>
+                                        </div>
+                                        <div class="icon-container">
+                                            <i class="fas fa-pills"></i>
+                                        </div>
+                                    </div>
+                                    <small class="text-white-50">Active prescriptions</small>
                                 </div>
                             </div>
                             <div class="col-md-6 col-lg-3">
-                                <div class="stat-card" style="background: var(--success-gradient);">
-                                    <i class="fas fa-file-invoice-dollar fa-3x mb-3"></i>
-                                    <h3>₱<?php echo ($bill_data) ? number_format($bill_data['total'], 2) : '0.00'; ?></h3>
-                                    <p>Total Bill</p>
+                                <div class="stat-card-enhanced" style="background: var(--success-gradient);">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h3>₱<?php echo ($bill_data) ? number_format($adjusted_total, 2) : '0.00'; ?></h3>
+                                            <p>Outstanding Balance</p>
+                                        </div>
+                                        <div class="icon-container">
+                                            <i class="fas fa-file-invoice-dollar"></i>
+                                        </div>
+                                    </div>
+                                    <small class="text-white-50">After insurance coverage</small>
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="glass-card p-4 mb-4">
-                            <h4 class="text-dark mb-4">
-                                <i class="fas fa-user-circle me-2"></i>Personal Information
-                            </h4>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <p><strong>Patient ID:</strong> <?php echo $pid; ?></p>
-                                    <p><strong>First Name:</strong> <?php echo $fname; ?></p>
-                                    <p><strong>Last Name:</strong> <?php echo $lname; ?></p>
-                                    <p><strong>Gender:</strong> <?php echo $gender; ?></p>
-                                </div>
-                                <div class="col-md-6">
-                                    <p><strong>Email:</strong> <?php echo $email; ?></p>
-                                    <p><strong>Contact:</strong> <?php echo $contact; ?></p>
-                                    <p><strong>Username:</strong> <?php echo $username; ?></p>
+
+                        <div class="row g-4">
+                            <!-- Recent Activity -->
+                            <div class="col-lg-8">
+                                <div class="glass-card p-4 h-100">
+                                    <h5 class="text-dark mb-3">
+                                        <i class="fas fa-history me-2"></i>Recent Medical Activity
+                                    </h5>
+                                    <div class="activity-feed">
+                                        <?php
+                                        // Get recent activities from different tables
+                                        $recent_activities = [];
+
+                                        // Recent prescriptions
+                                        mysqli_data_seek($prescriptions_result, 0);
+                                        while($pres = mysqli_fetch_array($prescriptions_result)) {
+                                            $recent_activities[] = [
+                                                'type' => 'prescription',
+                                                'activity' => 'New prescription received from Dr. ' . $pres['doctor'],
+                                                'date' => $pres['created_date'],
+                                                'icon' => 'fa-medkit',
+                                                'badge_class' => 'bg-success'
+                                            ];
+                                            if (count($recent_activities) >= 5) break;
+                                        }
+
+                                        // Recent lab tests
+                                        mysqli_data_seek($lab_tests_result, 0);
+                                        while($lab = mysqli_fetch_array($lab_tests_result)) {
+                                            $status_text = $lab['status'] == 'Completed' ? 'results available' : 'test ' . strtolower($lab['status']);
+                                            $recent_activities[] = [
+                                                'type' => 'lab_test',
+                                                'activity' => 'Lab test: ' . $lab['test_name'] . ' - ' . $status_text,
+                                                'date' => $lab['requested_date'],
+                                                'icon' => 'fa-flask',
+                                                'badge_class' => 'bg-info'
+                                            ];
+                                            if (count($recent_activities) >= 5) break;
+                                        }
+
+                                        // Recent diagnostics
+                                        mysqli_data_seek($diagnostics_result, 0);
+                                        while($diag = mysqli_fetch_array($diagnostics_result)) {
+                                            $recent_activities[] = [
+                                                'type' => 'diagnosis',
+                                                'activity' => 'Medical consultation with Dr. ' . $diag['doctor_name'],
+                                                'date' => $diag['created_date'],
+                                                'icon' => 'fa-stethoscope',
+                                                'badge_class' => 'bg-primary'
+                                            ];
+                                            if (count($recent_activities) >= 5) break;
+                                        }
+
+                                        // Sort by date and limit to 5
+                                        usort($recent_activities, function($a, $b) {
+                                            return strtotime($b['date']) - strtotime($a['date']);
+                                        });
+                                        $recent_activities = array_slice($recent_activities, 0, 5);
+
+                                        if (!empty($recent_activities)) {
+                                            foreach($recent_activities as $activity) {
+                                                echo '<div class="activity-item d-flex align-items-center">
+                                                    <span class="badge ' . $activity['badge_class'] . ' me-2"><i class="fas ' . $activity['icon'] . ' me-1"></i>' . ucfirst(str_replace('_', ' ', $activity['type'])) . '</span>
+                                                    <span class="flex-grow-1">' . $activity['activity'] . '</span>
+                                                    <small class="text-muted">' . date('M d, Y', strtotime($activity['date'])) . '</small>
+                                                </div>';
+                                            }
+                                        } else {
+                                            echo '<div class="text-center text-muted py-3">No recent medical activity</div>';
+                                        }
+                                        ?>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        
-                        <?php if($admission_data): ?>
-                        <div class="glass-card p-4">
-                            <h4 class="text-dark mb-4">
-                                <i class="fas fa-hospital me-2"></i>Current Admission Status
-                            </h4>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <p><strong>Status:</strong> 
-                                        <span class="badge <?php echo ($admission_data['status'] == 'Admitted') ? 'badge-success' : (($admission_data['status'] == 'Ready for Discharge') ? 'badge-warning' : 'badge-info'); ?> badge-lg">
+
+                            <!-- Quick Info & Personal Details -->
+                            <div class="col-lg-4">
+                                <div class="glass-card p-4 mb-4">
+                                    <h5 class="text-dark mb-3">
+                                        <i class="fas fa-user-circle me-2"></i>Personal Information
+                                    </h5>
+                                    <div class="mb-3">
+                                        <strong>Patient ID:</strong> <?php echo $pid; ?><br>
+                                        <strong>Name:</strong> <?php echo $fname . ' ' . $lname; ?><br>
+                                        <strong>Email:</strong> <?php echo $email; ?><br>
+                                        <strong>Contact:</strong> <?php echo $contact; ?>
+                                    </div>
+                                </div>
+
+                                <?php if($admission_data): ?>
+                                <div class="glass-card p-4">
+                                    <h5 class="text-dark mb-3">
+                                        <i class="fas fa-hospital me-2"></i>Admission Status
+                                    </h5>
+                                    <div class="mb-2">
+                                        <strong>Status:</strong>
+                                        <span class="badge <?php echo ($admission_data['status'] == 'Admitted') ? 'badge-success' : (($admission_data['status'] == 'Ready for Discharge') ? 'badge-warning' : 'badge-info'); ?> badge-lg ml-2">
                                             <?php echo $admission_data['status']; ?>
                                         </span>
-                                    </p>
-                                    <p><strong>Room:</strong> <?php echo $admission_data['room_number'] ?? 'Not Assigned'; ?></p>
-                                    <p><strong>Doctor:</strong> <?php echo $admission_data['assigned_doctor']; ?></p>
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong>Room:</strong> <?php echo $admission_data['room_number'] ?? 'Not Assigned'; ?>
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong>Doctor:</strong> <?php echo $admission_data['assigned_doctor']; ?>
+                                    </div>
+                                    <div class="mb-0">
+                                        <strong>Admitted:</strong> <?php echo $admission_data['admission_date']; ?>
+                                    </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <p><strong>Admitted:</strong> <?php echo $admission_data['admission_date']; ?></p>
-                                    <p><strong>Admission Type:</strong> Walk-in Direct Admission</p>
-                                </div>
+                                <?php endif; ?>
                             </div>
                         </div>
-                        <?php endif; ?>
                     </div>
                     
                     <div class="tab-pane fade" id="personal" role="tabpanel" aria-labelledby="personal-tab">
@@ -441,6 +668,7 @@ mysqli_data_seek($lab_tests_result, 0);
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        <?php mysqli_data_seek($diagnostics_result, 0); ?>
                                         <?php while($diag = mysqli_fetch_array($diagnostics_result)): ?>
                                         <tr>
                                             <td><?php echo $diag['created_date']; ?><br><small><?php echo $diag['created_time']; ?></small></td>
@@ -450,7 +678,6 @@ mysqli_data_seek($lab_tests_result, 0);
                                             <td>
                                                 <button class="btn btn-info btn-sm" data-toggle="modal" data-target="#diagModal-<?php echo $diag['id']; ?>">
                                                     <i class="fas fa-eye"></i> View Details
-                                                </button>
                                             </td>
                                         </tr>
                                         <?php endwhile; ?>
@@ -483,6 +710,7 @@ mysqli_data_seek($lab_tests_result, 0);
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        <?php mysqli_data_seek($lab_tests_result, 0); ?>
                                         <?php while($lab = mysqli_fetch_array($lab_tests_result)): ?>
                                         <tr>
                                             <td><strong><?php echo $lab['test_name']; ?></strong></td>
@@ -574,6 +802,35 @@ mysqli_data_seek($lab_tests_result, 0);
                                             <h6 class="mb-0"><i class="fas fa-calculator"></i> Bill Breakdown</h6>
                                         </div>
                                         <div class="card-body">
+                                            <!-- Insurance Information Card -->
+                                            <?php
+                                            $insurance_details_query = "SELECT ic.company_name, pi.coverage_percent, pi.policy_number, pi.start_date, pi.end_date 
+                                                                       FROM patient_insurancetb pi 
+                                                                       JOIN insurance_companiestb ic ON pi.insurance_id = ic.insurance_id 
+                                                                       WHERE pi.patient_id='$pid' AND pi.status='active' 
+                                                                       ORDER BY pi.start_date DESC LIMIT 1";
+                                            $insurance_details_result = mysqli_query($con, $insurance_details_query);
+                                            if ($insurance_details_result && mysqli_num_rows($insurance_details_result) > 0):
+                                                $insurance_details = mysqli_fetch_assoc($insurance_details_result);
+                                            ?>
+                                            <div class="card border-success mb-3">
+                                                <div class="card-body py-2">
+                                                    <h6 class="card-title text-success mb-1">
+                                                        <i class="fas fa-shield-alt me-1"></i>Insurance Active
+                                                    </h6>
+                                                    <p class="card-text small mb-1">
+                                                        <strong><?php echo $insurance_details['company_name']; ?></strong> | 
+                                                        Policy: <?php echo $insurance_details['policy_number']; ?>
+                                                    </p>
+                                                    <p class="card-text small mb-0">
+                                                        <strong>Coverage:</strong> 
+                                                        <span class="font-weight-bold text-success"><?php echo number_format($insurance_details['coverage_percent'], 2); ?>%</span>
+                                                        | Valid until: <?php echo !empty($insurance_details['end_date']) ? $insurance_details['end_date'] : 'No expiry'; ?>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <?php endif; ?>
+                                            
                                             <p><strong>Consultation Fees:</strong> ₱<?php echo number_format($bill_data['consultation_fees'], 2); ?></p>
                                             <p><strong>Lab Fees:</strong> ₱<?php echo number_format($bill_data['lab_fees'], 2); ?></p>
                                             <p><strong>Medicine Fees:</strong> ₱<?php echo number_format($bill_data['medicine_fees'], 2); ?></p>
@@ -581,10 +838,31 @@ mysqli_data_seek($lab_tests_result, 0);
                                             <p><strong>Service Charges:</strong> ₱<?php echo number_format($bill_data['service_charges'] ?? 0, 2); ?></p>
                                             <hr>
                                             <h5><strong>Total Amount:</strong> <span class="text-success">₱<?php echo number_format($bill_data['total'], 2); ?></span></h5>
+                                            
+                                            <!-- Updated Insurance Coverage Display -->
+                                            <?php if ($insurance_coverage_percent > 0): ?>
+                                                <div class="border-top pt-2 mt-2">
+                                                    <p><strong>Insurance Coverage:</strong> 
+                                                        <span class="text-success font-weight-bold"><?php echo number_format($insurance_coverage_percent, 2); ?>%</span>
+                                                        <small class="text-muted ml-2">(Exactly as registered by nurse)</small>
+                                                    </p>
+                                                    <p><strong>Coverage Amount:</strong> <span class="text-info">-₱<?php echo number_format($coverage_amount, 2); ?></span></p>
+                                                    <p class="small text-muted">
+                                                        <i class="fas fa-info-circle"></i> 
+                                                        Your insurance covers <?php echo number_format($insurance_coverage_percent, 2); ?>% of the total bill
+                                                    </p>
+                                                </div>
+                                                <hr>
+                                                <h5><strong>Final Amount After Insurance:</strong> <span class="text-success">₱<?php echo number_format($adjusted_total, 2); ?></span></h5>
+                                            <?php else: ?>
+                                                <div class="border-top pt-2 mt-2">
+                                                    <p class="text-muted"><i class="fas fa-info-circle"></i> No active insurance coverage found.</p>
+                                                </div>
+                                            <?php endif; ?>
                                         </div>
                                     </div>
                                     <form method="post" action="patient-panel.php" class="mt-3">
-                                        <input type="hidden" name="total_amount" value="<?php echo $bill_data['total']; ?>">
+                                        <input type="hidden" name="total_amount" value="<?php echo $adjusted_total; ?>">
                                         <button type="submit" name="request_invoice" class="btn btn-primary btn-block">
                                             <i class="fas fa-file-invoice"></i> Request Invoice
                                         </button>
@@ -614,20 +892,18 @@ mysqli_data_seek($lab_tests_result, 0);
                                                 </span>
                                             </p>
                                             <p><strong>Amount Paid:</strong>₱<?php echo number_format($bill_data['amount_paid'] ?? 0, 2); ?></p>
-                                            <p><strong>Balance Due:</strong> ₱<?php echo number_format($bill_data['total'] - ($bill_data['amount_paid'] ?? 0), 2); ?></p>
+                                            <p><strong>Balance Due:</strong> ₱<?php echo number_format($adjusted_total - ($bill_data['amount_paid'] ?? 0), 2); ?></p>
                                             <?php if(!empty($bill_data['payment_date'])): ?>
                                             <p><strong>Payment Date:</strong> <?php echo $bill_data['payment_date']; ?></p>
                                             <?php endif; ?>
                                             <?php if($bill_data['status'] == 'Paid'): ?>
-                                            <?php if($bill_data['status'] == 'Paid'): ?>
                                                 <a href="generate_receipt.php?pid=<?php echo $pid; ?>" class="btn btn-primary btn-block mt-2" target="_blank"><i class="fas fa-receipt"></i> Show Receipt</a>
-                                            <?php endif; ?>
                                             <?php endif; ?>
                                             <?php if($bill_data['status'] != 'Paid'): ?>
                                             <form method="post" action="patient-panel.php" class="mt-3">
                                                 <div class="form-group">
                                                     <label for="payment_amount">Payment Amount</label>
-                                                    <input type="number" step="0.01" name="payment_amount" id="payment_amount" class="form-control" value="<?php echo $bill_data['total'] - ($bill_data['amount_paid'] ?? 0); ?>" min="0.01" max="<?php echo $bill_data['total'] - ($bill_data['amount_paid'] ?? 0); ?>" required>
+                                                    <input type="number" step="0.01" name="payment_amount" id="payment_amount" class="form-control" value="<?php echo $adjusted_total - ($bill_data['amount_paid'] ?? 0); ?>" min="0.01" max="<?php echo $adjusted_total - ($bill_data['amount_paid'] ?? 0); ?>" required>
                                                 </div>
                                                 <div class="form-group">
                                                     <label for="payment_method">Payment Method</label>
@@ -670,12 +946,16 @@ mysqli_data_seek($lab_tests_result, 0);
                                         <td><?php echo $payment['payment_method']; ?></td>
                                         <td><?php echo $payment['processed_by']; ?></td>
                                         <td>
-                                            <span class="badge badge-<?php 
-                                                echo ($payment['status'] == 'Approved') ? 'success' : 
-                                                    (($payment['status'] == 'Pending') ? 'warning' : 'secondary'); 
-                                            ?>">
-                                                <?php echo !empty($payment['status']) ? $payment['status'] : 'Pending'; ?>
-                                            </span>
+                                            <?php if ($bill_data['status'] == 'Paid'): ?>
+                                                <span class="badge badge-success badge-lg">Paid</span>
+                                            <?php else: ?>
+                                                <span class="badge badge-<?php 
+                                                    echo ($payment['status'] == 'Approved') ? 'success' : 
+                                                        (($payment['status'] == 'Pending') ? 'warning' : 'secondary'); 
+                                                ?>">
+                                                    <?php echo !empty($payment['status']) ? $payment['status'] : 'Pending'; ?>
+                                                </span>
+                                            <?php endif; ?>
                                         </td>
                                         <td><?php echo $payment['notes'] ?? 'No notes'; ?></td>
                                     </tr>
@@ -712,6 +992,7 @@ mysqli_data_seek($lab_tests_result, 0);
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        <?php mysqli_data_seek($prescriptions_result, 0); ?>
                                         <?php while($pres = mysqli_fetch_array($prescriptions_result)): ?>
                                         <tr>
                                             <td><?php echo $pres['created_date']; ?></td>
@@ -954,26 +1235,43 @@ mysqli_data_seek($lab_tests_result, 0);
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            // Initialize Bootstrap components
-            $('[data-toggle="tab"]').tab();
-            
-            // Fix for modal glitching
-            $('.modal').on('show.bs.modal', function () {
-                $('body').addClass('modal-open');
+        <script>
+            $(document).ready(function() {
+                $('[data-toggle="tab"]').tab();
+
+                // Handle quick action buttons to switch tabs and update side nav active state
+                $('.quick-action-btn').on('click', function(e) {
+                    e.preventDefault();
+                    var targetTab = $(this).attr('href');
+
+                    // Hide all tab panes
+                    $('.tab-pane').removeClass('show active');
+
+                    // Show the target tab pane
+                    $(targetTab).addClass('show active');
+
+                    // Update side nav active class
+                    $('.nav-pills .nav-link').removeClass('active').attr('aria-selected', 'false');
+                    $('.nav-pills .nav-link[href="' + targetTab + '"]').addClass('active').attr('aria-selected', 'true');
+
+                    // Update quick action buttons aria-selected
+                    $('.quick-action-btn').attr('aria-selected', 'false');
+                    $(this).attr('aria-selected', 'true');
+                });
+
+                $('.modal').on('show.bs.modal', function () {
+                    $('body').addClass('modal-open');
+                });
+                
+                $('.modal').on('hidden.bs.modal', function () {
+                    $('body').removeClass('modal-open');
+                    $('.modal-backdrop').remove();
+                });
+                $('.modal .close, .modal [data-dismiss="modal"]').on('click', function() {
+                    $(this).closest('.modal').modal('hide');
+                });
             });
-            
-            $('.modal').on('hidden.bs.modal', function () {
-                $('body').removeClass('modal-open');
-                $('.modal-backdrop').remove();
-            });
-            
-            // Ensure modals close properly
-            $('.modal .close, .modal [data-dismiss="modal"]').on('click', function() {
-                $(this).closest('.modal').modal('hide');
-            });
-        });
-    </script>
+        </script>
 </body>
 </html>
+

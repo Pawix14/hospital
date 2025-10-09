@@ -302,7 +302,7 @@ if ($is_nurse) {
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="logout1.php"><i class="fa fa-sign-out" aria-hidden="true"></i> Logout</a>
+                        <a class="nav-link" href="logout.php"><i class="fa fa-sign-out" aria-hidden="true"></i> Logout</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="<?php echo $is_nurse ? 'nurse-panel.php' : 'doctor-panel.php'; ?>"><i class="fa fa-arrow-left" aria-hidden="true"></i> Back</a>

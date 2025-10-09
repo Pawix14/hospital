@@ -46,12 +46,25 @@ if ($medicine_fees_result && mysqli_num_rows($medicine_fees_result) > 0) {
     $mf_row = mysqli_fetch_assoc($medicine_fees_result);
     $calculated_medicine_fees = $mf_row['total_medicine_fees'] ?? 0;
 }
-$calculated_total = 
-    ($bill_data['consultation_fees'] ?? 0) + 
-    ($bill_data['lab_fees'] ?? 0) + 
-    $calculated_medicine_fees + 
-    ($bill_data['room_charges'] ?? 0) + 
+$insurance_coverage_percent = 0;
+$insurance_coverage_amount = 0;
+$insurance_query = "SELECT coverage_percent FROM patient_insurancetb WHERE patient_id='" . $invoice['pid'] . "' AND status='active' ORDER BY start_date DESC LIMIT 1";
+$insurance_result = mysqli_query($con, $insurance_query);
+if ($insurance_result && mysqli_num_rows($insurance_result) > 0) {
+    $insurance_row = mysqli_fetch_assoc($insurance_result);
+    $insurance_coverage_percent = floatval($insurance_row['coverage_percent']);
+}
+
+$calculated_total =
+    ($bill_data['consultation_fees'] ?? 0) +
+    ($bill_data['lab_fees'] ?? 0) +
+    $calculated_medicine_fees +
+    ($bill_data['room_charges'] ?? 0) +
     ($bill_data['service_charges'] ?? 0);
+
+if ($insurance_coverage_percent > 0) {
+    $insurance_coverage_amount = ($insurance_coverage_percent / 100) * $calculated_total;
+}
 $patient_query = "SELECT * FROM admissiontb WHERE pid = '" . $invoice['pid'] . "'";
 $patient_result = mysqli_query($con, $patient_query);
 $patient_data = mysqli_fetch_assoc($patient_result);
@@ -424,9 +437,15 @@ $status_class = ($payment_status == 'Paid') ? 'badge-success' : 'badge-warning';
                         <td>Service Charges</td>
                         <td class="text-right"><?php echo number_format($bill_data['service_charges'], 2); ?></td>
                     </tr>
+                    <?php if ($insurance_coverage_percent > 0): ?>
+                    <tr class="item-row">
+                        <td>Insurance Coverage (<?php echo number_format($insurance_coverage_percent, 2); ?>%)</td>
+                        <td class="text-right">-<?php echo number_format($insurance_coverage_amount, 2); ?></td>
+                    </tr>
+                    <?php endif; ?>
                     <tr class="total-row">
                         <td>Total Amount</td>
-                        <td class="text-right">₱ <?php echo number_format($calculated_total, 2); ?></td>
+                        <td class="text-right">₱ <?php echo number_format($calculated_total - $insurance_coverage_amount, 2); ?></td>
                     </tr>
                 </tbody>
             </table>

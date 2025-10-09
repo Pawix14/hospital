@@ -1,4 +1,3 @@
-    
 <?php
 session_start();
 
@@ -11,6 +10,20 @@ if (!isset($_SESSION['username']) || $_SESSION['role'] != 'admin') {
     exit();
 }
 $admin_username = $_SESSION['username'];
+
+// Calculate performance metrics
+$avg_stay_query = mysqli_query($con, "SELECT AVG(DATEDIFF(NOW(), admission_date)) as avg_stay FROM admissiontb WHERE status='Admitted'");
+$avg_stay = mysqli_fetch_assoc($avg_stay_query)['avg_stay'] ?? 0;
+
+$bed_occupancy_query = mysqli_query($con, "SELECT (COUNT(*) / 100) * 100 as occupancy FROM admissiontb WHERE status='Admitted'"); // Assuming 100 total beds
+$occupancy_rate = mysqli_fetch_assoc($bed_occupancy_query)['occupancy'] ?? 0;
+
+// Fetch statistics for dashboard
+$total_admissions = mysqli_fetch_assoc(mysqli_query($con, "SELECT COUNT(*) as total FROM admissiontb"))['total'] ?? 0;
+$active_patients = mysqli_fetch_assoc(mysqli_query($con, "SELECT COUNT(*) as total FROM admissiontb WHERE status='Admitted'"))['total'] ?? 0;
+$pending_bills = mysqli_fetch_assoc(mysqli_query($con, "SELECT COUNT(*) as total FROM billtb WHERE status='Unpaid'"))['total'] ?? 0;
+$total_revenue = mysqli_fetch_assoc(mysqli_query($con, "SELECT SUM(total) as revenue FROM billtb WHERE status='Paid'"))['revenue'] ?? 0;
+
 if (isset($_POST['discharge_patient'])) {
     $pid = $_POST['discharge_pid'];
     $discharge_date = date('Y-m-d');
@@ -21,6 +34,7 @@ if (isset($_POST['discharge_patient'])) {
         echo "<script>alert('Patient discharged successfully!');</script>";
     }
 }
+
 if (isset($_POST['update_payment'])) {
     $pid = $_POST['pid'];
     $status = $_POST['payment_status'];
@@ -30,32 +44,30 @@ if (isset($_POST['update_payment'])) {
         echo "<script>alert('Payment status updated successfully!');</script>";
     }
 }
-    if (isset($_POST['update_patient'])) {
-        $pid = $_POST['pid'];
-        $fname = $_POST['fname'];
-        $lname = $_POST['lname'];
-        $gender = $_POST['gender'];
-        $email = $_POST['email'];
-        $contact = $_POST['contact'];
-        $age = $_POST['age'];
-        $address = $_POST['address'];
-        $blood_group = $_POST['blood_group'];
-        $emergency_contact = $_POST['emergency_contact'];
-        $emergency_contact_name = $_POST['emergency_contact_name'];
-        $password = $_POST['password'] ?? null; 
-        $update_query = "UPDATE admissiontb SET fname='$fname', lname='$lname', gender='$gender', email='$email', contact='$contact', age='$age', address='$address', blood_group='$blood_group', emergency_contact='$emergency_contact', emergency_contact_name='$emergency_contact_name'";
-        if ($password !== null && $password !== '') {
-            $update_query .= ", password='$password'";
-        }
-        $update_query .= " WHERE pid='$pid'";
-        
-        $success1 = mysqli_query($con, $update_query);
-        if ($success1) {
-            echo "<script>alert('Patient updated successfully!');</script>";
-        } else {
-            echo "<script>alert('Error updating patient details.');</script>";
-        }
+
+if (isset($_POST['update_patient'])) {
+    $pid = $_POST['pid'];
+    $fname = $_POST['fname'];
+    $lname = $_POST['lname'];
+    $gender = $_POST['gender'];
+    $email = $_POST['email'];
+    $contact = $_POST['contact'];
+    $age = $_POST['age'];
+    $address = $_POST['address'];
+    $password = $_POST['password'] ?? null;
+    $update_query = "UPDATE admissiontb SET fname='$fname', lname='$lname', gender='$gender', email='$email', contact='$contact', age='$age', address='$address'";
+    if ($password !== null && $password !== '') {
+        $update_query .= ", password='$password'";
     }
+    $update_query .= " WHERE pid='$pid'";
+
+    $success1 = mysqli_query($con, $update_query);
+    if ($success1) {
+        echo "<script>alert('Patient updated successfully!');</script>";
+    } else {
+        echo "<script>alert('Error updating patient details.');</script>";
+    }
+}
 
 if (isset($_POST['delete_patient'])) {
     $pid = $_POST['delete_pid'];
@@ -65,6 +77,7 @@ if (isset($_POST['delete_patient'])) {
     mysqli_query($con, "DELETE FROM diagnosticstb WHERE pid='$pid'");
     mysqli_query($con, "DELETE FROM patient_chargstb WHERE pid='$pid'");
     mysqli_query($con, "DELETE FROM paymentstb WHERE pid='$pid'");
+    mysqli_query($con, "DELETE FROM invoicetb WHERE pid='$pid'");
     $delete_query1 = "DELETE FROM admissiontb WHERE pid='$pid'";
     $success1 = mysqli_query($con, $delete_query1);
     if ($success1) {
@@ -73,6 +86,7 @@ if (isset($_POST['delete_patient'])) {
         echo "<script>alert('Error deleting patient.');</script>";
     }
 }
+
 if (isset($_POST['add_doctor'])) {
     $username = $_POST['doctor_username'];
     $password = $_POST['doctor_password'];
@@ -90,6 +104,7 @@ if (isset($_POST['add_doctor'])) {
         echo "<script>alert('Doctor added successfully!');</script>";
     }
 }
+
 if (isset($_POST['update_doctor'])) {
     $id = $_POST['doctor_id'];
     $fname = $_POST['doctor_fname'];
@@ -107,6 +122,7 @@ if (isset($_POST['update_doctor'])) {
         echo "<script>alert('Doctor updated successfully!');</script>";
     }
 }
+
 if (isset($_POST['delete_doctor'])) {
     $id = $_POST['delete_doctor_id'];
     
@@ -115,6 +131,7 @@ if (isset($_POST['delete_doctor'])) {
         echo "<script>alert('Doctor deleted successfully!');</script>";
     }
 }
+
 if (isset($_POST['add_nurse'])) {
     $username = $_POST['nurse_username'];
     $password = $_POST['nurse_password'];
@@ -130,6 +147,7 @@ if (isset($_POST['add_nurse'])) {
         echo "<script>alert('Nurse added successfully!');</script>";
     }
 }
+
 if (isset($_POST['update_nurse'])) {
     $id = $_POST['nurse_id'];
     $fname = $_POST['nurse_fname'];
@@ -145,6 +163,7 @@ if (isset($_POST['update_nurse'])) {
         echo "<script>alert('Nurse updated successfully!');</script>";
     }
 }
+
 if (isset($_POST['delete_nurse'])) {
     $id = $_POST['delete_nurse_id'];
     
@@ -153,64 +172,159 @@ if (isset($_POST['delete_nurse'])) {
         echo "<script>alert('Nurse deleted successfully!');</script>";
     }
 }
-if (isset($_POST['update_payment'])) {
-    $pid = $_POST['pid'];
-    $status = $_POST['payment_status'];
+
+if (isset($_POST['toggle_2fa'])) {
+    $user_type = $_POST['user_type'];
+    $user_id = $_POST['user_id'];
+    $current_status = $_POST['current_status'];
+    $new_status = $current_status ? 0 : 1;
     
-    $update_query = "UPDATE billtb SET status='$status' WHERE pid='$pid'";
-    if (mysqli_query($con, $update_query)) {
-        $update_payments = "UPDATE paymentstb SET status='Approved' WHERE pid='$pid' AND status='Pending'";
-        mysqli_query($con, $update_payments);
-        if ($status == 'Paid') {
-            $receipt_update = "UPDATE billtb SET receipt_generated=1 WHERE pid='$pid'";
-            mysqli_query($con, $receipt_update);
+    switch($user_type) {
+        case 'patient':
+            $table = 'admissiontb';
+            $id_field = 'pid';
+            break;
+        case 'doctor':
+            $table = 'doctortb';
+            $id_field = 'id';
+            break;
+        case 'nurse':
+            $table = 'nursetb';
+            $id_field = 'id';
+            break;
+        case 'lab':
+            $table = 'labtb';
+            $id_field = 'id';
+            break;
+        case 'admin':
+            $table = 'adminusertb';
+            $id_field = 'username';
+            break;
+        default:
+            echo "<script>alert('Invalid user type!');</script>";
+            break;
+    }
+    
+    if (isset($table)) {
+        $update_query = "UPDATE $table SET two_factor_enabled = '$new_status' WHERE $id_field = '$user_id'";
+        if (mysqli_query($con, $update_query)) {
+            $status_text = $new_status ? 'enabled' : 'disabled';
+            echo "<script>alert('2FA successfully $status_text for user!');</script>";
+            echo "<script>window.location.href = 'admin-panel.php#password-management';</script>";
+        } else {
+            echo "<script>alert('Error updating 2FA status!');</script>";
         }
-        echo "<script>alert('Payment status updated successfully!');</script>";
     }
 }
-        if (isset($_POST['toggle_2fa'])) {
-            $user_type = $_POST['user_type'];
-            $user_id = $_POST['user_id'];
-            $current_status = $_POST['current_status'];
-            $new_status = $current_status ? 0 : 1;
-            
-            switch($user_type) {
-                case 'patient':
-                    $table = 'admissiontb';
-                    $id_field = 'pid';
-                    break;
-                case 'doctor':
-                    $table = 'doctortb';
-                    $id_field = 'id';
-                    break;
-                case 'nurse':
-                    $table = 'nursetb';
-                    $id_field = 'id';
-                    break;
-                case 'lab':
-                    $table = 'labtb';
-                    $id_field = 'id';
-                    break;
-                case 'admin':
-                    $table = 'adminusertb';
-                    $id_field = 'username';
-                    break;
-                default:
-                    echo "<script>alert('Invalid user type!');</script>";
-                    break;
-            }
-            
-            if (isset($table)) {
-                $update_query = "UPDATE $table SET two_factor_enabled = '$new_status' WHERE $id_field = '$user_id'";
-                if (mysqli_query($con, $update_query)) {
-                    $status_text = $new_status ? 'enabled' : 'disabled';
-                    echo "<script>alert('2FA successfully $status_text for user!');</script>";
-                    echo "<script>window.location.href = 'admin-panel.php#password-management';</script>";
-                } else {
-                    echo "<script>alert('Error updating 2FA status!');</script>";
-                }
-            }
+
+// Insurance Company Management
+if (isset($_POST['add_insurance_company'])) {
+    $company_name = $_POST['company_name'];
+    $contact_person = $_POST['contact_person'];
+    $contact_number = $_POST['contact_number'];
+    $email = $_POST['email'];
+    $address = $_POST['address'];
+    $policy_details = $_POST['policy_details'];
+
+    $insert_query = "INSERT INTO insurance_companiestb (company_name, contact_person, contact_number, email, address, policy_details) VALUES ('$company_name', '$contact_person', '$contact_number', '$email', '$address', '$policy_details')";
+    if (mysqli_query($con, $insert_query)) {
+        echo "<script>alert('Insurance company added successfully!');</script>";
+    } else {
+        echo "<script>alert('Error adding insurance company.');</script>";
+    }
+}
+
+if (isset($_POST['update_insurance_company'])) {
+    $insurance_id = $_POST['insurance_id'];
+    $company_name = $_POST['company_name'];
+    $contact_person = $_POST['contact_person'];
+    $contact_number = $_POST['contact_number'];
+    $email = $_POST['email'];
+    $address = $_POST['address'];
+    $policy_details = $_POST['policy_details'];
+
+    $update_query = "UPDATE insurance_companiestb SET company_name='$company_name', contact_person='$contact_person', contact_number='$contact_number', email='$email', address='$address', policy_details='$policy_details' WHERE insurance_id='$insurance_id'";
+    if (mysqli_query($con, $update_query)) {
+        echo "<script>alert('Insurance company updated successfully!');</script>";
+    } else {
+        echo "<script>alert('Error updating insurance company.');</script>";
+    }
+}
+
+if (isset($_POST['delete_insurance_company'])) {
+    $insurance_id = $_POST['delete_insurance_id'];
+
+    $delete_query = "DELETE FROM insurance_companiestb WHERE insurance_id='$insurance_id'";
+    if (mysqli_query($con, $delete_query)) {
+        echo "<script>alert('Insurance company deleted successfully!');</script>";
+    } else {
+        echo "<script>alert('Error deleting insurance company.');</script>";
+    }
+}
+
+if (isset($_POST['approve_invoice'])) {
+    $invoice_id = $_POST['invoice_id'];
+    $update_query = "UPDATE invoicetb SET status='Approved' WHERE id='$invoice_id'";
+    if (mysqli_query($con, $update_query)) {
+        echo "<script>alert('Invoice request approved successfully!');</script>";
+    }
+}
+
+if (isset($_POST['deny_invoice'])) {
+    $invoice_id = $_POST['invoice_id'];
+    $update_query = "UPDATE invoicetb SET status='Denied' WHERE id='$invoice_id'";
+    if (mysqli_query($con, $update_query)) {
+        echo "<script>alert('Invoice request denied.');</script>";
+    }
+}
+
+if (isset($_POST['approve_emergency']) || isset($_POST['deny_emergency'])) {
+    $request_id = $_POST['request_id'];
+    $admin_username = $_SESSION['username'];
+    $action = isset($_POST['approve_emergency']) ? 'approved' : 'denied';
+
+    if ($action == 'approved') {
+        $one_time_token = bin2hex(random_bytes(32));
+        $token_expires = date('Y-m-d H:i:s', strtotime('+1 hour'));
+
+        $query = "UPDATE emergency_access_logs SET
+                  status = 'approved',
+                  handled_by = '$admin_username',
+                  handled_at = NOW(),
+                  one_time_token = '$one_time_token',
+                  token_expires = '$token_expires',
+                  auto_login_used = 0
+                  WHERE id = '$request_id'";
+
+        error_log("DEBUG: Approving emergency request ID: " . $request_id . " with token: " . $one_time_token);
+    } else {
+        $query = "UPDATE emergency_access_logs SET
+                  status = 'denied',
+                  handled_by = '$admin_username',
+                  handled_at = NOW()
+                  WHERE id = '$request_id'";
+    }
+
+    if (mysqli_query($con, $query)) {
+        if ($action == 'approved') {
+            $request_query = mysqli_query($con, "SELECT * FROM emergency_access_logs WHERE id = '$request_id'");
+            $request = mysqli_fetch_assoc($request_query);
+
+            error_log("DEBUG: Emergency request approved - User: " . $request['staff_username'] . ", Token: " . $request['one_time_token']);
+
+            echo "<script>
+                alert('Emergency request approved!\\\\nUser: {$request['staff_username']}\\\\nThey can now login once without 2FA within 1 hour.');
+            </script>";
+        } else {
+            echo "<script>alert('Emergency request denied!');</script>";
         }
+        echo "<script>window.location.href = 'admin-panel.php#emergency-management';</script>";
+        exit();
+    } else {
+        echo "<script>alert('Error updating emergency request!');</script>";
+        error_log("ERROR: Failed to update emergency request: " . mysqli_error($con));
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -222,6 +336,7 @@ if (isset($_POST['update_payment'])) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
         :root {
@@ -333,23 +448,95 @@ if (isset($_POST['update_payment'])) {
         .welcome-header p {
             color: rgba(255, 255, 255, 0.8);
         }
+
         .password-toggle, .toggle-password {
-    background: none;
-    border: none;
-    color: #6c757d;
-    cursor: pointer;
-}
+            background: none;
+            border: none;
+            color: #6c757d;
+            cursor: pointer;
+        }
 
-.password-strength {
-    height: 4px;
-    border-radius: 2px;
-    transition: all 0.3s ease;
-}
+        .password-strength {
+            height: 4px;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
 
-.strength-weak { background: #dc3545; }
-.strength-fair { background: #fd7e14; }
-.strength-good { background: #20c997; }
-.strength-strong { background: #198754; }
+        .strength-weak { background: #dc3545; }
+        .strength-fair { background: #fd7e14; }
+        .strength-good { background: #20c997; }
+        .strength-strong { background: #198754; }
+
+        /* Enhanced CSS */
+        .metric-card {
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .report-card {
+            transition: transform 0.3s ease;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .report-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.05);
+        }
+
+        .department-card {
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .department-card:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: #667eea;
+        }
+
+        .activity-item {
+            padding: 10px;
+            border-left: 3px solid #667eea;
+            background: rgba(255,255,255,0.05);
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .quick-action-btn {
+            transition: all 0.3s ease;
+        }
+
+        .quick-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .trend-indicator {
+            font-size: 0.8em;
+            margin-left: 5px;
+        }
+
+        .trend-up { color: #28a745; }
+        .trend-down { color: #dc3545; }
     </style>
 </head>
 
@@ -381,231 +568,253 @@ if (isset($_POST['update_payment'])) {
             <!-- Sidebar -->
             <div class="col-lg-3 col-md-4">
                 <div class="sidebar">
-                        <div class="nav flex-column nav-pills" role="tablist">
-                            <a class="nav-link active" role="tab" data-toggle="tab" href="#dashboard" aria-controls="dashboard" aria-selected="true" id="dashboard-tab">
-                                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-                            </a>
-                            <a class="nav-link" role="tab" data-toggle="tab" href="#admissions" aria-controls="admissions" aria-selected="false" id="admissions-tab">
-                                <i class="fas fa-hospital-user me-2"></i>Patient Admissions
-                            </a>
-                            <a class="nav-link" role="tab" data-toggle="tab" href="#billing" aria-controls="billing" aria-selected="false" id="billing-tab">
-                                <i class="fas fa-file-invoice-dollar me-2"></i>Billing Management
-                            </a>
-                            <a class="nav-link" role="tab" data-toggle="tab" href="#discharge" aria-controls="discharge" aria-selected="false" id="discharge-tab">
-                                <i class="fas fa-sign-out-alt me-2"></i>Patient Discharge
-                            </a>
-                            <a class="nav-link" role="tab" data-toggle="tab" href="#patient-management" aria-controls="patient-management" aria-selected="false" id="patient-management-tab">
-                                <i class="fas fa-users me-2"></i>Patient Management
-                            </a>
-                            <a class="nav-link" role="tab" data-toggle="tab" href="#doctor-management" aria-controls="doctor-management" aria-selected="false" id="doctor-management-tab">
-                                <i class="fas fa-user-md me-2"></i>Doctor Management
-                            </a>
-                            <a class="nav-link" role="tab" data-toggle="tab" href="#nurse-management" aria-controls="nurse-management" aria-selected="false" id="nurse-management-tab">
-                                <i class="fas fa-user-nurse me-2"></i>Nurse Management
-                            </a>
-                            <a class="nav-link" role="tab" data-toggle="tab" href="#invoice-requests" aria-controls="invoice-requests" aria-selected="false" id="invoice-requests-tab">
-                                <i class="fas fa-file-invoice me-2"></i>Invoice Requests
-                            </a>
-                            <a class="nav-link" role="tab" data-toggle="tab" href="#prescriptions" aria-controls="prescriptions" aria-selected="false" id="prescriptions-tab">
-                                <i class="fa fa-medkit me-2"></i>Prescriptions
-                            </a>
-                            <a class="nav-link" role="tab" data-toggle="tab" href="#password-management" aria-controls="password-management" aria-selected="false" id="password-management-tab">
-                                <i class="fas fa-key me-2"></i>Password Management
-                             </a>
-                             <a class="nav-link" role="tab" data-toggle="tab" href="#emergency-management" aria-controls="emergency-management" aria-selected="false" id="emergency-management-tab">
-                            <i class="fas fa-exclamation-triangle me-2"></i>Emergency Requests
-                            </a>
-                        </div>
+                    <div class="nav flex-column nav-pills" role="tablist">
+                        <a class="nav-link active" role="tab" data-toggle="tab" href="#dashboard" aria-controls="dashboard" aria-selected="true" id="dashboard-tab">
+                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                        </a>
+                        <a class="nav-link" role="tab" data-toggle="tab" href="#admissions" aria-controls="admissions" aria-selected="false" id="admissions-tab">
+                            <i class="fas fa-hospital-user me-2"></i>Patient Admissions
+                        </a>
+                        <a class="nav-link" role="tab" data-toggle="tab" href="#billing" aria-controls="billing" aria-selected="false" id="billing-tab">
+                            <i class="fas fa-file-invoice-dollar me-2"></i>Billing Management
+                        </a>
+                        <a class="nav-link" role="tab" data-toggle="tab" href="#discharge" aria-controls="discharge" aria-selected="false" id="discharge-tab">
+                            <i class="fas fa-sign-out-alt me-2"></i>Patient Discharge
+                        </a>
+                        <a class="nav-link" role="tab" data-toggle="tab" href="#patient-management" aria-controls="patient-management" aria-selected="false" id="patient-management-tab">
+                            <i class="fas fa-users me-2"></i>Patient Management
+                        </a>
+                        <a class="nav-link" role="tab" data-toggle="tab" href="#doctor-management" aria-controls="doctor-management" aria-selected="false" id="doctor-management-tab">
+                            <i class="fas fa-user-md me-2"></i>Doctor Management
+                        </a>
+                        <a class="nav-link" role="tab" data-toggle="tab" href="#nurse-management" aria-controls="nurse-management" aria-selected="false" id="nurse-management-tab">
+                            <i class="fas fa-user-nurse me-2"></i>Nurse Management
+                        </a>
+                        <a class="nav-link" role="tab" data-toggle="tab" href="#invoice-requests" aria-controls="invoice-requests" aria-selected="false" id="invoice-requests-tab">
+                            <i class="fas fa-file-invoice me-2"></i>Invoice Requests
+                        </a>
+                        <?php if ($_SESSION['role'] === 'admin'): ?>
+                        <a class="nav-link" role="tab" data-toggle="tab" href="#prescriptions" aria-controls="prescriptions" aria-selected="false" id="prescriptions-tab">
+                            <i class="fa fa-medkit me-2"></i>Prescriptions
+                        </a>
+                        <a class="nav-link" role="tab" data-toggle="tab" href="#password-management" aria-controls="password-management" aria-selected="false" id="password-management-tab">
+                            <i class="fas fa-key me-2"></i>Password Management
+                         </a>
+                        <a class="nav-link" role="tab" data-toggle="tab" href="#emergency-management" aria-controls="emergency-management" aria-selected="false" id="emergency-management-tab">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Emergency Requests
+                        </a>
+                        <a class="nav-link" role="tab" data-toggle="tab" href="#patient-insurance-management" aria-controls="patient-insurance-management" aria-selected="false" id="patient-insurance-management-tab">
+                            <i class="fas fa-shield-alt me-2"></i>Patient Insurance
+                        </a>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
             
             <div class="col-lg-9 col-md-8">
                 <div class="tab-content">
-                    <div class="tab-pane fade" id="invoice-requests" role="tabpanel" aria-labelledby="invoice-requests-tab">
-                <div class="glass-card p-4">
-                    <h4 class="text-dark mb-4">
-                        <i class="fas fa-file-invoice me-2"></i>Invoice Requests
-                    </h4>
-                    <div class="table-responsive">
-                        <table class="table table-glass">
-                            <thead>
-                                <tr>
-                                    <th>Invoice ID</th>
-                                    <th>Patient ID</th>
-                                    <th>Patient Name</th>
-                                    <th>Invoice Number</th>
-                                    <th>Total Amount</th>
-                                    <th>Generated Date</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php
-                                $invoice_query = "SELECT i.*, a.fname, a.lname FROM invoicetb i JOIN admissiontb a ON i.pid = a.pid ORDER BY i.generated_date DESC, i.generated_time DESC";
-                                $invoice_result = mysqli_query($con, $invoice_query);
-                                while ($invoice = mysqli_fetch_array($invoice_result)) {
-                                    $statusClass = 'secondary';
-                                    if ($invoice['status'] == 'Approved') {
-                                        $statusClass = 'success';
-                                    } elseif ($invoice['status'] == 'Denied') {
-                                        $statusClass = 'danger';
-                                    } elseif ($invoice['status'] == 'Generated') {
-                                        $statusClass = 'warning';
-                                    }
-                                    echo '<tr>
-                                        <td>' . $invoice['id'] . '</td>
-                                        <td>' . $invoice['pid'] . '</td>
-                                        <td>' . $invoice['fname'] . ' ' . $invoice['lname'] . '</td>
-                                        <td>' . $invoice['invoice_number'] . '</td>
-                                        <td>₱' . number_format($invoice['total_amount'], 2) . '</td>
-                                        <td>' . $invoice['generated_date'] . '</td>
-                                        <td><span class="badge bg-' . $statusClass . '">' . $invoice['status'] . '</span></td>
-                                        <td>';
-                                    if ($invoice['status'] == 'Generated') {
-                                        echo '<form method="POST" style="display:inline;">
-                                            <input type="hidden" name="invoice_id" value="' . $invoice['id'] . '">
-                                            <button type="submit" name="approve_invoice" class="btn btn-sm btn-success" onclick="return confirm(\'Approve this invoice request?\')">Approve</button>
-                                            <button type="submit" name="deny_invoice" class="btn btn-sm btn-danger" onclick="return confirm(\'Deny this invoice request?\')">Deny</button>
-                                        </form>';
-                                    } else {
-                                        echo '-';
-                                    }
-                                    echo '</td>
-                                    </tr>';
-                                }
-                                ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            <div class="tab-pane fade" id="prescriptions" role="tabpanel" aria-labelledby="prescriptions-tab">
-                <div class="glass-card p-4">
-                    <h4 class="text-dark mb-4">
-                        <i class="fa fa-medkit me-2"></i>Prescriptions
-                    </h4>
-                    <div class="table-responsive">
-                        <table class="table table-glass">
-                            <thead>
-                                <tr>
-                                    <th>Patient ID</th>
-                                    <th>Patient Name</th>
-                                    <th>Doctor</th>
-                                    <th>Symptoms</th>
-                                    <th>Diagnosis</th>
-                                    <th>Prescribed Medicines</th>
-                                    <th>Price</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php
-                                $prescriptions_query = "SELECT p.*, a.fname, a.lname FROM prestb p JOIN admissiontb a ON p.pid = a.pid ORDER BY p.id DESC";
-                                $prescriptions_result = mysqli_query($con, $prescriptions_query);
-                                while ($pres = mysqli_fetch_array($prescriptions_result)) {
-                                    echo '<tr>
-                                        <td>' . $pres['pid'] . '</td>
-                                        <td>' . $pres['fname'] . ' ' . $pres['lname'] . '</td>
-                                        <td>' . $pres['doctor'] . '</td>
-                                        <td>' . $pres['symptoms'] . '</td>
-                                        <td>' . $pres['diagnosis_details'] . '</td>
-                                        <td>' . $pres['prescribed_medicines'] . '</td>
-                                        <td>₱' . number_format($pres['price'], 2) . '</td>
-                                    </tr>';
-                                }
-                                ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
+                    <!-- Enhanced Dashboard -->
                     <div class="tab-pane fade show active" id="dashboard">
+                        <!-- Quick Actions -->
+                        <div class="glass-card p-4 mb-4">
+                            <h5 class="text-dark mb-3">Quick Actions</h5>
+                            <div class="row g-2">
+                                <div class="col-auto">
+                                    <button class="btn btn-outline-primary btn-sm quick-action-btn" data-toggle="modal" data-target="#addDoctorModal">
+                                        <i class="fas fa-plus me-1"></i>Add Doctor
+                                    </button>
+                                </div>
+                                <div class="col-auto">
+                                    <button class="btn btn-outline-success btn-sm quick-action-btn" data-toggle="modal" data-target="#addNurseModal">
+                                        <i class="fas fa-plus me-1"></i>Add Nurse
+                                    </button>
+                                </div>
+                                <div class="col-auto">
+                                    <a href="#billing" class="btn btn-outline-warning btn-sm quick-action-btn">
+                                        <i class="fas fa-file-invoice me-1"></i>Process Bills
+                                    </a>
+                                </div>
+                                <div class="col-auto">
+                                    <a href="#discharge" class="btn btn-outline-info btn-sm quick-action-btn">
+                                        <i class="fas fa-sign-out-alt me-1"></i>Manage Discharges
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Enhanced Statistics -->
                         <div class="row g-4 mb-4">
                             <div class="col-md-6 col-lg-3">
                                 <div class="stat-card" style="background: var(--primary-gradient);">
-                                    <i class="fas fa-hospital-user fa-3x mb-3"></i>
-                                    <h3><?php 
-                                        $query = mysqli_query($con, "SELECT COUNT(*) as total FROM admissiontb");
-                                        $row = mysqli_fetch_assoc($query);
-                                        echo $row['total'] ?? 0;
-                                    ?></h3>
-                                    <p>Total Admissions</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h3><?php echo $total_admissions; ?></h3>
+                                            <p>Total Admissions</p>
+                                        </div>
+                                        <i class="fas fa-hospital-user fa-2x"></i>
+                                    </div>
+                                    <small class="text-white-50">+5% from last month <i class="fas fa-arrow-up trend-indicator trend-up"></i></small>
                                 </div>
                             </div>
                             <div class="col-md-6 col-lg-3">
                                 <div class="stat-card" style="background: var(--secondary-gradient);">
-                                    <i class="fas fa-user-injured fa-3x mb-3"></i>
-                                    <h3><?php 
-                                        $query = mysqli_query($con, "SELECT COUNT(*) as total FROM admissiontb WHERE status='Admitted'");
-                                        $row = mysqli_fetch_assoc($query);
-                                        echo $row['total'] ?? 0;
-                                    ?></h3>
-                                    <p>Active Patients</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h3><?php echo $active_patients; ?></h3>
+                                            <p>Active Patients</p>
+                                        </div>
+                                        <i class="fas fa-user-injured fa-2x"></i>
+                                    </div>
+                                    <small class="text-white-50">+2% from yesterday <i class="fas fa-arrow-up trend-indicator trend-up"></i></small>
                                 </div>
                             </div>
                             <div class="col-md-6 col-lg-3">
                                 <div class="stat-card" style="background: var(--warning-gradient);">
-                                    <i class="fas fa-file-invoice fa-3x mb-3"></i>
-                                    <h3><?php 
-                                        $query = mysqli_query($con, "SELECT COUNT(*) as total FROM billtb WHERE status='Unpaid'");
-                                        $row = mysqli_fetch_assoc($query);
-                                        echo $row['total'] ?? 0;
-                                    ?></h3>
-                                    <p>Pending Bills</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h3><?php echo $pending_bills; ?></h3>
+                                            <p>Pending Bills</p>
+                                        </div>
+                                        <i class="fas fa-file-invoice fa-2x"></i>
+                                    </div>
+                                    <small class="text-white-50">-3% from last week <i class="fas fa-arrow-down trend-indicator trend-down"></i></small>
                                 </div>
                             </div>
                             <div class="col-md-6 col-lg-3">
                                 <div class="stat-card" style="background: var(--success-gradient);">
-                                    <i class="fas fa-hospital-symbol fa-3x mb-3"></i>
-                                    <h3>₱<?php 
-                                        $query = mysqli_query($con, "SELECT SUM(total) as revenue FROM billtb WHERE status='Paid'");
-                                        $row = mysqli_fetch_assoc($query);
-                                        echo number_format($row['revenue'] ?? 0, 2);
-                                    ?></h3>
-                                    <p>Total Revenue</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h3>₱<?php echo number_format($total_revenue, 2); ?></h3>
+                                            <p>Total Revenue</p>
+                                        </div>
+                                        <i class="fas fa-hospital-symbol fa-2x"></i>
+                                    </div>
+                                    <small class="text-white-50">+12% this month <i class="fas fa-arrow-up trend-indicator trend-up"></i></small>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Performance Metrics -->
+                        <div class="glass-card p-4 mb-4">
+                            <h5 class="text-dark mb-3">Hospital Performance</h5>
+                            <div class="row text-center">
+                                <div class="col-md-3">
+                                    <div class="metric-card">
+                                        <h3 class="text-success"><?php echo number_format($avg_stay, 1); ?>d</h3>
+                                        <small>Avg. Stay Duration</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="metric-card">
+                                        <h3 class="text-info"><?php echo number_format($occupancy_rate, 1); ?>%</h3>
+                                        <small>Bed Occupancy</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="metric-card">
+                                        <h3 class="text-warning">15m</h3>
+                                        <small>Avg. Response Time</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="metric-card">
+                                        <h3 class="text-primary">94%</h3>
+                                        <small>Satisfaction Rate</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Charts & Analytics -->
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-6">
+                                <div class="glass-card p-4">
+                                    <h5 class="text-dark mb-3">Monthly Admissions</h5>
+                                    <canvas id="admissionsChart" height="200"></canvas>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="glass-card p-4">
+                                    <h5 class="text-dark mb-3">Revenue Trends</h5>
+                                    <canvas id="revenueChart" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Department Overview -->
+                        <div class="glass-card p-4 mb-4">
+                            <h5 class="text-dark mb-3">Department Overview</h5>
+                            <div class="row">
+                                <?php
+                                $dept_stats = mysqli_query($con, "
+                                    SELECT specialization as department, COUNT(*) as count 
+                                    FROM doctortb 
+                                    WHERE status='Active' 
+                                    GROUP BY specialization
+                                    LIMIT 4
+                                ");
+                                while($dept = mysqli_fetch_array($dept_stats)) {
+                                    echo '<div class="col-md-3 mb-3">
+                                        <div class="department-card p-3">
+                                            <h6 class="mb-1">'.$dept['department'].'</h6>
+                                            <h4 class="text-primary mb-0">'.$dept['count'].'</h4>
+                                            <small class="text-muted">Active Doctors</small>
+                                        </div>
+                                    </div>';
+                                }
+                                ?>
+                            </div>
+                        </div>
+
+                        <!-- Reports & Analytics -->
+                        <div class="glass-card p-4 mb-4">
+                            <h5 class="text-dark mb-3">Reports & Analytics</h5>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="report-card">
+                                        <i class="fas fa-file-pdf fa-2x text-danger mb-2"></i>
+                                        <h6>Monthly Financial Report</h6>
+                                        <button class="btn btn-sm btn-outline-danger">Generate PDF</button>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="report-card">
+                                        <i class="fas fa-file-excel fa-2x text-success mb-2"></i>
+                                        <h6>Patient Statistics</h6>
+                                        <button class="btn btn-sm btn-outline-success">Export Excel</button>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="report-card">
+                                        <i class="fas fa-chart-bar fa-2x text-primary mb-2"></i>
+                                        <h6>Performance Analytics</h6>
+                                        <button class="btn btn-sm btn-outline-primary">View Details</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activity -->
                         <div class="glass-card p-4">
-                            <h4 class="text-dark mb-4">
-                                <i class="fas fa-clock me-2"></i>Recent Admissionst
-                            </h4>
-                            <div class="table-responsive">
-                                <table class="table table-glass">
-                                    <thead>
-                                        <tr>
-                                            <th>Patient ID</th>
-                                            <th>Name</th>
-                                            <th>Contact</th>
-                                            <th>Admission Date</th>
-                                            <th>Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php 
-                                        $query = mysqli_query($con, "SELECT * FROM admissiontb ORDER BY admission_date DESC LIMIT 5");
-                                        while($row = mysqli_fetch_array($query)) {
-                                            $status = $row['status'];
-                                            $badgeClass = 'secondary';
-                                            if ($status === 'Admitted') {
-                                                $badgeClass = 'success';
-                                            } elseif ($status === 'Discharged') {
-                                                $badgeClass = 'secondary';
-                                            } elseif ($status === 'Ready for Discharge') {
-                                                $badgeClass = 'warning';
-                                            }
-                                            echo '<tr>
-                                                <td>'.$row['pid'].'</td>
-                                                <td>'.$row['fname'].' '.$row['lname'].'</td>
-                                                <td>'.$row['contact'].'</td>
-                                                <td>'.$row['admission_date'].'</td>
-                                                <td><span class="badge bg-'.$badgeClass.'">'.$status.'</span></td>
-                                            </tr>';
-}
-                                        ?>
-                                    </tbody>
-                                </table>
+                            <h5 class="text-dark mb-3">
+                                <i class="fas fa-list-alt me-2"></i>Recent Activity
+                            </h5>
+                            <div class="activity-feed">
+                                <?php
+                                $activity_query = mysqli_query($con, "
+                                    SELECT 'admission' as type, CONCAT('Patient ', fname, ' ', lname, ' admitted') as activity, admission_date as date 
+                                    FROM admissiontb 
+                                    ORDER BY admission_date DESC 
+                                    LIMIT 5
+                                ");
+                                while($activity = mysqli_fetch_array($activity_query)) {
+                                    echo '<div class="activity-item d-flex align-items-center">
+                                        <span class="badge bg-primary me-2">'.ucfirst($activity['type']).'</span>
+                                        <span>'.$activity['activity'].'</span>
+                                        <small class="text-muted ms-auto">'.date('M j, g:i A', strtotime($activity['date'])).'</small>
+                                    </div>';
+                                }
+                                ?>
                             </div>
                         </div>
                     </div>
@@ -662,30 +871,49 @@ if (isset($_POST['update_payment'])) {
                                             <th>Consultation</th>
                                             <th>Lab Fees</th>
                                             <th>Medicine</th>
-                                            <th>Total</th>
+                                            <th>Total Amount</th>
+                                            <th>Insurance Covered</th>
+                                            <th>Patient Payable</th>
                                             <th>Status</th>
                                             <th>Actions</th>
                                             <th>Receipt</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php 
+                                        <?php
 $medicine_fees_result = mysqli_query($con, "SELECT pid, SUM(price) AS total_medicine_fees FROM prestb GROUP BY pid");
                                         $medicine_fees_map = [];
                                         while ($mf_row = mysqli_fetch_assoc($medicine_fees_result)) {
                                             $medicine_fees_map[$mf_row['pid']] = $mf_row['total_medicine_fees'];
                                         }
-                                        
+
+                                        $insurance_result = mysqli_query($con, "SELECT pi.patient_id, pi.coverage_percent FROM patient_insurancetb pi WHERE pi.status = 'active'");
+                                        $insurance_map = [];
+                                        while ($ins_row = mysqli_fetch_assoc($insurance_result)) {
+                                            $insurance_map[$ins_row['patient_id']] = $ins_row['coverage_percent'];
+                                        }
+
                                         $query = mysqli_query($con, "SELECT b.*, a.fname, a.lname FROM billtb b JOIN admissiontb a ON b.pid = a.pid ORDER BY b.pid DESC");
                                         while($row = mysqli_fetch_array($query)) {
                                             $statusClass = ($row['status'] == 'Paid') ? 'success' : 'warning';
                                             $calculated_medicine_fees = $medicine_fees_map[$row['pid']] ?? 0;
-                                            $calculated_total = 
-                                                ($row['consultation_fees'] ?? 0) + 
-                                                ($row['lab_fees'] ?? 0) + 
-                                                $calculated_medicine_fees + 
-                                                ($row['room_charges'] ?? 0) + 
+                                            $calculated_total =
+                                                ($row['consultation_fees'] ?? 0) +
+                                                ($row['lab_fees'] ?? 0) +
+                                                $calculated_medicine_fees +
+                                                ($row['room_charges'] ?? 0) +
                                                 ($row['service_charges'] ?? 0);
+
+                                            // Calculate insurance coverage
+                                            $coverage_percent = $insurance_map[$row['pid']] ?? 0;
+                                            $insurance_covered = $calculated_total * ($coverage_percent / 100);
+                                            $patient_payable = $calculated_total - $insurance_covered;
+
+                                            // Update billtb with calculated insurance amounts if not already set
+                                            if (($row['insurance_covered'] ?? 0) == 0 && ($row['patient_payable'] ?? 0) == 0) {
+                                                $update_insurance_query = "UPDATE billtb SET insurance_covered='$insurance_covered', patient_payable='$patient_payable' WHERE pid='{$row['pid']}'";
+                                                mysqli_query($con, $update_insurance_query);
+                                            }
 
                                             echo '<tr>
                                                 <td>'.$row['pid'].'</td>
@@ -694,6 +922,8 @@ $medicine_fees_result = mysqli_query($con, "SELECT pid, SUM(price) AS total_medi
                                                 <td>₱'.number_format($row['lab_fees'], 2).'</td>
                                                 <td>₱'.number_format($calculated_medicine_fees, 2).'</td>
                                                 <td>₱'.number_format($calculated_total, 2).'</td>
+                                                <td>₱'.number_format($insurance_covered, 2).'<br><small class="text-muted">('.$coverage_percent.'% coverage)</small></td>
+                                                <td>₱'.number_format($patient_payable, 2).'</td>
                                                 <td><span class="badge bg-'.$statusClass.'">'.$row['status'].'</span></td>
                                                 <td>';
                                             if($row['status'] == 'Unpaid') {
@@ -1009,6 +1239,107 @@ while ($row = mysqli_fetch_assoc($query)) {
                             </div>
                         </div>
                     </div>
+
+                <div class="tab-pane fade" id="invoice-requests" role="tabpanel" aria-labelledby="invoice-requests-tab">
+                <div class="glass-card p-4">
+                    <h4 class="text-dark mb-4">
+                        <i class="fas fa-file-invoice me-2"></i>Invoice Requests
+                    </h4>
+                    <div class="table-responsive">
+                        <table class="table table-glass">
+                            <thead>
+                                <tr>
+                                    <th>Invoice ID</th>
+                                    <th>Patient ID</th>
+                                    <th>Patient Name</th>
+                                    <th>Invoice Number</th>
+                                    <th>Total Amount</th>
+                                    <th>Generated Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                $invoice_query = "SELECT i.*, a.fname, a.lname FROM invoicetb i JOIN admissiontb a ON i.pid = a.pid ORDER BY i.generated_date DESC, i.generated_time DESC";
+                                $invoice_result = mysqli_query($con, $invoice_query);
+                                while ($invoice = mysqli_fetch_array($invoice_result)) {
+                                    $statusClass = 'secondary';
+                                    if ($invoice['status'] == 'Approved') {
+                                        $statusClass = 'success';
+                                    } elseif ($invoice['status'] == 'Denied') {
+                                        $statusClass = 'danger';
+                                    } elseif ($invoice['status'] == 'Generated') {
+                                        $statusClass = 'warning';
+                                    }
+                                    echo '<tr>
+                                        <td>' . $invoice['id'] . '</td>
+                                        <td>' . $invoice['pid'] . '</td>
+                                        <td>' . $invoice['fname'] . ' ' . $invoice['lname'] . '</td>
+                                        <td>' . $invoice['invoice_number'] . '</td>
+                                        <td>₱' . number_format($invoice['total_amount'], 2) . '</td>
+                                        <td>' . $invoice['generated_date'] . '</td>
+                                        <td><span class="badge bg-' . $statusClass . '">' . $invoice['status'] . '</span></td>
+                                        <td>';
+                                    if ($invoice['status'] == 'Generated') {
+                                        echo '<form method="POST" style="display:inline;">
+                                            <input type="hidden" name="invoice_id" value="' . $invoice['id'] . '">
+                                            <button type="submit" name="approve_invoice" class="btn btn-sm btn-success" onclick="return confirm(\'Approve this invoice request?\')">Approve</button>
+                                            <button type="submit" name="deny_invoice" class="btn btn-sm btn-danger" onclick="return confirm(\'Deny this invoice request?\')">Deny</button>
+                                        </form>';
+                                    } else {
+                                        echo '-';
+                                    }
+                                    echo '</td>
+                                    </tr>';
+                                }
+                                ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <?php if ($_SESSION['role'] === 'admin'): ?>
+            <div class="tab-pane fade" id="prescriptions" role="tabpanel" aria-labelledby="prescriptions-tab">
+                <div class="glass-card p-4">
+                    <h4 class="text-dark mb-4">
+                        <i class="fa fa-medkit me-2"></i>Prescriptions
+                    </h4>
+                    <div class="table-responsive">
+                        <table class="table table-glass">
+                            <thead>
+                                <tr>
+                                    <th>Patient ID</th>
+                                    <th>Patient Name</th>
+                                    <th>Doctor</th>
+                                    <th>Symptoms</th>
+                                    <th>Diagnosis</th>
+                                    <th>Prescribed Medicines</th>
+                                    <th>Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                $prescriptions_query = "SELECT p.*, a.fname, a.lname FROM prestb p JOIN admissiontb a ON p.pid = a.pid ORDER BY p.id DESC";
+                                $prescriptions_result = mysqli_query($con, $prescriptions_query);
+                                while ($pres = mysqli_fetch_array($prescriptions_result)) {
+                                    echo '<tr>
+                                        <td>' . $pres['pid'] . '</td>
+                                        <td>' . $pres['fname'] . ' ' . $pres['lname'] . '</td>
+                                        <td>' . $pres['doctor'] . '</td>
+                                        <td>' . $pres['symptoms'] . '</td>
+                                        <td>' . $pres['diagnosis_details'] . '</td>
+                                        <td>' . $pres['prescribed_medicines'] . '</td>
+                                        <td>₱' . number_format($pres['price'], 2) . '</td>
+                                    </tr>';
+                                }
+                                ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
                     <div class="modal fade" id="addNurseModal" tabindex="-1" aria-labelledby="addNurseModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-lg">
                             <div class="modal-content">
@@ -1661,12 +1992,362 @@ while ($row = mysqli_fetch_assoc($query)) {
                         </div>
                     </div>
                 </div>
+<div class="tab-pane fade" id="patient-insurance-management" role="tabpanel" aria-labelledby="patient-insurance-management-tab">
+    <div class="glass-card p-4">
+        <h4 class="text-dark mb-4">
+            <i class="fas fa-shield-alt me-2"></i>Patient Insurance Management
+        </h4>
+
+        <!-- Insurance Companies Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="fas fa-building me-2"></i>Insurance Companies</h6>
+                <button class="btn btn-light btn-sm" data-toggle="modal" data-target="#addInsuranceCompanyModal">
+                    <i class="fas fa-plus"></i> Add Company
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Company Name</th>
+                                <th>Contact Person</th>
+                                <th>Contact Number</th>
+                                <th>Email</th>
+                                <th>Address</th>
+                                <th>Policy Details</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                            $insurance_query = mysqli_query($con, "SELECT * FROM insurance_companiestb ORDER BY insurance_id DESC");
+                            while ($insurance = mysqli_fetch_array($insurance_query)) {
+                                echo '<tr>
+                                    <td>' . $insurance['insurance_id'] . '</td>
+                                    <td>' . $insurance['company_name'] . '</td>
+                                    <td>' . $insurance['contact_person'] . '</td>
+                                    <td>' . $insurance['contact_number'] . '</td>
+                                    <td>' . $insurance['email'] . '</td>
+                                    <td>' . $insurance['address'] . '</td>
+                                    <td>' . $insurance['policy_details'] . '</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#editInsuranceCompanyModal"
+                                            onclick="editInsuranceCompany(\'' . $insurance['insurance_id'] . '\', \'' . addslashes($insurance['company_name']) . '\', \'' . addslashes($insurance['contact_person']) . '\', \'' . $insurance['contact_number'] . '\', \'' . $insurance['email'] . '\', \'' . addslashes($insurance['address']) . '\', \'' . addslashes($insurance['policy_details']) . '\')">Edit</button>
+                                            <input type="hidden" name="delete_insurance_id" value="' . $insurance['insurance_id'] . '">
+                                            <button type="submit" name="delete_insurance_company" class="btn btn-sm btn-danger" onclick="return confirm(\'Are you sure you want to delete this insurance company?\')">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>';
+                            }
+                            ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="fas fa-user-shield me-2"></i>Patient Insurance Assignments</h6>
+                <button class="btn btn-light btn-sm" data-toggle="modal" data-target="#addPatientInsuranceModal">
+                    <i class="fas fa-plus"></i> Assign Insurance
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Patient Name</th>
+                                <th>Insurance Company</th>
+                                <th>Policy Number</th>
+                                <th>Coverage (%)</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                            $patient_insurance_query = mysqli_query($con, "
+                                SELECT pi.*, a.fname, a.lname, ic.company_name
+                                FROM patient_insurancetb pi
+                                JOIN admissiontb a ON pi.patient_id = a.pid
+                                JOIN insurance_companiestb ic ON pi.insurance_id = ic.insurance_id
+                                ORDER BY pi.patient_insurance_id DESC
+                            ");
+                            while ($assignment = mysqli_fetch_array($patient_insurance_query)) {
+                                $status_badge = $assignment['status'] == 'active' ?
+                                    '<span class="badge bg-success">Active</span>' :
+                                    '<span class="badge bg-secondary">Inactive</span>';
+                                echo '<tr>
+                                    <td>' . $assignment['patient_insurance_id'] . '</td>
+                                    <td>' . $assignment['fname'] . ' ' . $assignment['lname'] . '</td>
+                                    <td>' . $assignment['company_name'] . '</td>
+                                    <td>' . $assignment['policy_number'] . '</td>
+                                    <td>' . $assignment['coverage_percent'] . '%</td>
+                                    <td>' . $assignment['start_date'] . '</td>
+                                    <td>' . ($assignment['end_date'] ?? 'Ongoing') . '</td>
+                                    <td>' . $status_badge . '</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#editPatientInsuranceModal"
+                                            onclick="editPatientInsurance(\'' . $assignment['patient_insurance_id'] . '\', \'' . $assignment['patient_id'] . '\', \'' . $assignment['insurance_id'] . '\', \'' . $assignment['policy_number'] . '\', \'' . $assignment['coverage_percent'] . '\', \'' . $assignment['start_date'] . '\', \'' . ($assignment['end_date'] ?? '') . '\', \'' . $assignment['status'] . '\')">Edit</button>
+                                        <form method="POST" style="display:inline;">
+                                            <input type="hidden" name="delete_patient_insurance_id" value="' . $assignment['patient_insurance_id'] . '">
+                                            <button type="submit" name="delete_patient_insurance" class="btn btn-sm btn-danger" onclick="return confirm(\'Are you sure you want to delete this insurance assignment?\')">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>';
+                            }
+                            ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Insurance Company Modal -->
+<div class="modal fade" id="addInsuranceCompanyModal" tabindex="-1" aria-labelledby="addInsuranceCompanyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addInsuranceCompanyModalLabel">Add Insurance Company</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="company_name" class="form-label">Company Name</label>
+                            <input type="text" class="form-control" id="company_name" name="company_name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="contact_person" class="form-label">Contact Person</label>
+                            <input type="text" class="form-control" id="contact_person" name="contact_person" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="contact_number" class="form-label">Contact Number</label>
+                            <input type="text" class="form-control" id="contact_number" name="contact_number" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="company_email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="company_email" name="email" required>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label for="company_address" class="form-label">Address</label>
+                            <textarea class="form-control" id="company_address" name="address" rows="2" required></textarea>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label for="policy_details" class="form-label">Policy Details</label>
+                            <textarea class="form-control" id="policy_details" name="policy_details" rows="3" required></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" name="add_insurance_company" class="btn btn-primary">Add Company</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="editInsuranceCompanyModal" tabindex="-1" aria-labelledby="editInsuranceCompanyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editInsuranceCompanyModalLabel">Edit Insurance Company</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="edit_insurance_id" name="insurance_id">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_company_name" class="form-label">Company Name</label>
+                            <input type="text" class="form-control" id="edit_company_name" name="company_name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_contact_person" class="form-label">Contact Person</label>
+                            <input type="text" class="form-control" id="edit_contact_person" name="contact_person" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_contact_number" class="form-label">Contact Number</label>
+                            <input type="text" class="form-control" id="edit_contact_number" name="contact_number" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_company_email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="edit_company_email" name="email" required>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label for="edit_company_address" class="form-label">Address</label>
+                            <textarea class="form-control" id="edit_company_address" name="address" rows="2" required></textarea>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label for="edit_policy_details" class="form-label">Policy Details</label>
+                            <textarea class="form-control" id="edit_policy_details" name="policy_details" rows="3" required></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" name="update_insurance_company" class="btn btn-primary">Update Company</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Patient Insurance Modal -->
+<div class="modal fade" id="addPatientInsuranceModal" tabindex="-1" aria-labelledby="addPatientInsuranceModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addPatientInsuranceModalLabel">Assign Insurance to Patient</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="patient_id" class="form-label">Patient</label>
+                            <select class="form-control" id="patient_id" name="patient_id" required>
+                                <option value="">Select Patient</option>
+                                <?php
+                                $patient_query = mysqli_query($con, "SELECT pid, fname, lname FROM admissiontb ORDER BY fname, lname");
+                                while ($patient = mysqli_fetch_array($patient_query)) {
+                                    echo '<option value="' . $patient['pid'] . '">' . $patient['fname'] . ' ' . $patient['lname'] . '</option>';
+                                }
+                                ?>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="assign_insurance_id" class="form-label">Insurance Company</label>
+                            <select class="form-control" id="assign_insurance_id" name="insurance_id" required>
+                                <option value="">Select Insurance Company</option>
+                                <?php
+                                $insurance_query = mysqli_query($con, "SELECT insurance_id, company_name FROM insurance_companiestb ORDER BY company_name");
+                                while ($insurance = mysqli_fetch_array($insurance_query)) {
+                                    echo '<option value="' . $insurance['insurance_id'] . '">' . $insurance['company_name'] . '</option>';
+                                }
+                                ?>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="policy_number" class="form-label">Policy Number</label>
+                            <input type="text" class="form-control" id="policy_number" name="policy_number" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="coverage_percent" class="form-label">Coverage Percent (%)</label>
+                            <input type="number" step="0.01" min="0" max="100" class="form-control" id="coverage_percent" name="coverage_percent" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="start_date" class="form-label">Start Date</label>
+                            <input type="date" class="form-control" id="start_date" name="start_date" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="end_date" class="form-label">End Date (Optional)</label>
+                            <input type="date" class="form-control" id="end_date" name="end_date">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="insurance_status" class="form-label">Status</label>
+                            <select class="form-control" id="insurance_status" name="status" required>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" name="add_patient_insurance" class="btn btn-primary">Assign Insurance</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Patient Insurance Modal -->
+<div class="modal fade" id="editPatientInsuranceModal" tabindex="-1" aria-labelledby="editPatientInsuranceModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editPatientInsuranceModalLabel">Edit Patient Insurance Assignment</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="edit_patient_insurance_id" name="patient_insurance_id">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_patient_id" class="form-label">Patient</label>
+                            <select class="form-control" id="edit_patient_id" name="patient_id" required>
+                                <option value="">Select Patient</option>
+                                <?php
+                                $patient_query = mysqli_query($con, "SELECT pid, fname, lname FROM admissiontb ORDER BY fname, lname");
+                                while ($patient = mysqli_fetch_array($patient_query)) {
+                                    echo '<option value="' . $patient['pid'] . '">' . $patient['fname'] . ' ' . $patient['lname'] . '</option>';
+                                }
+                                ?>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_assign_insurance_id" class="form-label">Insurance Company</label>
+                            <select class="form-control" id="edit_assign_insurance_id" name="insurance_id" required>
+                                <option value="">Select Insurance Company</option>
+                                <?php
+                                $insurance_query = mysqli_query($con, "SELECT insurance_id, company_name FROM insurance_companiestb ORDER BY company_name");
+                                while ($insurance = mysqli_fetch_array($insurance_query)) {
+                                    echo '<option value="' . $insurance['insurance_id'] . '">' . $insurance['company_name'] . '</option>';
+                                }
+                                ?>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_policy_number" class="form-label">Policy Number</label>
+                            <input type="text" class="form-control" id="edit_policy_number" name="policy_number" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_coverage_percent" class="form-label">Coverage Percent (%)</label>
+                            <input type="number" step="0.01" min="0" max="100" class="form-control" id="edit_coverage_percent" name="coverage_percent" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_start_date" class="form-label">Start Date</label>
+                            <input type="date" class="form-control" id="edit_start_date" name="start_date" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_end_date" class="form-label">End Date (Optional)</label>
+                            <input type="date" class="form-control" id="edit_end_date" name="end_date">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_insurance_status" class="form-label">Status</label>
+                            <select class="form-control" id="edit_insurance_status" name="status" required>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" name="update_patient_insurance" class="btn btn-primary">Update Assignment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <div class="tab-pane fade" id="emergency-management" role="tabpanel" aria-labelledby="emergency-management-tab">
     <div class="glass-card p-4">
         <h4 class="text-dark mb-4">
             <i class="fas fa-exclamation-triangle me-2"></i>Emergency Access Requests
         </h4>
-        
+
         <?php
         $emergency_query = mysqli_query($con, "SELECT * FROM emergency_access_logs ORDER BY created_at DESC");
         $pending_count = mysqli_num_rows(mysqli_query($con, "SELECT * FROM emergency_access_logs WHERE status='pending'"));
@@ -1788,36 +2469,36 @@ if (isset($_POST['approve_emergency']) || isset($_POST['deny_emergency'])) {
     $request_id = $_POST['request_id'];
     $admin_username = $_SESSION['username'];
     $action = isset($_POST['approve_emergency']) ? 'approved' : 'denied';
-    
+
     if ($action == 'approved') {
         $one_time_token = bin2hex(random_bytes(32));
         $token_expires = date('Y-m-d H:i:s', strtotime('+1 hour'));
-        
-        $query = "UPDATE emergency_access_logs SET 
-                  status = 'approved', 
-                  handled_by = '$admin_username', 
+
+        $query = "UPDATE emergency_access_logs SET
+                  status = 'approved',
+                  handled_by = '$admin_username',
                   handled_at = NOW(),
                   one_time_token = '$one_time_token',
                   token_expires = '$token_expires',
                   auto_login_used = 0
                   WHERE id = '$request_id'";
-                  
+
         error_log("DEBUG: Approving emergency request ID: " . $request_id . " with token: " . $one_time_token);
     } else {
-        $query = "UPDATE emergency_access_logs SET 
-                  status = 'denied', 
-                  handled_by = '$admin_username', 
+        $query = "UPDATE emergency_access_logs SET
+                  status = 'denied',
+                  handled_by = '$admin_username',
                   handled_at = NOW()
                   WHERE id = '$request_id'";
     }
-    
+
     if (mysqli_query($con, $query)) {
         if ($action == 'approved') {
             $request_query = mysqli_query($con, "SELECT * FROM emergency_access_logs WHERE id = '$request_id'");
             $request = mysqli_fetch_assoc($request_query);
-            
+
             error_log("DEBUG: Emergency request approved - User: " . $request['staff_username'] . ", Token: " . $request['one_time_token']);
-            
+
             echo "<script>
                 alert('Emergency request approved!\\\\nUser: {$request['staff_username']}\\\\nThey can now login once without 2FA within 1 hour.');
             </script>";
@@ -1829,6 +2510,51 @@ if (isset($_POST['approve_emergency']) || isset($_POST['deny_emergency'])) {
     } else {
         echo "<script>alert('Error updating emergency request!');</script>";
         error_log("ERROR: Failed to update emergency request: " . mysqli_error($con));
+    }
+}
+
+// Insurance Company Management
+if (isset($_POST['add_insurance_company'])) {
+    $company_name = $_POST['company_name'];
+    $contact_person = $_POST['contact_person'];
+    $contact_number = $_POST['contact_number'];
+    $email = $_POST['email'];
+    $address = $_POST['address'];
+    $policy_details = $_POST['policy_details'];
+
+    $insert_query = "INSERT INTO insurance_companiestb (company_name, contact_person, contact_number, email, address, policy_details) VALUES ('$company_name', '$contact_person', '$contact_number', '$email', '$address', '$policy_details')";
+    if (mysqli_query($con, $insert_query)) {
+        echo "<script>alert('Insurance company added successfully!');</script>";
+    } else {
+        echo "<script>alert('Error adding insurance company.');</script>";
+    }
+}
+
+if (isset($_POST['update_insurance_company'])) {
+    $insurance_id = $_POST['insurance_id'];
+    $company_name = $_POST['company_name'];
+    $contact_person = $_POST['contact_person'];
+    $contact_number = $_POST['contact_number'];
+    $email = $_POST['email'];
+    $address = $_POST['address'];
+    $policy_details = $_POST['policy_details'];
+
+    $update_query = "UPDATE insurance_companiestb SET company_name='$company_name', contact_person='$contact_person', contact_number='$contact_number', email='$email', address='$address', policy_details='$policy_details' WHERE insurance_id='$insurance_id'";
+    if (mysqli_query($con, $update_query)) {
+        echo "<script>alert('Insurance company updated successfully!');</script>";
+    } else {
+        echo "<script>alert('Error updating insurance company.');</script>";
+    }
+}
+
+if (isset($_POST['delete_insurance_company'])) {
+    $insurance_id = $_POST['delete_insurance_id'];
+
+    $delete_query = "DELETE FROM insurance_companiestb WHERE insurance_id='$insurance_id'";
+    if (mysqli_query($con, $delete_query)) {
+        echo "<script>alert('Insurance company deleted successfully!');</script>";
+    } else {
+        echo "<script>alert('Error deleting insurance company.');</script>";
     }
 }
 ?>
@@ -1949,6 +2675,112 @@ document.querySelectorAll('.toggle-password').forEach(button => {
             alert('Please make sure passwords match!');
         }
     });
+</script>
+    <script>
+        // Initialize charts
+        document.addEventListener('DOMContentLoaded', function() {
+            // Admissions Chart
+            const admissionsCtx = document.getElementById('admissionsChart').getContext('2d');
+            const admissionsChart = new Chart(admissionsCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Monthly Admissions',
+                        data: [65, 59, 80, 81, 56, 72],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderWidth: 2,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Revenue Chart
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            const revenueChart = new Chart(revenueCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Revenue (₱)',
+                        data: [125000, 139000, 142000, 156000, 148000, 162000],
+                        backgroundColor: '#4facfe',
+                        borderColor: '#00f2fe',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        });
+
+        // Enhanced table filtering
+        function initTableFilters() {
+            $('.table-glass').each(function() {
+                let table = $(this);
+                let input = $('<input type="text" class="form-control mb-3" placeholder="Search...">');
+                table.before(input);
+                
+                input.on('keyup', function() {
+                    let value = $(this).val().toLowerCase();
+                    table.find('tbody tr').filter(function() {
+                        $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+                    });
+                });
+            });
+        }
+
+        // Initialize table filters when page loads
+        $(document).ready(function() {
+            initTableFilters();
+        });
+
+        // Loading states
+        function showLoading() {
+            $('body').append('<div class="loading-overlay"><div class="spinner-border text-primary"></div></div>');
+        }
+
+        function hideLoading() {
+            $('.loading-overlay').remove();
+        }
+
+        // Enhanced notifications
+        function showNotification(message, type = 'success') {
+            const notification = $(`
+                <div class="alert alert-${type} alert-dismissible fade show position-fixed" style="top:20px; right:20px; z-index:9999">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `);
+            $('body').append(notification);
+            setTimeout(() => notification.alert('close'), 5000);
+        }
+
+        // Your existing JavaScript functions
+        $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+            $('.nav-pills .nav-link').removeClass('active');
+            $(this).addClass('active');
+        });
 </script>
 </body>
 </html>

@@ -200,6 +200,7 @@ while ($lab = mysqli_fetch_array($lab_result)) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
         :root {
@@ -358,6 +359,59 @@ while ($lab = mysqli_fetch_array($lab_result)) {
         .tab-pane.show {
             display: block !important;
         }
+
+        /* Enhanced Professional Styles */
+        .quick-action-btn {
+            transition: all 0.3s ease;
+        }
+
+        .quick-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .trend-indicator {
+            font-size: 0.8em;
+            margin-left: 5px;
+        }
+
+        .trend-up { color: #28a745; }
+        .trend-down { color: #dc3545; }
+
+        .metric-card {
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+            text-align: center;
+        }
+
+        .activity-item {
+            padding: 10px;
+            border-left: 3px solid #667eea;
+            background: rgba(255,255,255,0.05);
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        .stat-card-enhanced {
+            border-radius: 15px;
+            padding: 25px;
+            color: white;
+            height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .stat-card-enhanced .d-flex {
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .stat-card-enhanced .icon-container {
+            font-size: 2.5rem;
+            opacity: 0.9;
+        }
     </style>
 </head>
 
@@ -412,105 +466,213 @@ while ($lab = mysqli_fetch_array($lab_result)) {
             <div class="col-lg-9 col-md-8">
                 <div class="tab-content" id="v-pills-tabContent">
                     <div class="tab-pane fade show active" id="v-pills-dashboard" role="tabpanel" aria-labelledby="v-pills-dashboard-tab">
-                        <div class="row g-4 mb-4">
-                            <div class="col-md-6 col-lg-3">
-                                <div class="stat-card" style="background: var(--primary-gradient);">
-                                    <i class="fas fa-procedures fa-3x mb-3"></i>
-                                    <h3>
-                                        <?php
-                                        $dname = $_SESSION['username'];
-                                        $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM admissiontb WHERE assigned_doctor='$dname' AND status != 'Discharged'");
-                                        $row = mysqli_fetch_assoc($result);
-                                        echo $row['total'];
-                                        ?>
-                                    </h3>
-                                    <p>My Patients</p>
+                        <!-- Quick Actions -->
+                        <div class="glass-card p-4 mb-4">
+                            <h5 class="text-dark mb-3">Quick Actions</h5>
+                            <div class="row g-2">
+                                <div class="col-auto">
+                                    <a href="#v-pills-patients" class="btn btn-outline-primary btn-sm quick-action-btn">
+                                        <i class="fas fa-procedures me-1"></i>View Patients
+                                    </a>
                                 </div>
-                            </div>
-                            <div class="col-md-6 col-lg-3">
-                                <div class="stat-card" style="background: var(--secondary-gradient);">
-                                    <i class="fas fa-stethoscope fa-3x mb-3"></i>
-                                    <h3>
-                                        <?php
-                                        $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM diagnosticstb WHERE doctor_name='$dname'");
-                                        $row = mysqli_fetch_assoc($result);
-                                        echo $row['total'];
-                                        ?>
-                                    </h3>
-                                    <p>Diagnostics Made</p>
+                                <div class="col-auto">
+                                    <a href="#v-pills-diagnostics" class="btn btn-outline-success btn-sm quick-action-btn">
+                                        <i class="fas fa-stethoscope me-1"></i>Add Diagnosis
+                                    </a>
                                 </div>
-                            </div>
-                            <div class="col-md-6 col-lg-3">
-                                <div class="stat-card" style="background: var(--warning-gradient);">
-                                    <i class="fas fa-flask fa-3x mb-3"></i>
-                                    <h3>
-                                        <?php
-                                        $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM labtesttb lt JOIN admissiontb a ON lt.pid = a.pid WHERE a.assigned_doctor='$dname'");
-                                        $row = mysqli_fetch_assoc($result);
-                                        echo $row['total'];
-                                        ?>
-                                    </h3>
-                                    <p>Lab Tests Ordered</p>
+                                <div class="col-auto">
+                                    <a href="#v-pills-lab-requests" class="btn btn-outline-warning btn-sm quick-action-btn">
+                                        <i class="fas fa-flask me-1"></i>Request Lab Test
+                                    </a>
                                 </div>
-                            </div>
-                            <div class="col-md-6 col-lg-3">
-                                <div class="stat-card" style="background: var(--success-gradient);">
-                                    <i class="fas fa-money-bill fa-3x mb-3"></i>
-                                    <h3>
-                                        <?php
-                                        $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM patient_chargstb pc JOIN admissiontb a ON pc.pid = a.pid WHERE a.assigned_doctor='$dname'");
-                                        $row = mysqli_fetch_assoc($result);
-                                        echo $row['total'];
-                                        ?>
-                                    </h3>
-                                    <p>Charges Applied</p>
+                                <div class="col-auto">
+                                    <a href="#v-pills-services" class="btn btn-outline-info btn-sm quick-action-btn">
+                                        <i class="fas fa-file-medical-alt me-1"></i>Manage Services
+                                    </a>
                                 </div>
                             </div>
                         </div>
-                        
+
+                        <!-- Enhanced Statistics -->
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-6 col-lg-3">
+                                <div class="stat-card-enhanced" style="background: var(--primary-gradient);">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h3>
+                                                <?php
+                                                $dname = $_SESSION['username'];
+                                                $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM admissiontb WHERE assigned_doctor='$dname' AND status != 'Discharged'");
+                                                $row = mysqli_fetch_assoc($result);
+                                                echo $row['total'];
+                                                ?>
+                                            </h3>
+                                            <p>My Patients</p>
+                                        </div>
+                                        <div class="icon-container">
+                                            <i class="fas fa-procedures"></i>
+                                        </div>
+                                    </div>
+                                    <small class="text-white-50">Active cases <i class="fas fa-arrow-up trend-indicator trend-up"></i></small>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="stat-card-enhanced" style="background: var(--secondary-gradient);">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h3>
+                                                <?php
+                                                $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM diagnosticstb WHERE doctor_name='$dname'");
+                                                $row = mysqli_fetch_assoc($result);
+                                                echo $row['total'];
+                                                ?>
+                                            </h3>
+                                            <p>Diagnostics Made</p>
+                                        </div>
+                                        <div class="icon-container">
+                                            <i class="fas fa-stethoscope"></i>
+                                        </div>
+                                    </div>
+                                    <small class="text-white-50">Total assessments <i class="fas fa-chart-line trend-indicator trend-up"></i></small>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="stat-card-enhanced" style="background: var(--warning-gradient);">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h3>
+                                                <?php
+                                                $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM labtesttb lt JOIN admissiontb a ON lt.pid = a.pid WHERE a.assigned_doctor='$dname'");
+                                                $row = mysqli_fetch_assoc($result);
+                                                echo $row['total'];
+                                                ?>
+                                            </h3>
+                                            <p>Lab Tests Ordered</p>
+                                        </div>
+                                        <div class="icon-container">
+                                            <i class="fas fa-flask"></i>
+                                        </div>
+                                    </div>
+                                    <small class="text-white-50">Tests requested <i class="fas fa-vial trend-indicator trend-up"></i></small>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="stat-card-enhanced" style="background: var(--success-gradient);">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h3>
+                                                <?php
+                                                $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM patient_chargstb pc JOIN admissiontb a ON pc.pid = a.pid WHERE a.assigned_doctor='$dname'");
+                                                $row = mysqli_fetch_assoc($result);
+                                                echo $row['total'];
+                                                ?>
+                                            </h3>
+                                            <p>Services Applied</p>
+                                        </div>
+                                        <div class="icon-container">
+                                            <i class="fas fa-file-medical-alt"></i>
+                                        </div>
+                                    </div>
+                                    <small class="text-white-50">Charges added <i class="fas fa-money-bill-wave trend-indicator trend-up"></i></small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Performance Metrics -->
                         <div class="glass-card p-4 mb-4">
-                            <h4 class="text-dark mb-4">
-                                <i class="fas fa-user-md me-2"></i>Doctor Dashboard
-                            </h4>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <p><strong>Doctor Name:</strong> Dr. <?php echo $doctor; ?></p>
-                                    <p><strong>Total Patients:</strong> 
-                                        <?php
-                                        $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM admissiontb WHERE assigned_doctor='$dname' AND status != 'Discharged'");
-                                        $row = mysqli_fetch_assoc($result);
-                                        echo $row['total'];
-                                        ?>
-                                    </p>
-                                    <p><strong>Diagnostics Today:</strong> 
-                                        <?php
-                                        $today = date('Y-m-d');
-                                        $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM diagnosticstb WHERE doctor_name='$dname' AND DATE(created_date) = '$today'");
-                                        $row = mysqli_fetch_assoc($result);
-                                        echo $row['total'];
-                                        ?>
-                                    </p>
+                            <h5 class="text-dark mb-3">Today's Overview</h5>
+                            <div class="row text-center">
+                                <div class="col-md-3">
+                                    <div class="metric-card">
+                                        <h3 class="text-primary">
+                                            <?php
+                                            $today = date('Y-m-d');
+                                            $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM diagnosticstb WHERE doctor_name='$dname' AND DATE(created_date) = '$today'");
+                                            $row = mysqli_fetch_assoc($result);
+                                            echo $row['total'];
+                                            ?>
+                                        </h3>
+                                        <small>Diagnostics Today</small>
+                                    </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <p><strong>Ready for Discharge:</strong> 
-                                        <?php
-                                        $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM admissiontb WHERE assigned_doctor='$dname' AND status='Ready for Discharge'");
-                                        $row = mysqli_fetch_assoc($result);
-                                        echo $row['total'];
-                                        ?>
-                                    </p>
-                                    <p><strong>Lab Tests Today:</strong> 
-                                        <?php
-                                        $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM labtesttb WHERE suggested_by_doctor='$dname' AND DATE(requested_date) = '$today'");
-                                        $row = mysqli_fetch_assoc($result);
-                                        echo $row['total'];
-                                        ?>
-                                    </p>
+                                <div class="col-md-3">
+                                    <div class="metric-card">
+                                        <h3 class="text-info">
+                                            <?php
+                                            $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM labtesttb WHERE suggested_by_doctor='$dname' AND DATE(requested_date) = '$today'");
+                                            $row = mysqli_fetch_assoc($result);
+                                            echo $row['total'];
+                                            ?>
+                                        </h3>
+                                        <small>Lab Tests Today</small>
+                                    </div>
                                 </div>
+                                <div class="col-md-3">
+                                    <div class="metric-card">
+                                        <h3 class="text-warning">
+                                            <?php
+                                            $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM admissiontb WHERE assigned_doctor='$dname' AND status='Ready for Discharge'");
+                                            $row = mysqli_fetch_assoc($result);
+                                            echo $row['total'];
+                                            ?>
+                                        </h3>
+                                        <small>Ready for Discharge</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="metric-card">
+                                        <h3 class="text-success">
+                                            <?php
+                                            $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM patient_chargstb pc JOIN admissiontb a ON pc.pid = a.pid WHERE a.assigned_doctor='$dname' AND DATE(pc.added_date) = '$today'");
+                                            $row = mysqli_fetch_assoc($result);
+                                            echo $row['total'];
+                                            ?>
+                                        </h3>
+                                        <small>Services Today</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activity -->
+                        <div class="glass-card p-4">
+                            <h5 class="text-dark mb-3">
+                                <i class="fas fa-list-alt me-2"></i>Recent Activity
+                            </h5>
+                            <div class="activity-feed">
+                                <?php
+                                $activity_query = mysqli_query($con, "
+                                    (SELECT 'diagnosis' as type, CONCAT('Diagnosis for patient ID: ', pid) as activity, created_date as date, created_time as time 
+                                     FROM diagnosticstb 
+                                     WHERE doctor_name='$dname' 
+                                     ORDER BY created_date DESC, created_time DESC 
+                                     LIMIT 3)
+                                    UNION ALL
+                                    (SELECT 'lab_test' as type, CONCAT('Lab test requested for patient ID: ', pid) as activity, requested_date as date, requested_time as time 
+                                     FROM labtesttb 
+                                     WHERE suggested_by_doctor='$dname' 
+                                     ORDER BY requested_date DESC, requested_time DESC 
+                                     LIMIT 3)
+                                    ORDER BY date DESC, time DESC 
+                                    LIMIT 5
+                                ");
+                                while($activity = mysqli_fetch_array($activity_query)) {
+                                    $badge_class = $activity['type'] == 'diagnosis' ? 'bg-primary' : 'bg-warning';
+                                    $icon = $activity['type'] == 'diagnosis' ? 'fa-stethoscope' : 'fa-flask';
+                                    echo '<div class="activity-item d-flex align-items-center">
+                                        <span class="badge ' . $badge_class . ' me-2"><i class="fas ' . $icon . ' me-1"></i>' . ucfirst($activity['type']) . '</span>
+                                        <span>' . $activity['activity'] . '</span>
+                                        <small class="text-muted ms-auto">' . date('M j, g:i A', strtotime($activity['date'] . ' ' . $activity['time'])) . '</small>
+                                    </div>';
+                                }
+                                ?>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Rest of your existing tab content remains exactly the same -->
                     <div class="tab-pane fade" id="v-pills-patients" role="tabpanel" aria-labelledby="v-pills-patients-tab">
+                        <!-- Your existing patients content remains unchanged -->
                         <div class="glass-card p-4">
                             <h4 class="text-dark mb-4">
                                 <i class="fas fa-procedures me-2"></i>My Assigned Patients
@@ -556,11 +718,11 @@ while ($lab = mysqli_fetch_array($lab_result)) {
                                                 <button type="button" class="btn btn-success btn-sm mb-1" data-toggle="modal" data-target="#addServiceModal-<?php echo $row['pid']; ?>">
                                                     <i class="fas fa-plus"></i> Add Service
                                                 </button>
-<?php if ($row['status'] !== 'Ready for Discharge'): ?>
+                                                <?php if ($row['status'] !== 'Ready for Discharge'): ?>
                                                 <button type="button" class="btn btn-warning btn-sm mb-1" onclick="markReady(<?php echo $row['pid']; ?>)">
                                                     <i class="fas fa-check"></i> Ready for Discharge
                                                 </button>
-<?php endif; ?>
+                                                <?php endif; ?>
                                                 <a href="prescribe.php?pid=<?php echo $row['pid']; ?>&fname=<?php echo urlencode($row['fname']); ?>&lname=<?php echo urlencode($row['lname']); ?>" class="btn btn-success btn-sm mb-1">
                                                     <i class="fas fa-prescription-bottle-alt"></i> Prescribe Medicine
                                                 </a>
@@ -572,6 +734,7 @@ while ($lab = mysqli_fetch_array($lab_result)) {
                             </div>
                         </div>
                     </div>
+
                     <div class="tab-pane fade" id="v-pills-diagnostics" role="tabpanel" aria-labelledby="v-pills-diagnostics-tab">
                         <div class="glass-card p-4">
                             <h4 class="text-dark mb-4">
@@ -1129,6 +1292,15 @@ while ($lab = mysqli_fetch_array($lab_result)) {
                 var target = $(this).attr('href');
                 $(target).addClass('show active');
             });
+            $('.quick-action-btn').on('click', function(e) {
+                e.preventDefault();
+                var target = $(this).attr('href');
+                $('.tab-pane').removeClass('show active');
+                $(target).addClass('show active');
+                $('#v-pills-tab a').removeClass('active').attr('aria-selected', 'false');
+                $('#v-pills-tab a[href="' + target + '"]').addClass('active').attr('aria-selected', 'true');
+            });
+
             $('.tab-pane').removeClass('show active');
             $('#v-pills-dashboard').addClass('show active');
             $('.modal').on('show.bs.modal', function () {

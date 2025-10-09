@@ -38,6 +38,11 @@ if (isset($_POST['register_admit_patient'])) {
     $age = (int)$_POST['age'];
     $address = mysqli_real_escape_string($con, $_POST['address']);
     $reason = mysqli_real_escape_string($con, $_POST['reason']);
+    $insurance_company = !empty($_POST['insurance_company']) ? mysqli_real_escape_string($con, $_POST['insurance_company']) : NULL;
+    $policy_number = !empty($_POST['policy_number']) ? mysqli_real_escape_string($con, $_POST['policy_number']) : NULL;
+    $coverage_percent = (float)($_POST['coverage_percent'] ?? 0);
+    $effective_date = !empty($_POST['effective_date']) ? mysqli_real_escape_string($con, $_POST['effective_date']) : NULL;
+    $expiry_date = !empty($_POST['expiry_date']) ? mysqli_real_escape_string($con, $_POST['expiry_date']) : NULL;
     $admission_date = date("Y-m-d");
     $admission_time = date("H:i:s");
     $form_data = [
@@ -50,7 +55,12 @@ if (isset($_POST['register_admit_patient'])) {
         'address' => $address,
         'reason' => $reason,
         'assigned_doctor' => $assigned_doctor,
-        'room_number' => $room_number
+        'room_number' => $room_number,
+        'insurance_company' => $insurance_company,
+        'policy_number' => $policy_number,
+        'coverage_percent' => $coverage_percent,
+        'effective_date' => $effective_date,
+        'expiry_date' => $expiry_date
     ];
     if (empty($email)) {
         $validation_errors['email'] = "Email is required.";
@@ -109,9 +119,20 @@ if (isset($_POST['register_admit_patient'])) {
     if (empty($validation_errors)) {
         $room_check_query = "SELECT pid FROM admissiontb WHERE room_number = '$room_number' AND status = 'Admitted'";
         $room_check_result = mysqli_query($con, $room_check_query);
-        
+
         if (mysqli_num_rows($room_check_result) > 0) {
             $validation_errors['room_number'] = "Room $room_number is already occupied. Please select a different room.";
+        }
+    }
+    if (!empty($insurance_company)) {
+        if (empty($policy_number)) {
+            $validation_errors['policy_number'] = "Policy number is required when insurance is selected.";
+        }
+        if ($coverage_percent <= 0 || $coverage_percent > 100) {
+            $validation_errors['coverage_percent'] = "Coverage percent must be between 1 and 100 when insurance is selected.";
+        }
+        if (!empty($effective_date) && !empty($expiry_date) && $effective_date > $expiry_date) {
+            $validation_errors['expiry_date'] = "Expiry date must be after effective date.";
         }
     }
     if (empty($validation_errors)) {
@@ -121,7 +142,15 @@ if (isset($_POST['register_admit_patient'])) {
         
         if (mysqli_query($con, $reg_query)) {
             $pid = mysqli_insert_id($con);
+            $insurance_insertion_success = true;
+            if (!empty($insurance_company) && !empty($policy_number) && $coverage_percent > 0) {
+                $insurance_query = "INSERT INTO patient_insurancetb (patient_id, insurance_id, policy_number, coverage_percent, start_date, end_date, status) VALUES ('$pid', '$insurance_company', '$policy_number', '$coverage_percent', '$effective_date', " . ($expiry_date ? "'$expiry_date'" : "NULL") . ", 'active')";
 
+                if (!mysqli_query($con, $insurance_query)) {
+                    $insurance_insertion_success = false;
+                    error_log("Insurance insertion failed: " . mysqli_error($con));
+                }
+            }
             $doctor_fee_query = "SELECT consultation_fee FROM doctortb WHERE username='$assigned_doctor'";
             $doctor_fee_result = mysqli_query($con, $doctor_fee_query);
             $doctor_fee_row = mysqli_fetch_array($doctor_fee_result);
@@ -129,25 +158,52 @@ if (isset($_POST['register_admit_patient'])) {
 
             $room_charge = 0;
             if (strpos($room_number, '101') !== false || strpos($room_number, '102') !== false || strpos($room_number, '103') !== false) {
-                $room_charge = 250; 
+                $room_charge = 250;
             } elseif (strpos($room_number, '201') !== false || strpos($room_number, '202') !== false || strpos($room_number, '203') !== false) {
-                $room_charge = 550; 
+                $room_charge = 550;
             } elseif (strpos($room_number, '301') !== false || strpos($room_number, '302') !== false) {
-                $room_charge = 500; 
+                $room_charge = 500;
             } elseif (strpos($room_number, '401') !== false || strpos($room_number, '402') !== false) {
-                $room_charge = 400; 
+                $room_charge = 400;
             }
 
             $total = $consultation_fee + $room_charge;
-            $bill_query = "INSERT INTO billtb (pid, consultation_fees, room_charges, lab_fees, medicine_fees, service_charges, total, status) VALUES ('$pid', '$consultation_fee', '$room_charge', 0, 0, 0, '$total', 'Unpaid')";
-            mysqli_query($con, $bill_query);
+            $insurance_covered = 0;
+            $patient_payable = $total;
 
-            echo "<script>
-                alert('Patient registered and admitted successfully!\nPatient ID: $pid\nRoom: $room_number\nAssigned Doctor: $assigned_doctor\nPatient can now login with email: $email');
-                // Clear form data after successful submission
-                window.location.href = 'nurse-panel.php#register-patient';
-            </script>";
-            $form_data = [];
+            if ($insurance_insertion_success && $coverage_percent > 0) {
+                $insurance_covered = $total * ($coverage_percent / 100);
+                $patient_payable = $total - $insurance_covered;
+            }
+
+            $bill_query = "INSERT INTO billtb (pid, consultation_fees, room_charges, lab_fees, medicine_fees, service_charges, total, insurance_covered, patient_payable, status) VALUES ('$pid', '$consultation_fee', '$room_charge', 0, 0, 0, '$total', '$insurance_covered', '$patient_payable', 'Unpaid')";
+
+            if (mysqli_query($con, $bill_query)) {
+                $insurance_message = "";
+                if (!empty($insurance_company) && $insurance_insertion_success) {
+                    if (is_array($insurance_companies) && !empty($insurance_companies)) {
+                        $key = array_search($insurance_company, array_column($insurance_companies, 'insurance_id'));
+                        if ($key !== false) {
+                            $company_name = $insurance_companies[$key]['company_name'];
+                            $insurance_message = "\nInsurance Assigned: {$company_name} ({$coverage_percent}% coverage)";
+                        } else {
+                            $insurance_message = "\nInsurance Assigned: Unknown Company ({$coverage_percent}% coverage)";
+                        }
+                    } else {
+                        $insurance_message = "\nInsurance Assigned: Company details unavailable ({$coverage_percent}% coverage)";
+                    }
+                } elseif (!empty($insurance_company) && !$insurance_insertion_success) {
+                    $insurance_message = "\nWarning: Insurance assignment failed, but patient was registered.";
+                }
+
+                $_SESSION['success_message'] = "Patient registered and admitted successfully!\nPatient ID: $pid\nRoom: $room_number\nAssigned Doctor: $assigned_doctor\nPatient can now login with email: $email" . $insurance_message;
+                $form_data = [];
+                 header("Location: nurse-panel.php#register-patient");
+            exit();
+            } else {
+                error_log("Billing insertion failed: " . mysqli_error($con));
+                echo "<script>alert('Patient registered but billing setup failed. Please contact administrator.\nPatient ID: $pid\nPatient can now login with email: $email');</script>";
+            }
         } else {
             echo "<script>alert('Error registering patient: " . mysqli_error($con) . "');</script>";
         }
@@ -195,10 +251,8 @@ if (isset($_POST['add_sample_medicines'])) {
         array("Levothyroxine 50mcg", 40, 12.60),
         array("Albuterol Inhaler", 28, 24.30)
     );
-
     $success_count = 0;
-    $error_count = 0;
-    
+    $error_count = 0; 
     foreach ($sample_medicines as $medicine) {
         $name = mysqli_real_escape_string($con, $medicine[0]);
         $qty = (int)$medicine[1];
@@ -212,11 +266,9 @@ if (isset($_POST['add_sample_medicines'])) {
         } else {
             $error_count++;
         }
-    }
-    
+    }    
     echo "<script>alert('Added $success_count sample medicines. $error_count failed.');</script>";
 }
-
 if (isset($_POST['update_medicine_quantity'])) {
     $medicine_id = (int)$_POST['medicine_id'];
     $new_quantity = (int)$_POST['edit_quantity'];
@@ -232,7 +284,6 @@ if (isset($_POST['update_medicine_quantity'])) {
         }
     }
 }
-
 if (isset($_POST['update_medicine_details'])) {
     $medicine_id = (int)$_POST['medicine_id'];
     $new_quantity = (int)$_POST['edit_quantity'];
@@ -252,7 +303,6 @@ if (isset($_POST['update_medicine_details'])) {
         }
     }
 }
-
 if (isset($_GET['delete_medicine'])) {
     $id = (int)$_GET['delete_medicine'];
 
@@ -354,6 +404,14 @@ foreach ($all_rooms as $room) {
     }
     
     $rooms_data[] = $room_info;
+}
+
+// Get insurance companies
+$insurance_companies = [];
+$insurance_query = "SELECT insurance_id, company_name FROM insurance_companiestb";
+$insurance_result = mysqli_query($con, $insurance_query);
+while ($insurance = mysqli_fetch_array($insurance_result)) {
+    $insurance_companies[] = $insurance;
 }
 
 ?>
@@ -500,6 +558,84 @@ foreach ($all_rooms as $room) {
             transform: translateY(-5px);
             box-shadow: 0 8px 25px rgba(0,0,0,0.15);
         }
+
+        /* Enhanced Professional Styles */
+        .quick-action-btn {
+            transition: all 0.3s ease;
+        }
+
+        .quick-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .trend-indicator {
+            font-size: 0.8em;
+            margin-left: 5px;
+        }
+
+        .trend-up { color: #28a745; }
+        .trend-down { color: #dc3545; }
+
+        .metric-card {
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+            text-align: center;
+        }
+
+        .activity-item {
+            padding: 10px;
+            border-left: 3px solid #667eea;
+            background: rgba(255,255,255,0.05);
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        .stat-card-enhanced {
+            border-radius: 15px;
+            padding: 25px;
+            color: white;
+            height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .stat-card-enhanced .d-flex {
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .stat-card-enhanced .icon-container {
+            font-size: 2.5rem;
+            opacity: 0.9;
+        }
+
+        .tab-content > .tab-pane {
+            display: none;
+        }
+        .tab-content > .active {
+            display: block;
+        }
+        .fade {
+            transition: opacity 0.15s linear;
+        }
+        .fade:not(.show) {
+            opacity: 0;
+        }
+        .fade.show {
+            opacity: 1;
+        }
+        .tab-pane {
+            display: none !important;
+        }
+        .tab-pane.active {
+            display: block !important;
+        }
+        .tab-pane.show {
+            display: block !important;
+        }
     </style>
 </head>
 
@@ -531,23 +667,23 @@ foreach ($all_rooms as $room) {
             <!-- Sidebar -->
             <div class="col-lg-3 col-md-4">
                 <div class="sidebar">
-                    <div class="nav flex-column nav-pills" role="tablist">
-                        <a class="nav-link active" role="tab" data-toggle="tab" href="#dashboard" aria-controls="dashboard" aria-selected="true" id="dashboard-tab">
+                    <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                        <a class="nav-link active" id="v-pills-dashboard-tab" data-toggle="pill" href="#v-pills-dashboard" role="tab" aria-controls="v-pills-dashboard" aria-selected="true">
                             <i class="fas fa-tachometer-alt me-2"></i>Dashboard
                         </a>
-                        <a class="nav-link" role="tab" data-toggle="tab" href="#register-patient" aria-controls="register-patient" aria-selected="false" id="register-patient-tab">
+                        <a class="nav-link" id="v-pills-register-patient-tab" data-toggle="pill" href="#v-pills-register-patient" role="tab" aria-controls="v-pills-register-patient" aria-selected="false">
                             <i class="fas fa-hospital-user me-2"></i>Register Patient
                         </a>
-                        <a class="nav-link" role="tab" data-toggle="tab" href="#patient-list" aria-controls="patient-list" aria-selected="false" id="patient-list-tab">
+                        <a class="nav-link" id="v-pills-patient-list-tab" data-toggle="pill" href="#v-pills-patient-list" role="tab" aria-controls="v-pills-patient-list" aria-selected="false">
                             <i class="fas fa-users me-2"></i>Patient List
                         </a>
-                        <a class="nav-link" role="tab" data-toggle="tab" href="#medicine-management" aria-controls="medicine-management" aria-selected="false" id="medicine-management-tab">
+                        <a class="nav-link" id="v-pills-medicine-management-tab" data-toggle="pill" href="#v-pills-medicine-management" role="tab" aria-controls="v-pills-medicine-management" aria-selected="false">
                             <i class="fas fa-pills me-2"></i>Manage Medicines
                         </a>
-                        <a class="nav-link" role="tab" data-toggle="tab" href="#patient-rounds" aria-controls="patient-rounds" aria-selected="false" id="patient-rounds-tab">
+                        <a class="nav-link" id="v-pills-patient-rounds-tab" data-toggle="pill" href="#v-pills-patient-rounds" role="tab" aria-controls="v-pills-patient-rounds" aria-selected="false">
                             <i class="fas fa-clock me-2"></i>Schedule Rounds
                         </a>
-                        <a class="nav-link" role="tab" data-toggle="tab" href="#room-management" aria-controls="room-management" aria-selected="false" id="room-management-tab">
+                        <a class="nav-link" id="v-pills-room-management-tab" data-toggle="pill" href="#v-pills-room-management" role="tab" aria-controls="v-pills-room-management" aria-selected="false">
                             <i class="fas fa-bed me-2"></i>Room Management
                         </a>
                     </div>
@@ -555,108 +691,335 @@ foreach ($all_rooms as $room) {
             </div>
             
             <div class="col-lg-9 col-md-8">
-                <div class="tab-content">
-                    <!-- Dashboard Tab -->
-                    <div class="tab-pane fade show active" id="dashboard" role="tabpanel" aria-labelledby="dashboard-tab">
-                        <div class="row g-4 mb-4">
-                            <div class="col-md-6 col-lg-3">
-                                <div class="stat-card" style="background: var(--primary-gradient);">
-                                    <i class="fas fa-hospital-user fa-3x mb-3"></i>
-                                    <h3><?php 
-                                        $query = mysqli_query($con, "SELECT COUNT(*) as total FROM admissiontb");
-                                        $row = mysqli_fetch_assoc($query);
-                                        echo $row['total'] ?? 0;
-                                    ?></h3>
-                                    <p>Total Admissions</p>
+                <div class="tab-content" id="v-pills-tabContent">
+                    <div class="tab-pane fade show active" id="v-pills-dashboard" role="tabpanel" aria-labelledby="v-pills-dashboard-tab">
+                        <div class="glass-card p-4 mb-4">
+                            <h5 class="text-dark mb-3">Quick Actions</h5>
+                            <div class="row g-2">
+                                <div class="col-auto">
+                                    <a href="#v-pills-register-patient" class="btn btn-outline-primary btn-sm quick-action-btn">
+                                        <i class="fas fa-hospital-user me-1"></i>Register Patient
+                                    </a>
                                 </div>
-                            </div>
-                            <div class="col-md-6 col-lg-3">
-                                <div class="stat-card" style="background: var(--secondary-gradient);">
-                                    <i class="fas fa-user-injured fa-3x mb-3"></i>
-                                    <h3><?php 
-                                        $query = mysqli_query($con, "SELECT COUNT(*) as total FROM admissiontb WHERE status='Admitted'");
-                                        $row = mysqli_fetch_assoc($query);
-                                        echo $row['total'] ?? 0;
-                                    ?></h3>
-                                    <p>Active Patients</p>
+                                <div class="col-auto">
+                                    <a href="#v-pills-medicine-management" class="btn btn-outline-success btn-sm quick-action-btn">
+                                        <i class="fas fa-pills me-1"></i>Manage Medicines
+                                    </a>
                                 </div>
-                            </div>
-                            <div class="col-md-6 col-lg-3">
-                                <div class="stat-card" style="background: var(--warning-gradient);">
-                                    <i class="fas fa-pills fa-3x mb-3"></i>
-                                    <h3><?php 
-                                        $query = mysqli_query($con, "SELECT COUNT(*) as total FROM medicinetb");
-                                        $row = mysqli_fetch_assoc($query);
-                                        echo $row['total'] ?? 0;
-                                    ?></h3>
-                                    <p>Available Medicines</p>
+                                <div class="col-auto">
+                                    <a href="#v-pills-patient-rounds" class="btn btn-outline-warning btn-sm quick-action-btn">
+                                        <i class="fas fa-clock me-1"></i>Schedule Rounds
+                                    </a>
                                 </div>
-                            </div>
-                            <div class="col-md-6 col-lg-3">
-                                <div class="stat-card" style="background: var(--success-gradient);">
-                                    <i class="fas fa-bed fa-3x mb-3"></i>
-                                    <h3><?php 
-                                        $query = mysqli_query($con, "SELECT COUNT(DISTINCT room_number) as total FROM admissiontb WHERE status='Admitted'");
-                                        $row = mysqli_fetch_assoc($query);
-                                        echo $row['total'] ?? 0;
-                                    ?></h3>
-                                    <p>Occupied Rooms</p>
+                                <div class="col-auto">
+                                    <a href="#v-pills-room-management" class="btn btn-outline-info btn-sm quick-action-btn">
+                                        <i class="fas fa-bed me-1"></i>Room Management
+                                    </a>
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="glass-card p-4">
-                            <h4 class="text-dark mb-4">
-                                <i class="fas fa-clock me-2"></i>Today's Scheduled Rounds
-                            </h4>
-                            <div class="table-responsive">
-                                <table class="table table-glass">
-                                    <thead>
-                                        <tr>
-                                            <th>Patient ID</th>
-                                            <th>Patient Name</th>
-                                            <th>Scheduled Time</th>
-                                            <th>Status</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-6 col-lg-3">
+                                <div class="stat-card-enhanced" style="background: var(--primary-gradient);">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h3>
+                                                <?php 
+                                                $query = mysqli_query($con, "SELECT COUNT(*) as total FROM admissiontb");
+                                                $row = mysqli_fetch_assoc($query);
+                                                echo $row['total'] ?? 0;
+                                                ?>
+                                            </h3>
+                                            <p>Total Admissions</p>
+                                        </div>
+                                        <div class="icon-container">
+                                            <i class="fas fa-hospital-user"></i>
+                                        </div>
+                                    </div>
+                                    <small class="text-white-50">All-time registrations <i class="fas fa-chart-line trend-indicator trend-up"></i></small>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="stat-card-enhanced" style="background: var(--secondary-gradient);">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h3>
+                                                <?php 
+                                                $query = mysqli_query($con, "SELECT COUNT(*) as total FROM admissiontb WHERE status='Admitted'");
+                                                $row = mysqli_fetch_assoc($query);
+                                                echo $row['total'] ?? 0;
+                                                ?>
+                                            </h3>
+                                            <p>Active Patients</p>
+                                        </div>
+                                        <div class="icon-container">
+                                            <i class="fas fa-user-injured"></i>
+                                        </div>
+                                    </div>
+                                    <small class="text-white-50">Currently admitted <i class="fas fa-procedures trend-indicator trend-up"></i></small>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="stat-card-enhanced" style="background: var(--warning-gradient);">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h3>
+                                                <?php 
+                                                $query = mysqli_query($con, "SELECT COUNT(*) as total FROM medicinetb");
+                                                $row = mysqli_fetch_assoc($query);
+                                                echo $row['total'] ?? 0;
+                                                ?>
+                                            </h3>
+                                            <p>Available Medicines</p>
+                                        </div>
+                                        <div class="icon-container">
+                                            <i class="fas fa-pills"></i>
+                                        </div>
+                                    </div>
+                                    <small class="text-white-50">In inventory <i class="fas fa-capsules trend-indicator trend-up"></i></small>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="stat-card-enhanced" style="background: var(--success-gradient);">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h3>
+                                                <?php 
+                                                $query = mysqli_query($con, "SELECT COUNT(DISTINCT room_number) as total FROM admissiontb WHERE status='Admitted'");
+                                                $row = mysqli_fetch_assoc($query);
+                                                echo $row['total'] ?? 0;
+                                                ?>
+                                            </h3>
+                                            <p>Occupied Rooms</p>
+                                        </div>
+                                        <div class="icon-container">
+                                            <i class="fas fa-bed"></i>
+                                        </div>
+                                    </div>
+                                    <small class="text-white-50">Currently in use <i class="fas fa-door-closed trend-indicator trend-up"></i></small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="glass-card p-4 mb-4">
+                            <h5 class="text-dark mb-3">Today's Overview</h5>
+                            <div class="row text-center">
+                                <div class="col-md-3">
+                                    <div class="metric-card">
+                                        <h3 class="text-primary">
+                                            <?php
+                                            $today = date('Y-m-d');
+                                            $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM admissiontb WHERE DATE(admission_date) = '$today'");
+                                            $row = mysqli_fetch_assoc($result);
+                                            echo $row['total'];
+                                            ?>
+                                        </h3>
+                                        <small>New Admissions Today</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="metric-card">
+                                        <h3 class="text-info">
+                                            <?php
+                                            $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM patient_roundstb WHERE round_date = '$today'");
+                                            $row = mysqli_fetch_assoc($result);
+                                            echo $row['total'];
+                                            ?>
+                                        </h3>
+                                        <small>Rounds Scheduled</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="metric-card">
+                                        <h3 class="text-warning">
+                                            <?php
+                                            $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM patient_roundstb WHERE round_date = '$today' AND status = 'Completed'");
+                                            $row = mysqli_fetch_assoc($result);
+                                            echo $row['total'];
+                                            ?>
+                                        </h3>
+                                        <small>Rounds Completed</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="metric-card">
+                                        <h3 class="text-success">
+                                            <?php
+                                            $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM medicinetb WHERE quantity < 10");
+                                            $row = mysqli_fetch_assoc($result);
+                                            echo $row['total'];
+                                            ?>
+                                        </h3>
+                                        <small>Low Stock Medicines</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-4">
+                            <!-- Today's Rounds -->
+                            <div class="col-lg-8">
+                                <div class="glass-card p-4 h-100">
+                                    <h5 class="text-dark mb-3">
+                                        <i class="fas fa-clock me-2"></i>Today's Scheduled Rounds
+                                    </h5>
+                                    <div class="table-responsive">
+                                        <table class="table table-glass">
+                                            <thead>
+                                                <tr>
+                                                    <th>Patient</th>
+                                                    <th>Scheduled Time</th>
+                                                    <th>Status</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <?php
+                                                mysqli_data_seek($rounds_result, 0);
+                                                $has_rounds = false;
+                                                while ($round = mysqli_fetch_array($rounds_result)) {
+                                                    $has_rounds = true;
+                                                    $status_class = "";
+                                                    $status_badge = "";
+                                                    if ($round['status'] == 'Completed') {
+                                                        $status_class = "round-status-completed";
+                                                        $status_badge = "success";
+                                                    } elseif ($round['status'] == 'Missed') {
+                                                        $status_class = "round-status-missed";
+                                                        $status_badge = "danger";
+                                                    } else {
+                                                        $status_class = "round-status-scheduled";
+                                                        $status_badge = "warning";
+                                                    }
+                                                    
+                                                    echo "<tr class='$status_class'>
+                                                        <td>
+                                                            <strong>ID: {$round['pid']}</strong><br>
+                                                            <small>{$round['fname']} {$round['lname']}</small>
+                                                        </td>
+                                                        <td>{$round['round_time']}</td>
+                                                        <td><span class='badge badge-$status_badge'>{$round['status']}</span></td>
+                                                        <td>
+                                                            <button type='button' class='btn btn-info btn-sm' data-toggle='modal' data-target='#updateRoundModal{$round['id']}'>
+                                                                <i class='fas fa-edit'></i> Update
+                                                            </button>
+                                                            <a href='nurse-panel.php?delete_round={$round['id']}' class='btn btn-danger btn-sm' onclick='return confirm(\"Are you sure you want to delete this round?\")'>
+                                                                <i class='fas fa-trash'></i>
+                                                            </a>
+                                                        </td>
+                                                    </tr>";
+                                                }
+                                                
+                                                if (!$has_rounds) {
+                                                    echo "<tr><td colspan='4' class='text-center text-muted py-4'>No rounds scheduled for today</td></tr>";
+                                                }
+                                                ?>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="glass-card p-4 mb-4">
+                                    <h5 class="text-dark mb-3">
+                                        <i class="fas fa-list-alt me-2"></i>Recent Activity
+                                    </h5>
+                                    <div class="activity-feed">
                                         <?php
-                                        mysqli_data_seek($rounds_result, 0); // Reset pointer for table display
-                                        while ($round = mysqli_fetch_array($rounds_result)) {
-                                            $status_class = "";
-                                            if ($round['status'] == 'Completed') {
-                                                $status_class = "round-status-completed";
-                                            } elseif ($round['status'] == 'Missed') {
-                                                $status_class = "round-status-missed";
-                                            } else {
-                                                $status_class = "round-status-scheduled";
+$activity_query = mysqli_query($con, '
+    (SELECT \'admission\' as type, CONCAT(\'New admission: \', fname, \' \', lname) as activity, admission_date as date, \'00:00:00\' as time
+     FROM admissiontb
+     ORDER BY admission_date DESC
+     LIMIT 3)
+    UNION ALL
+    (SELECT \'medicine\' as type, CONCAT(\'Medicine added: \', medicine_name) as activity, NULL as date, NULL as time
+     FROM medicinetb
+     ORDER BY id DESC
+     LIMIT 3)
+    UNION ALL
+    (SELECT \'round\' as type, CONCAT(\'Round scheduled for patient ID: \', pid) as activity, round_date as date, round_time as time
+     FROM patient_roundstb
+     ORDER BY round_date DESC, round_time DESC
+     LIMIT 3)
+    ORDER BY date DESC, time DESC
+    LIMIT 5
+');
+                                        
+                                        while($activity = mysqli_fetch_array($activity_query)) {
+                                            $badge_class = '';
+                                            $icon = '';
+                                            switch($activity['type']) {
+                                                case 'admission':
+                                                    $badge_class = 'bg-primary';
+                                                    $icon = 'fa-user-plus';
+                                                    break;
+                                                case 'medicine':
+                                                    $badge_class = 'bg-success';
+                                                    $icon = 'fa-pills';
+                                                    break;
+                                                case 'round':
+                                                    $badge_class = 'bg-warning';
+                                                    $icon = 'fa-clock';
+                                                    break;
                                             }
                                             
-                                            echo "<tr class='$status_class'>
-                                                <td>{$round['pid']}</td>
-                                                <td>{$round['fname']} {$round['lname']}</td>
-                                                <td>{$round['round_time']}</td>
-                                                <td>{$round['status']}</td>
-                                                <td>
-                                                    <button type='button' class='btn btn-info btn-sm' data-toggle='modal' data-target='#updateRoundModal{$round['id']}'>Update</button>
-                                                    <a href='nurse-panel.php?delete_round={$round['id']}' class='btn btn-danger btn-sm'>Delete</a>
-                                                </td>
-                                            </tr>";
+                                            echo '<div class="activity-item d-flex align-items-center">
+                                                <span class="badge ' . $badge_class . ' me-2"><i class="fas ' . $icon . ' me-1"></i>' . ucfirst($activity['type']) . '</span>
+                                                <span class="flex-grow-1">' . $activity['activity'] . '</span>
+                                                <small class="text-muted">' . date('g:i A', strtotime($activity['time'])) . '</small>
+                                            </div>';
+                                        }
+                                        
+                                        if (mysqli_num_rows($activity_query) === 0) {
+                                            echo '<div class="text-center text-muted py-3">No recent activity</div>';
                                         }
                                         ?>
-                                    </tbody>
-                                </table>
+                                    </div>
+                                </div>
+                                <div class="glass-card p-4">
+                                    <h5 class="text-dark mb-3">
+                                        <i class="fas fa-exclamation-triangle me-2 text-warning"></i>Low Stock Alert
+                                    </h5>
+                                    <div class="low-stock-list">
+                                        <?php
+                                        $low_stock_query = mysqli_query($con, "
+                                            SELECT medicine_name, quantity 
+                                            FROM medicinetb 
+                                            WHERE quantity < 10 
+                                            ORDER BY quantity ASC 
+                                            LIMIT 5
+                                        ");                                       
+                                        $low_stock_count = 0;
+                                        while($medicine = mysqli_fetch_array($low_stock_query)) {
+                                            $low_stock_count++;
+                                            $stock_class = $medicine['quantity'] == 0 ? 'text-danger' : 'text-warning';
+                                            $stock_text = $medicine['quantity'] == 0 ? 'Out of Stock' : 'Low Stock';
+                                            
+                                            echo '<div class="d-flex justify-content-between align-items-center mb-2 p-2 border-bottom">
+                                                <div>
+                                                    <strong>' . $medicine['medicine_name'] . '</strong><br>
+                                                    <small class="' . $stock_class . '">' . $stock_text . ' - ' . $medicine['quantity'] . ' remaining</small>
+                                                </div>
+                                                <a href="#v-pills-medicine-management" class="btn btn-outline-warning btn-sm">
+                                                    <i class="fas fa-sync-alt"></i>
+                                                </a>
+                                            </div>';
+                                        }
+                                        
+                                        if ($low_stock_count === 0) {
+                                            echo '<div class="text-center text-muted py-3">All medicines are well stocked</div>';
+                                        }
+                                        ?>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="tab-pane fade" id="register-patient" role="tabpanel" aria-labelledby="register-patient-tab">
+                    <div class="tab-pane fade" id="v-pills-register-patient" role="tabpanel" aria-labelledby="v-pills-register-patient-tab">
                         <div class="glass-card p-4">
                             <h4 class="text-dark mb-4">
                                 <i class="fas fa-hospital-user me-2"></i>Register New Patient
                             </h4>
-                            <form class="form-group" method="post" action="nurse-panel.php#register-patient" id="patientRegistrationForm">
+                            <form class="form-group" method="post" action="nurse-panel.php#v-pills-register-patient" id="patientRegistrationForm">
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label for="fname">First Name:</label>
@@ -726,6 +1089,50 @@ foreach ($all_rooms as $room) {
                                                 name="reason" rows="3" placeholder="Describe the medical condition or reason for admission" required><?php echo htmlspecialchars($form_data['reason'] ?? ''); ?></textarea>
                                         <?php if (isset($validation_errors['reason'])): ?>
                                             <div class="invalid-feedback"><?php echo $validation_errors['reason']; ?></div>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="insurance_company">Insurance Company (Optional):</label>
+                                        <select name="insurance_company" class="form-control <?php echo isset($validation_errors['insurance_company']) ? 'is-invalid' : ''; ?>">
+                                            <option value="">No Insurance</option>
+                                            <?php foreach ($insurance_companies as $insurance): ?>
+                                                <option value="<?php echo $insurance['insurance_id']; ?>" <?php echo (($form_data['insurance_company'] ?? '') == $insurance['insurance_id']) ? 'selected' : ''; ?>><?php echo $insurance['company_name']; ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                        <?php if (isset($validation_errors['insurance_company'])): ?>
+                                            <div class="invalid-feedback"><?php echo $validation_errors['insurance_company']; ?></div>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="policy_number">Policy Number:</label>
+                                        <input type="text" class="form-control <?php echo isset($validation_errors['policy_number']) ? 'is-invalid' : ''; ?>"
+                                            name="policy_number" value="<?php echo htmlspecialchars($form_data['policy_number'] ?? ''); ?>">
+                                        <?php if (isset($validation_errors['policy_number'])): ?>
+                                            <div class="invalid-feedback"><?php echo $validation_errors['policy_number']; ?></div>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="coverage_percent">Coverage Percent (0-100):</label>
+                                        <input type="number" class="form-control <?php echo isset($validation_errors['coverage_percent']) ? 'is-invalid' : ''; ?>"
+                                            name="coverage_percent" min="0" max="100" step="0.01" value="<?php echo htmlspecialchars($form_data['coverage_percent'] ?? ''); ?>">
+                                        <?php if (isset($validation_errors['coverage_percent'])): ?>
+                                            <div class="invalid-feedback"><?php echo $validation_errors['coverage_percent']; ?></div>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="effective_date">Effective Date:</label>
+                                        <input type="date" class="form-control <?php echo isset($validation_errors['effective_date']) ? 'is-invalid' : ''; ?>"
+                                            name="effective_date" value="<?php echo htmlspecialchars($form_data['effective_date'] ?? ''); ?>">
+                                        <?php if (isset($validation_errors['effective_date'])): ?>
+                                            <div class="invalid-feedback"><?php echo $validation_errors['effective_date']; ?></div>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="expiry_date">Expiry Date (Optional):</label>
+                                        <input type="date" class="form-control <?php echo isset($validation_errors['expiry_date']) ? 'is-invalid' : ''; ?>"
+                                            name="expiry_date" value="<?php echo htmlspecialchars($form_data['expiry_date'] ?? ''); ?>">
+                                        <?php if (isset($validation_errors['expiry_date'])): ?>
+                                            <div class="invalid-feedback"><?php echo $validation_errors['expiry_date']; ?></div>
                                         <?php endif; ?>
                                     </div>
                                     <div class="col-md-6 mb-3">
@@ -835,12 +1242,21 @@ foreach ($all_rooms as $room) {
                                     </div>
                                 </div>
                             </form>
+
+                            <?php if (isset($_SESSION['success_message'])): ?>
+                            <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+                                <strong>Success!</strong> <?php echo nl2br(htmlspecialchars($_SESSION['success_message'])); ?>
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <?php unset($_SESSION['success_message']); ?>
+                            <?php endif; ?>
                         </div>
                     </div>
 
-                    
                     <!-- Patient List Tab -->
-                    <div class="tab-pane fade" id="patient-list" role="tabpanel" aria-labelledby="patient-list-tab">
+                    <div class="tab-pane fade" id="v-pills-patient-list" role="tabpanel" aria-labelledby="v-pills-patient-list-tab">
                         <div class="glass-card p-4">
                             <h4 class="text-dark mb-4">
                                 <i class="fas fa-users me-2"></i>Patient List
@@ -888,7 +1304,7 @@ foreach ($all_rooms as $room) {
                     </div>
                     
                     <!-- Medicine Management Tab -->
-                    <div class="tab-pane fade" id="medicine-management" role="tabpanel" aria-labelledby="medicine-management-tab">
+                    <div class="tab-pane fade" id="v-pills-medicine-management" role="tabpanel" aria-labelledby="v-pills-medicine-management-tab">
                         <div class="glass-card p-4">
                             <h4 class="text-dark mb-4">
                                 <i class="fas fa-pills me-2"></i>Medicine Management
@@ -950,7 +1366,7 @@ foreach ($all_rooms as $room) {
                                             <h5>Medicine Inventory</h5>
                                             <?php                        
                                             if (!empty($medicine_table)) {
-                                                mysqli_data_seek($medicine_result, 0); // Reset pointer for table display
+                                                mysqli_data_seek($medicine_result, 0);
                                                 
                                                 if ($medicine_result && mysqli_num_rows($medicine_result) > 0) {
                                                     echo '<table class="table table-hover table-striped">
@@ -1003,9 +1419,7 @@ while ($row = mysqli_fetch_array($medicine_result)) {
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Patient Rounds Tab -->
-                    <div class="tab-pane fade" id="patient-rounds" role="tabpanel" aria-labelledby="patient-rounds-tab">
+                    <div class="tab-pane fade" id="v-pills-patient-rounds" role="tabpanel" aria-labelledby="v-pills-patient-rounds-tab">
                         <div class="glass-card p-4">
                             <h4 class="text-dark mb-4">
                                 <i class="fas fa-clock me-2"></i>Schedule Patient Rounds
@@ -1104,9 +1518,7 @@ while ($row = mysqli_fetch_array($medicine_result)) {
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Room Management Tab -->
-                    <div class="tab-pane fade" id="room-management" role="tabpanel" aria-labelledby="room-management-tab">
+                    <div class="tab-pane fade" id="v-pills-room-management" role="tabpanel" aria-labelledby="v-pills-room-management-tab">
                         <div class="glass-card p-4">
                             <h4 class="text-dark mb-4">
                                 <i class="fas fa-bed me-2"></i>Room Management
@@ -1217,8 +1629,6 @@ while ($row = mysqli_fetch_array($medicine_result)) {
             </div>
         </div>
     </div>
-    
-    <!-- Modals for Today's Rounds -->
     <?php foreach($today_rounds_data as $round): ?>
     <div class="modal fade" id="updateRoundModal<?php echo $round['id']; ?>" tabindex="-1" role="dialog" aria-labelledby="updateRoundModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -1250,8 +1660,6 @@ while ($row = mysqli_fetch_array($medicine_result)) {
         </div>
     </div>
     <?php endforeach; ?>
-    
-    <!-- Modals for Medicine Quantity Editing -->
 <?php foreach($medicine_data as $row): ?>
 <div class="modal fade" id="editMedicineModal<?php echo $row['id']; ?>" tabindex="-1" role="dialog" aria-labelledby="editMedicineModalLabel<?php echo $row['id']; ?>" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -1304,11 +1712,38 @@ while ($row = mysqli_fetch_array($medicine_result)) {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-    $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-        $('.nav-pills .nav-link').removeClass('active');
-        $(this).addClass('active');
+    $(document).ready(function() {
+        $('#v-pills-tab a').on('click', function (e) {
+            e.preventDefault();
+            $(this).tab('show');
+            $('.tab-pane').removeClass('show active');
+            var target = $(this).attr('href');
+            $(target).addClass('show active');
+        });
+        
+        $('.quick-action-btn').on('click', function(e) {
+            e.preventDefault();
+            var target = $(this).attr('href');
+            $('.tab-pane').removeClass('show active');
+            $(target).addClass('show active');
+            $('#v-pills-tab a').removeClass('active').attr('aria-selected', 'false');
+            $('#v-pills-tab a[href="' + target + '"]').addClass('active').attr('aria-selected', 'true');
+        });
+        $('.tab-pane').removeClass('show active');
+        $('#v-pills-dashboard').addClass('show active');
+        $('.sidebar').css('pointer-events', 'auto');
+        $('.quick-action-btn').css('pointer-events', 'auto');       
+        $('.modal').on('show.bs.modal', function () {
+            $('body').addClass('modal-open');
+        });           
+        $('.modal').on('hidden.bs.modal', function () {
+            $('body').removeClass('modal-open');
+            $('.modal-backdrop').remove();
+        });
+        $('.modal .close, .modal [data-dismiss="modal"]').on('click', function() {
+            $(this).closest('.modal').modal('hide');
+        });
     });
-
     function updateDoctorFee() {
         var select = document.getElementById('assigned_doctor');
         var feeInput = document.getElementById('doctor_fee');
@@ -1316,7 +1751,6 @@ while ($row = mysqli_fetch_array($medicine_result)) {
         var fee = selectedOption.getAttribute('data-fee');
         feeInput.value = fee ? '₱' + fee : '';
     }
-
     function checkRoomAvailability() {
         var roomSelect = document.getElementById('room_number');
         var selectedOption = roomSelect.options[roomSelect.selectedIndex];
@@ -1332,125 +1766,99 @@ while ($row = mysqli_fetch_array($medicine_result)) {
             messageElement.innerHTML = '<span class="text-success">This room is available for admission.</span>';
         }
     }
-
     document.addEventListener('DOMContentLoaded', function() {
         checkRoomAvailability();
-    });
+    });    
     function setupPasswordToggle(passwordFieldId, toggleButtonId) {
-    const passwordField = document.getElementById(passwordFieldId);
-    const toggleButton = document.getElementById(toggleButtonId);
-    const eyeIcon = toggleButton.querySelector('i');
-    
-    toggleButton.addEventListener('click', function() {
-        // Toggle the type attribute
-        const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
-        passwordField.setAttribute('type', type);
+        const passwordField = document.getElementById(passwordFieldId);
+        const toggleButton = document.getElementById(toggleButtonId);
+        const eyeIcon = toggleButton.querySelector('i');
         
-        // Toggle the eye icon
-        if (type === 'text') {
-            eyeIcon.classList.remove('fa-eye');
-            eyeIcon.classList.add('fa-eye-slash');
-            toggleButton.setAttribute('title', 'Hide password');
-        } else {
-            eyeIcon.classList.remove('fa-eye-slash');
-            eyeIcon.classList.add('fa-eye');
-            toggleButton.setAttribute('title', 'Show password');
-        }
-    });
-}
-    $(document).ready(function() {
-        $('.modal').on('show.bs.modal', function () {
-            $('body').addClass('modal-open');
+        toggleButton.addEventListener('click', function() {
+            const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordField.setAttribute('type', type);
+            
+            if (type === 'text') {
+                eyeIcon.classList.remove('fa-eye');
+                eyeIcon.classList.add('fa-eye-slash');
+                toggleButton.setAttribute('title', 'Hide password');
+            } else {
+                eyeIcon.classList.remove('fa-eye-slash');
+                eyeIcon.classList.add('fa-eye');
+                toggleButton.setAttribute('title', 'Show password');
+            }
         });
-        
-        $('.modal').on('hidden.bs.modal', function () {
-            $('body').removeClass('modal-open');
-            $('.modal-backdrop').remove();
-        });
-    
-        $('.modal .close, .modal [data-dismiss="modal"]').on('click', function() {
-            $(this).closest('.modal').modal('hide');
-        });
-    });
+    }   
     document.getElementById('password').addEventListener('input', function() {
-    const password = this.value;
-    const requirements = {
-        length: password.length >= 8,
-        uppercase: /[A-Z]/.test(password),
-        lowercase: /[a-z]/.test(password),
-        number: /[0-9]/.test(password),
-        special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
-    };
-    for (const [key, met] of Object.entries(requirements)) {
-        const element = document.getElementById(key);
-        if (met) {
-            element.classList.remove('text-muted');
-            element.classList.add('text-success');
-        } else {
-            element.classList.remove('text-success');
-            element.classList.add('text-muted');
+        const password = this.value;
+        const requirements = {
+            length: password.length >= 8,
+            uppercase: /[A-Z]/.test(password),
+            lowercase: /[a-z]/.test(password),
+            number: /[0-9]/.test(password),
+            special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+        };
+        
+        for (const [key, met] of Object.entries(requirements)) {
+            const element = document.getElementById(key);
+            if (met) {
+                element.classList.remove('text-muted');
+                element.classList.add('text-success');
+            } else {
+                element.classList.remove('text-success');
+                element.classList.add('text-muted');
+            }
         }
-    }
-});
+    });    
     document.getElementById('cpassword').addEventListener('input', function() {
-    const password = document.getElementById('password').value;
-    const confirmPassword = this.value;
-    const messageElement = document.getElementById('passwordMatchMessage');
-    
-    if (confirmPassword === '') {
-        messageElement.textContent = '';
-        messageElement.className = 'form-text text-muted';
-    } else if (password === confirmPassword) {
-        messageElement.textContent = 'Passwords match!';
-        messageElement.className = 'form-text text-success';
-    } else {
-        messageElement.textContent = 'Passwords do not match!';
-        messageElement.className = 'form-text text-danger';
-    }
-});
+        const password = document.getElementById('password').value;
+        const confirmPassword = this.value;
+        const messageElement = document.getElementById('passwordMatchMessage');
+        
+        if (confirmPassword === '') {
+            messageElement.textContent = '';
+            messageElement.className = 'form-text text-muted';
+        } else if (password === confirmPassword) {
+            messageElement.textContent = 'Passwords match!';
+            messageElement.className = 'form-text text-success';
+        } else {
+            messageElement.textContent = 'Passwords do not match!';
+            messageElement.className = 'form-text text-danger';
+        }
+    });   
     document.getElementById('patientRegistrationForm').addEventListener('submit', function(e) {
-    const password = document.getElementById('password').value;
-    const confirmPassword = document.getElementById('cpassword').value;
-    
-    // Basic client-side validation
-    if (password !== confirmPassword) {
-        e.preventDefault();
-        alert('Passwords do not match. Please check your entries.');
-        return false;
-    }
-    
-    // Check password strength
-    const requirements = {
-        length: password.length >= 8,
-        uppercase: /[A-Z]/.test(password),
-        lowercase: /[a-z]/.test(password),
-        number: /[0-9]/.test(password),
-        special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
-    };
-    
-    const allMet = Object.values(requirements).every(met => met);
-    if (!allMet) {
-        e.preventDefault();
-        alert('Please ensure your password meets all the requirements.');
-        return false;
-    }
-    
-    return true;
-});
-document.addEventListener('DOMContentLoaded', function() {
-    setupPasswordToggle('password', 'togglePassword');
-    setupPasswordToggle('cpassword', 'toggleConfirmPassword');
-    
-    updateDoctorFee();
-    checkRoomAvailability();
-    
-    // If there are validation errors, scroll to the form
-    <?php if (!empty($validation_errors)): ?>
-        document.getElementById('register-patient-tab').click();
-        window.location.hash = 'register-patient';
-    <?php endif; ?>
-});
-
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('cpassword').value;        
+        if (password !== confirmPassword) {
+            e.preventDefault();
+            alert('Passwords do not match. Please check your entries.');
+            return false;
+        }       
+        const requirements = {
+            length: password.length >= 8,
+            uppercase: /[A-Z]/.test(password),
+            lowercase: /[a-z]/.test(password),
+            number: /[0-9]/.test(password),
+            special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+        };       
+        const allMet = Object.values(requirements).every(met => met);
+        if (!allMet) {
+            e.preventDefault();
+            alert('Please ensure your password meets all the requirements.');
+            return false;
+        }       
+        return true;
+    });   
+    document.addEventListener('DOMContentLoaded', function() {
+        setupPasswordToggle('password', 'togglePassword');
+        setupPasswordToggle('cpassword', 'toggleConfirmPassword');       
+        updateDoctorFee();
+        checkRoomAvailability();        
+        <?php if (!empty($validation_errors)): ?>
+            document.getElementById('v-pills-register-patient-tab').click();
+            window.location.hash = 'v-pills-register-patient';
+        <?php endif; ?>
+    });
     </script>
 </body>
 </html>

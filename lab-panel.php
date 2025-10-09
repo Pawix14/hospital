@@ -24,6 +24,40 @@ $completed_tests = mysqli_fetch_array($completed_tests_result)['completed'];
 $revenue_query = "SELECT SUM(price) as revenue FROM labtesttb WHERE status='Completed'";
 $revenue_result = mysqli_query($con, $revenue_query);
 $revenue = mysqli_fetch_array($revenue_result)['revenue'] ?? 0;
+$today = date('Y-m-d');
+$today_tests_query = "SELECT COUNT(*) as total FROM labtesttb WHERE DATE(requested_date) = '$today'";
+$today_tests_result = mysqli_query($con, $today_tests_query);
+$today_tests = mysqli_fetch_array($today_tests_result)['total'];
+$today_completed_query = "SELECT COUNT(*) as completed FROM labtesttb WHERE status='Completed' AND DATE(completed_date) = '$today'";
+$today_completed_result = mysqli_query($con, $today_completed_query);
+$today_completed = mysqli_fetch_array($today_completed_result)['completed'];
+$today_revenue_query = "SELECT SUM(price) as revenue FROM labtesttb WHERE status='Completed' AND DATE(completed_date) = '$today'";
+$today_revenue_result = mysqli_query($con, $today_revenue_query);
+$today_revenue = mysqli_fetch_array($today_revenue_result)['revenue'] ?? 0;
+$emergency_tests_query = "SELECT COUNT(*) as emergency FROM labtesttb WHERE priority='Emergency' AND status != 'Completed'";
+$emergency_tests_result = mysqli_query($con, $emergency_tests_query);
+$emergency_tests = mysqli_fetch_array($emergency_tests_result)['emergency'];
+$urgent_tests_query = "SELECT COUNT(*) as urgent FROM labtesttb WHERE priority='Urgent' AND status != 'Completed'";
+$urgent_tests_result = mysqli_query($con, $urgent_tests_query);
+$urgent_tests = mysqli_fetch_array($urgent_tests_result)['urgent'];
+$total_equipment = 15;
+$operational_equipment = 12;
+$maintenance_equipment = 3;
+$recent_activity_query = "
+    (SELECT 'test_request' as type, CONCAT('New test: ', test_name, ' for Patient ID: ', pid) as activity, requested_date as date, requested_time as time
+     FROM labtesttb
+     ORDER BY requested_date DESC, requested_time DESC
+     LIMIT 3)
+    UNION ALL
+    (SELECT 'test_completed' as type, CONCAT('Completed: ', test_name) as activity, completed_date as date, '00:00:00' as time
+     FROM labtesttb
+     WHERE status='Completed'
+     ORDER BY completed_date DESC
+     LIMIT 3)
+    ORDER BY date DESC, time DESC
+    LIMIT 5
+";
+$recent_activity_result = mysqli_query($con, $recent_activity_query);
 
 if (isset($_POST['accept_test'])) {
     $id = $_POST['test_id'];
@@ -201,6 +235,94 @@ if (isset($_POST['reject_test'])) {
         .badge-success { background-color: #28a745; }
         .badge-danger { background-color: #dc3545; }
         .badge-secondary { background-color: #6c757d; }
+        .quick-action-btn {
+            transition: all 0.3s ease;
+        }
+
+        .quick-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .trend-indicator {
+            font-size: 0.8em;
+            margin-left: 5px;
+        }
+
+        .trend-up { color: #28a745; }
+        .trend-down { color: #dc3545; }
+
+        .metric-card {
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+            text-align: center;
+        }
+
+        .activity-item {
+            padding: 10px;
+            border-left: 3px solid #667eea;
+            background: rgba(255,255,255,0.05);
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        .stat-card-enhanced {
+            border-radius: 15px;
+            padding: 25px;
+            color: white;
+            height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .stat-card-enhanced .d-flex {
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .stat-card-enhanced .icon-container {
+            font-size: 2.5rem;
+            opacity: 0.9;
+        }
+
+        .priority-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        .priority-emergency { background-color: #dc3545; }
+        .priority-urgent { background-color: #fd7e14; }
+        .priority-normal { background-color: #20c997; }
+
+        .tab-content > .tab-pane {
+            display: none;
+        }
+        .tab-content > .active {
+            display: block;
+        }
+        .fade {
+            transition: opacity 0.15s linear;
+        }
+        .fade:not(.show) {
+            opacity: 0;
+        }
+        .fade.show {
+            opacity: 1;
+        }
+        .tab-pane {
+            display: none !important;
+        }
+        .tab-pane.active {
+            display: block !important;
+        }
+        .tab-pane.show {
+            display: block !important;
+        }
     </style>
 </head>
 
@@ -227,115 +349,363 @@ if (isset($_POST['reject_test'])) {
             <h2>Welcome back, <?php echo $lab_user; ?>!</h2>
             <p>Laboratory Dashboard - Manage lab tests, results, and quality control</p>
         </div>
-
         <div class="row">
-            <!-- Sidebar -->
             <div class="col-lg-3 col-md-4">
                 <div class="sidebar">
-                    <div class="nav flex-column nav-pills" role="tablist">
-                        <a class="nav-link active" role="tab" data-toggle="tab" href="#dashboard" aria-controls="dashboard" aria-selected="true" id="dashboard-tab">
+                    <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                        <a class="nav-link active" id="v-pills-dashboard-tab" data-toggle="pill" href="#v-pills-dashboard" role="tab" aria-controls="v-pills-dashboard" aria-selected="true">
                             <i class="fas fa-tachometer-alt me-2"></i>Dashboard
                         </a>
-                        <a class="nav-link" role="tab" data-toggle="tab" href="#lab-tests" aria-controls="lab-tests" aria-selected="false" id="lab-tests-tab">
+                        <a class="nav-link" id="v-pills-lab-tests-tab" data-toggle="pill" href="#v-pills-lab-tests" role="tab" aria-controls="v-pills-lab-tests" aria-selected="false">
                             <i class="fas fa-vials me-2"></i>Lab Tests
+                        </a>
+                        <a class="nav-link" id="v-pills-equipment-tab" data-toggle="pill" href="#v-pills-equipment" role="tab" aria-controls="v-pills-equipment" aria-selected="false">
+                            <i class="fas fa-cogs me-2"></i>Equipment
+                        </a>
+                        <a class="nav-link" id="v-pills-quality-control-tab" data-toggle="pill" href="#v-pills-quality-control" role="tab" aria-controls="v-pills-quality-control" aria-selected="false">
+                            <i class="fas fa-check-circle me-2"></i>Quality Control
+                        </a>
+                        <a class="nav-link" id="v-pills-reports-tab" data-toggle="pill" href="#v-pills-reports" role="tab" aria-controls="v-pills-reports" aria-selected="false">
+                            <i class="fas fa-chart-bar me-2"></i>Reports
                         </a>
                     </div>
                 </div>
-            </div>
-            
+            </div>          
             <div class="col-lg-9 col-md-8">
-                <div class="tab-content">
-                    <!-- Dashboard Tab -->
-                    <div class="tab-pane fade show active" id="dashboard" role="tabpanel" aria-labelledby="dashboard-tab">
-                        <div class="row g-4 mb-4">
-                            <div class="col-md-6 col-lg-3">
-                                <div class="stat-card" style="background: var(--primary-gradient);">
-                                    <i class="fas fa-vials fa-3x mb-3"></i>
-                                    <h3><?php echo $total_tests; ?></h3>
-                                    <p>Total Lab Tests</p>
+                <div class="tab-content" id="v-pills-tabContent">
+                    <div class="tab-pane fade show active" id="v-pills-dashboard" role="tabpanel" aria-labelledby="v-pills-dashboard-tab">
+                        <div class="glass-card p-4 mb-4">
+                            <h5 class="text-dark mb-3">Quick Actions</h5>
+                            <div class="row g-2">
+                                <div class="col-auto">
+                                    <a href="#v-pills-lab-tests" class="btn btn-outline-primary btn-sm quick-action-btn">
+                                        <i class="fas fa-vials me-1"></i>Manage Tests
+                                    </a>
                                 </div>
-                            </div>
-                            <div class="col-md-6 col-lg-3">
-                                <div class="stat-card" style="background: var(--secondary-gradient);">
-                                    <i class="fas fa-hourglass-half fa-3x mb-3"></i>
-                                    <h3><?php echo $pending_tests; ?></h3>
-                                    <p>Pending Tests</p>
+                                <div class="col-auto">
+                                    <a href="#v-pills-equipment" class="btn btn-outline-success btn-sm quick-action-btn">
+                                        <i class="fas fa-cogs me-1"></i>Equipment Status
+                                    </a>
                                 </div>
-                            </div>
-                            <div class="col-md-6 col-lg-3">
-                                <div class="stat-card" style="background: var(--warning-gradient);">
-                                    <i class="fas fa-check-circle fa-3x mb-3"></i>
-                                    <h3><?php echo $completed_tests; ?></h3>
-                                    <p>Completed Tests</p>
+                                <div class="col-auto">
+                                    <a href="#v-pills-quality-control" class="btn btn-outline-warning btn-sm quick-action-btn">
+                                        <i class="fas fa-check-circle me-1"></i>Quality Control
+                                    </a>
                                 </div>
-                            </div>
-                            <div class="col-md-6 col-lg-3">
-                                <div class="stat-card" style="background: var(--success-gradient);">
-                                    <i class="fas fa-dollar-sign fa-3x mb-3"></i>
-                                    <h3>₱<?php echo number_format($revenue, 2); ?></h3>
-                                    <p>Total Revenue</p>
+                                <div class="col-auto">
+                                    <a href="#v-pills-reports" class="btn btn-outline-info btn-sm quick-action-btn">
+                                        <i class="fas fa-chart-bar me-1"></i>View Reports
+                                    </a>
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="glass-card p-4">
-                            <h4 class="text-dark mb-4">
-                                <i class="fas fa-clock me-2"></i>Today's Lab Activity
-                            </h4>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="card border-0 shadow-lg h-100" style="background: rgba(255,255,255,0.95); border-radius: 15px;">
-                                        <div class="card-body text-center p-4">
-                                            <div class="mb-3">
-                                                <i class="fa fa-microscope fa-3x text-primary"></i>
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-6 col-lg-3">
+                                <div class="stat-card-enhanced" style="background: var(--primary-gradient);">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h3><?php echo $total_tests; ?></h3>
+                                            <p>Total Lab Tests</p>
+                                        </div>
+                                        <div class="icon-container">
+                                            <i class="fas fa-vials"></i>
+                                        </div>
+                                    </div>
+                                    <small class="text-white-50">All-time tests <i class="fas fa-chart-line trend-indicator trend-up"></i></small>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="stat-card-enhanced" style="background: var(--secondary-gradient);">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h3><?php echo $pending_tests; ?></h3>
+                                            <p>Pending Tests</p>
+                                        </div>
+                                        <div class="icon-container">
+                                            <i class="fas fa-hourglass-half"></i>
+                                        </div>
+                                    </div>
+                                    <small class="text-white-50">Awaiting processing <i class="fas fa-clock trend-indicator trend-up"></i></small>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="stat-card-enhanced" style="background: var(--warning-gradient);">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h3><?php echo $completed_tests; ?></h3>
+                                            <p>Completed Tests</p>
+                                        </div>
+                                        <div class="icon-container">
+                                            <i class="fas fa-check-circle"></i>
+                                        </div>
+                                    </div>
+                                    <small class="text-white-50">Successfully processed <i class="fas fa-tasks trend-indicator trend-up"></i></small>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="stat-card-enhanced" style="background: var(--success-gradient);">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h3>₱<?php echo number_format($revenue, 2); ?></h3>
+                                            <p>Total Revenue</p>
+                                        </div>
+                                        <div class="icon-container">
+                                            <i class="fas fa-dollar-sign"></i>
+                                        </div>
+                                    </div>
+                                    <small class="text-white-50">From completed tests <i class="fas fa-chart-line trend-indicator trend-up"></i></small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="glass-card p-4 mb-4">
+                            <h5 class="text-dark mb-3">Today's Overview</h5>
+                            <div class="row text-center">
+                                <div class="col-md-3">
+                                    <div class="metric-card">
+                                        <h3 class="text-primary"><?php echo $today_tests; ?></h3>
+                                        <small>Tests Requested Today</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="metric-card">
+                                        <h3 class="text-info"><?php echo $today_completed; ?></h3>
+                                        <small>Completed Today</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="metric-card">
+                                        <h3 class="text-warning"><?php echo $pending_tests; ?></h3>
+                                        <small>Pending Tests</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="metric-card">
+                                        <h3 class="text-success">₱<?php echo number_format($today_revenue, 2); ?></h3>
+                                        <small>Today's Revenue</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-4">
+                            <div class="col-lg-8">
+                                <div class="glass-card p-4 h-100">
+                                    <h5 class="text-dark mb-3">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>Priority Tests Requiring Attention
+                                    </h5>
+                                    <div class="table-responsive">
+                                        <table class="table table-glass">
+                                            <thead>
+                                                <tr>
+                                                    <th>Test ID</th>
+                                                    <th>Patient</th>
+                                                    <th>Test Name</th>
+                                                    <th>Priority</th>
+                                                    <th>Requested</th>
+                                                    <th>Status</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <?php
+                                                $priority_query = "SELECT l.*, a.fname, a.lname 
+                                                                  FROM labtesttb l 
+                                                                  JOIN admissiontb a ON l.pid = a.pid 
+                                                                  WHERE l.status IN ('Pending', 'Accepted') 
+                                                                  AND l.priority IN ('Emergency', 'Urgent')
+                                                                  ORDER BY 
+                                                                  CASE l.priority 
+                                                                      WHEN 'Emergency' THEN 1 
+                                                                      WHEN 'Urgent' THEN 2 
+                                                                  END,
+                                                                  l.requested_date DESC, l.requested_time DESC
+                                                                  LIMIT 5";
+                                                $priority_result = mysqli_query($con, $priority_query);
+                                                $has_priority = false;
+                                                
+                                                while ($row = mysqli_fetch_array($priority_result)) {
+                                                    $has_priority = true;
+                                                    $status_class = '';
+                                                    switch($row['status']) {
+                                                        case 'Pending': $status_class = 'badge-warning'; break;
+                                                        case 'Accepted': $status_class = 'badge-info'; break;
+                                                        case 'Completed': $status_class = 'badge-success'; break;
+                                                        case 'Rejected': $status_class = 'badge-danger'; break;
+                                                        case 'Denied': $status_class = 'badge-secondary'; break;
+                                                    }
+                                                    
+                                                    $priority_class = '';
+                                                    $priority_indicator = '';
+                                                    switch($row['priority']) {
+                                                        case 'Normal': 
+                                                            $priority_class = 'badge-secondary'; 
+                                                            $priority_indicator = 'priority-normal';
+                                                            break;
+                                                        case 'Urgent': 
+                                                            $priority_class = 'badge-warning'; 
+                                                            $priority_indicator = 'priority-urgent';
+                                                            break;
+                                                        case 'Emergency': 
+                                                            $priority_class = 'badge-danger'; 
+                                                            $priority_indicator = 'priority-emergency';
+                                                            break;
+                                                    }
+                                                    
+                                                    echo "<tr>
+                                                        <td><strong>#{$row['id']}</strong></td>
+                                                        <td>{$row['fname']} {$row['lname']}</td>
+                                                        <td>{$row['test_name']}</td>
+                                                        <td>
+                                                            <span class='priority-indicator {$priority_indicator}'></span>
+                                                            <span class='badge {$priority_class}'>{$row['priority']}</span>
+                                                        </td>
+                                                        <td>{$row['requested_date']}</td>
+                                                        <td><span class='badge {$status_class}'>{$row['status']}</span></td>
+                                                        <td>";
+                                                    
+                                                    if ($row['status'] == 'Pending') {
+                                                        echo "<button class='btn btn-success btn-sm mb-1' data-toggle='modal' data-target='#acceptModal-{$row['id']}'>
+                                                                <i class='fa fa-check'></i> Accept
+                                                              </button>";
+                                                    } elseif ($row['status'] == 'Accepted') {
+                                                        echo "<button class='btn btn-primary btn-sm' data-toggle='modal' data-target='#completeModal-{$row['id']}'>
+                                                                <i class='fa fa-flask'></i> Complete
+                                                              </button>";
+                                                    }
+                                                    
+                                                    echo "</td></tr>";
+                                                }
+                                                
+                                                if (!$has_priority) {
+                                                    echo "<tr><td colspan='7' class='text-center text-muted py-4'>No priority tests requiring immediate attention</td></tr>";
+                                                }
+                                                ?>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-4">
+                                <div class="glass-card p-4 mb-4">
+                                    <h5 class="text-dark mb-3">
+                                        <i class="fas fa-list-alt me-2"></i>Recent Activity
+                                    </h5>
+                                    <div class="activity-feed">
+                                        <?php
+                                        $has_activity = false;
+                                        while($activity = mysqli_fetch_array($recent_activity_result)) {
+                                            $has_activity = true;
+                                            $badge_class = '';
+                                            $icon = '';
+                                            switch($activity['type']) {
+                                                case 'test_request':
+                                                    $badge_class = 'bg-primary';
+                                                    $icon = 'fa-vials';
+                                                    break;
+                                                case 'test_completed':
+                                                    $badge_class = 'bg-success';
+                                                    $icon = 'fa-check-circle';
+                                                    break;
+                                            }
+                                            
+                                            $time_display = ($activity['time'] != '00:00:00') ? date('g:i A', strtotime($activity['time'])) : '';
+                                            
+                                            echo '<div class="activity-item d-flex align-items-center">
+                                                <span class="badge ' . $badge_class . ' me-2"><i class="fas ' . $icon . ' me-1"></i>' . ucfirst(str_replace('_', ' ', $activity['type'])) . '</span>
+                                                <span class="flex-grow-1 small">' . $activity['activity'] . '</span>
+                                                <small class="text-muted">' . $time_display . '</small>
+                                            </div>';
+                                        }
+                                        
+                                        if (!$has_activity) {
+                                            echo '<div class="text-center text-muted py-3">No recent activity</div>';
+                                        }
+                                        ?>
+                                    </div>
+                                </div>
+                                <div class="glass-card p-4">
+                                    <h5 class="text-dark mb-3">
+                                        <i class="fas fa-cogs me-2 text-info"></i>Equipment Status
+                                    </h5>
+                                    <div class="equipment-status">
+                                        <div class="d-flex justify-content-between align-items-center mb-2 p-2 border-bottom">
+                                            <div>
+                                                <strong>Total Equipment</strong><br>
+                                                <small class="text-muted">All laboratory devices</small>
                                             </div>
-                                            <h5 class="fw-bold mb-3" style="color: #2c3e50;">Lab Test Management</h5>
-                                            <p class="text-muted mb-3">Process and manage laboratory tests</p>
-                                            <button class="btn btn-primary fw-bold" onclick="$('#lab-tests-tab').click()">
-                                                <i class="fa fa-flask me-1"></i>Manage Tests
-                                            </button>
+                                            <span class="badge badge-primary"><?php echo $total_equipment; ?></span>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center mb-2 p-2 border-bottom">
+                                            <div>
+                                                <strong>Operational</strong><br>
+                                                <small class="text-muted">Ready for use</small>
+                                            </div>
+                                            <span class="badge badge-success"><?php echo $operational_equipment; ?></span>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center mb-2 p-2 border-bottom">
+                                            <div>
+                                                <strong>Under Maintenance</strong><br>
+                                                <small class="text-muted">Requires service</small>
+                                            </div>
+                                            <span class="badge badge-warning"><?php echo $maintenance_equipment; ?></span>
+                                        </div>
+                                        <div class="text-center mt-3">
+                                            <a href="#v-pills-equipment" class="btn btn-outline-info btn-sm">
+                                                <i class="fas fa-cogs me-1"></i>Manage Equipment
+                                            </a>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="card border-0 shadow-lg h-100" style="background: rgba(255,255,255,0.95); border-radius: 15px;">
-                                        <div class="card-body text-center p-4">
-                                            <div class="mb-3">
-                                                <i class="fa fa-chart-bar fa-3x text-info"></i>
-                                            </div>
-                                            <h5 class="fw-bold mb-3" style="color: #2c3e50;">Today's Summary</h5>
-                                            <div class="row text-center">
-                                                <div class="col-6">
-                                                    <h6 class="text-primary fw-bold">
-                                                        <?php
-                                                        $today = date('Y-m-d');
-                                                        $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM labtesttb WHERE DATE(requested_date) = '$today'");
-                                                        $row = mysqli_fetch_assoc($result);
-                                                        echo $row['total'];
-                                                        ?>
-                                                    </h6>
-                                                    <small class="text-muted">Today's Tests</small>
-                                                </div>
-                                                <div class="col-6">
-                                                    <h6 class="text-warning fw-bold">
-                                                        <?php
-                                                        $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM labtesttb WHERE status='Completed' AND DATE(completed_date) = '$today'");
-                                                        $row = mysqli_fetch_assoc($result);
-                                                        echo $row['total'];
-                                                        ?>
-                                                    </h6>
-                                                    <small class="text-muted">Completed Today</small>
-                                                </div>
-                                            </div>
-                                        </div>
+                            </div>
+                        </div>
+
+                        <!-- Test Statistics Breakdown -->
+                        <div class="glass-card p-4 mt-4">
+                            <h5 class="text-dark mb-3">
+                                <i class="fas fa-chart-pie me-2"></i>Test Statistics Breakdown
+                            </h5>
+                            <div class="row text-center">
+                                <div class="col-md-2">
+                                    <div class="metric-card">
+                                        <h3 class="text-warning"><?php echo $pending_tests; ?></h3>
+                                        <small>Pending</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="metric-card">
+                                        <h3 class="text-info"><?php echo $accepted_tests; ?></h3>
+                                        <small>Accepted</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="metric-card">
+                                        <h3 class="text-success"><?php echo $completed_tests; ?></h3>
+                                        <small>Completed</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="metric-card">
+                                        <h3 class="text-danger"><?php echo $emergency_tests; ?></h3>
+                                        <small>Emergency</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="metric-card">
+                                        <h3 class="text-warning"><?php echo $urgent_tests; ?></h3>
+                                        <small>Urgent</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="metric-card">
+                                        <h3 class="text-primary">₱<?php echo number_format($today_revenue, 2); ?></h3>
+                                        <small>Today's Revenue</small>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Lab Tests Tab -->
-                    <div class="tab-pane fade" id="lab-tests" role="tabpanel" aria-labelledby="lab-tests-tab">
+                    <div class="tab-pane fade" id="v-pills-lab-tests" role="tabpanel" aria-labelledby="v-pills-lab-tests-tab">
                         <div class="glass-card p-4">
                             <h4 class="text-dark mb-4">
                                 <i class="fas fa-vials me-2"></i>Lab Test Management
@@ -431,12 +801,192 @@ if (isset($_POST['reject_test'])) {
                             </div>
                         </div>
                     </div>
+                    <div class="tab-pane fade" id="v-pills-equipment" role="tabpanel" aria-labelledby="v-pills-equipment-tab">
+                        <div class="glass-card p-4">
+                            <h4 class="text-dark mb-4">
+                                <i class="fas fa-cogs me-2"></i>Equipment Management
+                            </h4>
+                            <div class="equipment-status">
+                                <div class="d-flex justify-content-between align-items-center mb-2 p-2 border-bottom">
+                                    <div>
+                                        <strong>Total Equipment</strong><br>
+                                        <small class="text-muted">All laboratory devices</small>
+                                    </div>
+                                    <span class="badge badge-primary"><?php echo $total_equipment; ?></span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-2 p-2 border-bottom">
+                                    <div>
+                                        <strong>Operational</strong><br>
+                                        <small class="text-muted">Ready for use</small>
+                                    </div>
+                                    <span class="badge badge-success"><?php echo $operational_equipment; ?></span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-2 p-2 border-bottom">
+                                    <div>
+                                        <strong>Under Maintenance</strong><br>
+                                        <small class="text-muted">Requires service</small>
+                                    </div>
+                                    <span class="badge badge-warning"><?php echo $maintenance_equipment; ?></span>
+                                </div>
+                                <div class="text-center mt-3">
+                                    <a href="#v-pills-equipment" class="btn btn-outline-info btn-sm">
+                                        <i class="fas fa-cogs me-1"></i>Manage Equipment
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="v-pills-quality-control" role="tabpanel" aria-labelledby="v-pills-quality-control-tab">
+                        <div class="glass-card p-4">
+                            <h4 class="text-dark mb-4">
+                                <i class="fas fa-check-circle me-2"></i>Quality Control
+                            </h4>
+                            <div class="table-responsive">
+                                <table class="table table-glass table-hover table-striped">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th>QC ID</th>
+                                            <th>Test Name</th>
+                                            <th>Control Level</th>
+                                            <th>Result</th>
+                                            <th>Date</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php
+                                        $quality_control_data = [
+                                            ['id' => 1, 'test_name' => 'Glucose', 'control_level' => 'Level 1', 'result' => '5.2 mmol/L', 'date' => '2024-06-01', 'status' => 'Pass'],
+                                            ['id' => 2, 'test_name' => 'Cholesterol', 'control_level' => 'Level 2', 'result' => '190 mg/dL', 'date' => '2024-06-01', 'status' => 'Pass'],
+                                            ['id' => 3, 'test_name' => 'Hemoglobin', 'control_level' => 'Level 1', 'result' => '13.5 g/dL', 'date' => '2024-06-01', 'status' => 'Fail'],
+                                            ['id' => 4, 'test_name' => 'Calcium', 'control_level' => 'Level 2', 'result' => '9.8 mg/dL', 'date' => '2024-06-01', 'status' => 'Pass'],
+                                        ];
+                                        foreach ($quality_control_data as $qc) {
+                                            $status_class = ($qc['status'] == 'Pass') ? 'badge-success' : 'badge-danger';
+                                            echo "<tr>
+                                                <td>#{$qc['id']}</td>
+                                                <td>{$qc['test_name']}</td>
+                                                <td>{$qc['control_level']}</td>
+                                                <td>{$qc['result']}</td>
+                                                <td>{$qc['date']}</td>
+                                                <td><span class='badge {$status_class}'>{$qc['status']}</span></td>
+                                            </tr>";
+                                        }
+                                        ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="v-pills-reports" role="tabpanel" aria-labelledby="v-pills-reports-tab">
+                        <div class="glass-card p-4">
+                            <h4 class="text-dark mb-4">
+                                <i class="fas fa-chart-bar me-2"></i>Reports
+                            </h4>
+                            <div class="row g-4 mb-4">
+                                <div class="col-md-6 col-lg-3">
+                                    <div class="stat-card-enhanced" style="background: var(--primary-gradient);">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h3><?php echo $total_tests; ?></h3>
+                                                <p>Total Lab Tests</p>
+                                            </div>
+                                            <div class="icon-container">
+                                                <i class="fas fa-vials"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-lg-3">
+                                    <div class="stat-card-enhanced" style="background: var(--secondary-gradient);">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h3><?php echo $pending_tests; ?></h3>
+                                                <p>Pending Tests</p>
+                                            </div>
+                                            <div class="icon-container">
+                                                <i class="fas fa-hourglass-half"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-lg-3">
+                                    <div class="stat-card-enhanced" style="background: var(--warning-gradient);">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h3><?php echo $accepted_tests; ?></h3>
+                                                <p>Accepted Tests</p>
+                                            </div>
+                                            <div class="icon-container">
+                                                <i class="fas fa-check-circle"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-lg-3">
+                                    <div class="stat-card-enhanced" style="background: var(--success-gradient);">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h3><?php echo $completed_tests; ?></h3>
+                                                <p>Completed Tests</p>
+                                            </div>
+                                            <div class="icon-container">
+                                                <i class="fas fa-tasks"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <div class="stat-card-enhanced" style="background: var(--success-gradient);">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h3>₱<?php echo number_format($revenue, 2); ?></h3>
+                                                <p>Total Revenue</p>
+                                            </div>
+                                            <div class="icon-container">
+                                                <i class="fas fa-dollar-sign"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="glass-card p-3">
+                                        <h5 class="text-dark mb-3">Priority Breakdown</h5>
+                                        <table class="table table-glass table-hover table-striped mb-0">
+                                            <thead class="thead-light">
+                                                <tr>
+                                                    <th>Priority</th>
+                                                    <th>Count</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td><span class="badge badge-danger">Emergency</span></td>
+                                                    <td><?php echo $emergency_tests; ?></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><span class="badge badge-warning">Urgent</span></td>
+                                                    <td><?php echo $urgent_tests; ?></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><span class="badge badge-secondary">Normal</span></td>
+                                                    <td><?php echo $total_tests - $emergency_tests - $urgent_tests; ?></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Modals -->
     <?php
     mysqli_data_seek($result, 0);
     while ($row = mysqli_fetch_array($result)) {
@@ -574,6 +1124,46 @@ if (isset($_POST['reject_test'])) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
     $(document).ready(function() {
+        // Tab functionality
+        $('#v-pills-tab a').on('click', function (e) {
+            e.preventDefault();
+            $(this).tab('show');
+            $('.tab-pane').removeClass('show active');
+            var target = $(this).attr('href');
+            $(target).addClass('show active');
+        });
+        
+        $('.quick-action-btn').on('click', function(e) {
+            e.preventDefault();
+            var target = $(this).attr('href');
+            $('.tab-pane').removeClass('show active');
+            $(target).addClass('show active');
+            $('#v-pills-tab a').removeClass('active').attr('aria-selected', 'false');
+            $('#v-pills-tab a[href="' + target + '"]').addClass('active').attr('aria-selected', 'true');
+        });
+
+        $('.tab-pane').removeClass('show active');
+        $('#v-pills-dashboard').addClass('show active');
+
+        // Fix for pointer events
+        $('.sidebar').css('pointer-events', 'auto');
+        $('.quick-action-btn').css('pointer-events', 'auto');
+        
+        // Modal functionality
+        $('.modal').on('show.bs.modal', function () {
+            $('body').addClass('modal-open');
+        });           
+        
+        $('.modal').on('hidden.bs.modal', function () {
+            $('body').removeClass('modal-open');
+            $('.modal-backdrop').remove();
+        });
+        
+        $('.modal .close, .modal [data-dismiss="modal"]').on('click', function() {
+            $(this).closest('.modal').modal('hide');
+        });
+
+        // Form validation
         $('.modal').on('show.bs.modal', function() {
             $(this).find('form').trigger('reset');
             $(this).find('.is-invalid').removeClass('is-invalid');
