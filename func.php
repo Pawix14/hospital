@@ -1,12 +1,9 @@
 <?php
-// Include 2FA functions
 include('2fa_functions.php');
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 $con=mysqli_connect("localhost","root","","myhmsdb");
-
-// SIMPLIFIED Emergency Bypass Functions - NO EXPIRATION CHECK
 function shouldBypass2FA($con, $username) {
     $query = "SELECT id FROM emergency_access_logs 
               WHERE staff_username = '$username' 
@@ -19,7 +16,6 @@ function shouldBypass2FA($con, $username) {
 }
 
 function useEmergencyAutoLogin($con, $username) {
-    // Get the request ID
     $query = "SELECT id FROM emergency_access_logs 
               WHERE staff_username = '$username' 
               AND status = 'approved' 
@@ -31,8 +27,6 @@ function useEmergencyAutoLogin($con, $username) {
     if ($result && mysqli_num_rows($result) > 0) {
         $row = mysqli_fetch_assoc($result);
         $request_id = $row['id'];
-        
-        // Mark as used
         mysqli_query($con, "UPDATE emergency_access_logs SET auto_login_used = 1 WHERE id = '$request_id'");
         
         return true;
@@ -40,39 +34,27 @@ function useEmergencyAutoLogin($con, $username) {
     
     return false;
 }
-
-// Unified Login Handler - UPDATED WITH PROPER EMERGENCY BYPASS
 if(isset($_POST['login'])){
     $username = $_POST['username'];
     $password = $_POST['password'];
     $user_found = false;
     $is_email = strpos($username, '@') !== false;
-
-    // 1. Check Admin Table
     if (!$user_found) {
         $query = "select * from adminusertb where username='$username' and password='$password';";
         $result = mysqli_query($con, $query);
         if(mysqli_num_rows($result) == 1) {
             $user_found = true;
             $role = 'admin';
-            
-            // CHECK EMERGENCY BYPASS FIRST
             if (shouldBypass2FA($con, $username)) {
                 if (useEmergencyAutoLogin($con, $username)) {
-                    // EMERGENCY LOGIN SUCCESS - BYPASS 2FA
                     $_SESSION['username'] = $username;
                     $_SESSION['role'] = $role;
-                    $_SESSION['emergency_login'] = true;
-                    
+                    $_SESSION['emergency_login'] = true;                    
                     session_regenerate_id(true);
-                    
-                    // REDIRECT TO PANEL
                     header("Location: admin-panel.php");
                     exit();
                 }
             }
-            
-            // If no emergency bypass or it failed, check 2FA
             if (is2FAEnabled($con, $username, $role)) {
                 $code = generate2FACode();
                 $email = getUserEmail($con, $username, $role);
@@ -85,14 +67,12 @@ if(isset($_POST['login'])){
                     header("Location: 2fa-verification.php");
                     exit();
                 } else {
-                    // Email failed fallback
                     $_SESSION['username'] = $username;
                     $_SESSION['role'] = $role;
                     header("Location: admin-panel.php");
                     exit();
                 }
             } else {
-                // No 2FA enabled
                 $_SESSION['username'] = $username;
                 $_SESSION['role'] = $role;
                 header("Location: admin-panel.php");
@@ -100,35 +80,24 @@ if(isset($_POST['login'])){
             }
         }
     }
-        // 1. CHECK PATIENT TABLE FIRST (using email)
     if (!$user_found && $is_email) {
         $query = "SELECT * FROM admissiontb WHERE email='$username'";
-        $result = mysqli_query($con, $query);
-        
+        $result = mysqli_query($con, $query);        
         error_log("Patient query: " . $query);
         error_log("Patient results: " . mysqli_num_rows($result));
-        
         if(mysqli_num_rows($result) == 1) {
             $row = mysqli_fetch_array($result, MYSQLI_ASSOC);
-            
-            // DEBUG: Check what password hash looks like
             error_log("Stored password: " . $row['password']);
-            error_log("Submitted password: " . $password);
-            
-            // Try both methods - hashed and plain text
+            error_log("Submitted password: " . $password);           
             $password_valid = false;
-            
-            // Method 1: Check if password is hashed
             if (password_verify($password, $row['password'])) {
                 $password_valid = true;
                 error_log("Password verified via password_verify()");
             } 
-            // Method 2: Check if password is plain text
             elseif ($row['password'] === $password) {
                 $password_valid = true;
                 error_log("Password verified via plain text comparison");
             }
-            // Method 3: Check common hash patterns
             elseif (md5($password) === $row['password']) {
                 $password_valid = true;
                 error_log("Password verified via MD5");
@@ -160,19 +129,14 @@ if(isset($_POST['login'])){
             error_log("No patient found with email: " . $username);
         }
     }
-
-    // 2. Check Nurse Table
     if (!$user_found) {
         $query = "select * from nursetb where username='$username' and password='$password';";
         $result = mysqli_query($con, $query);
         if(mysqli_num_rows($result) == 1) {
             $user_found = true;
             $role = 'nurse';
-            
-            // CHECK EMERGENCY BYPASS FIRST
             if (shouldBypass2FA($con, $username)) {
                 if (useEmergencyAutoLogin($con, $username)) {
-                    // EMERGENCY LOGIN SUCCESS - BYPASS 2FA
                     $_SESSION['username'] = $username;
                     $_SESSION['role'] = $role;
                     $_SESSION['emergency_login'] = true;
@@ -183,8 +147,6 @@ if(isset($_POST['login'])){
                     exit();
                 }
             }
-            
-            // If no emergency bypass, check 2FA
             if (is2FAEnabled($con, $username, $role)) {
                 $code = generate2FACode();
                 $email = getUserEmail($con, $username, $role);
@@ -210,8 +172,6 @@ if(isset($_POST['login'])){
             }
         }
     }
-
-    // 3. Check Doctor Table (similar pattern)
     if (!$user_found) {
         $query = "select * from doctortb where username='$username' and password='$password';";
         $result = mysqli_query($con, $query);
@@ -255,8 +215,6 @@ if(isset($_POST['login'])){
             }
         }
     }
-
-    // 4. Check Lab Table (similar pattern)
     if (!$user_found) {
         $query = "select * from labtb where username='$username' and password='$password';";
         $result = mysqli_query($con, $query);
@@ -300,15 +258,11 @@ if(isset($_POST['login'])){
             }
         }
     }
-
-    // If no user found
     if (!$user_found) {
         echo("<script>alert('Invalid Username/Email or Password. Try Again!');
               window.location.href = 'index.php';</script>");
     }
 }
-
-// Keep all existing functions exactly as they were
 if(isset($_POST['patsub'])){
 	$email=$_POST['email'];
 	$password=$_POST['password2'];

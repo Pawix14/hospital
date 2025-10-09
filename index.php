@@ -568,23 +568,14 @@
             </div>
         </div>
     </section>
-
-    <!-- Bootstrap 5 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- AOS Animation Library -->
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    
-    <!-- Custom JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>   
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>    
     <script>
-        // Initialize AOS
         AOS.init({
             duration: 1000,
             once: true,
             offset: 100
         });
-        
-        // Hide loading overlay after page loads
         window.addEventListener('load', function() {
             const loadingOverlay = document.getElementById('loadingOverlay');
             loadingOverlay.style.opacity = '0';
@@ -592,8 +583,6 @@
                 loadingOverlay.style.display = 'none';
             }, 500);
         });
-        
-        // Form validation
         (function() {
             'use strict';
             window.addEventListener('load', function() {
@@ -609,8 +598,6 @@
                 });
             }, false);
         })();
-        
-        // Enhanced navbar scroll effect
         window.addEventListener('scroll', function() {
             const navbar = document.querySelector('.navbar-glass');
             if (window.scrollY > 50) {
@@ -621,7 +608,6 @@
                 navbar.style.backdropFilter = 'blur(20px)';
             }
         });
-        // Password toggle functionality
 document.getElementById('togglePassword').addEventListener('click', function() {
     const passwordInput = document.getElementById('password');
     const icon = this.querySelector('i');
@@ -636,8 +622,6 @@ document.getElementById('togglePassword').addEventListener('click', function() {
         icon.classList.add('fa-eye');
     }
         });
-
-        // Password strength indicator (for registration if added later)
         function checkPasswordStrength(password) {
             const strengthBar = document.getElementById('passwordStrength');
             if (!strengthBar) return;
@@ -661,8 +645,6 @@ document.getElementById('togglePassword').addEventListener('click', function() {
                 strengthBar.classList.add('strength-strong');
             }
         }
-
-        // Add event listener for password strength (if needed)
         document.getElementById('password')?.addEventListener('input', function(e) {
             checkPasswordStrength(e.target.value);
         });

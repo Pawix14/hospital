@@ -164,21 +164,15 @@ if (isset($_POST['mark_ready'])) {
         echo "<script>alert('Error updating status!');</script>";
     }
 }
-
-// Store data for modals
 $patients_data = [];
 $diagnostics_data = [];
 $lab_data = [];
-
-// Get patients data
 $dname = $_SESSION['username'];
 $query = "SELECT pid, fname, lname, age, gender, contact, room_number, admission_date, reason, status FROM admissiontb WHERE assigned_doctor='$dname' AND status != 'Discharged'";
 $patients_result = mysqli_query($con,$query);
 while ($row = mysqli_fetch_array($patients_result)) {
     $patients_data[] = $row;
 }
-
-// Get diagnostics data
 $diagnostics_query = "SELECT d.*, a.fname, a.lname, p.prescribed_medicines FROM diagnosticstb d 
                     JOIN admissiontb a ON d.pid = a.pid 
                     LEFT JOIN prestb p ON d.pid = p.pid AND d.doctor_name = p.doctor
@@ -188,8 +182,6 @@ $diagnostics_result = mysqli_query($con, $diagnostics_query);
 while ($diag = mysqli_fetch_array($diagnostics_result)) {
     $diagnostics_data[] = $diag;
 }
-
-// Get lab data
 $lab_query = "SELECT lt.*, a.fname, a.lname FROM labtesttb lt 
             JOIN admissiontb a ON lt.pid = a.pid 
             WHERE lt.suggested_by_doctor = '$doctor' 
@@ -325,38 +317,29 @@ while ($lab = mysqli_fetch_array($lab_result)) {
             padding: 8px 12px;
             font-size: 0.9rem;
         }
-
         .btn-outline-light:hover {
             color: #25bef7;
             background-color: #f8f9fa;
             border-color: #f8f9fa;
         }
-
         .modal {
             z-index: 1050 !important;
         }
         .modal-backdrop {
             z-index: 1040 !important;
         }
-        
-        /* Fix for clickable sidebar */
         .nav-pills .nav-link {
             pointer-events: all !important;
-        }
-        
+        }   
         .sidebar * {
             pointer-events: all !important;
         }
-        
-        /* Fix for tab content - CRITICAL FIX */
         .tab-content > .tab-pane {
             display: none;
         }
         .tab-content > .active {
             display: block;
         }
-        
-        /* Ensure proper tab transitions */
         .fade {
             transition: opacity 0.15s linear;
         }
@@ -366,8 +349,6 @@ while ($lab = mysqli_fetch_array($lab_result)) {
         .fade.show {
             opacity: 1;
         }
-        
-        /* Force proper tab display */
         .tab-pane {
             display: none !important;
         }
@@ -529,8 +510,6 @@ while ($lab = mysqli_fetch_array($lab_result)) {
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Patients Tab -->
                     <div class="tab-pane fade" id="v-pills-patients" role="tabpanel" aria-labelledby="v-pills-patients-tab">
                         <div class="glass-card p-4">
                             <h4 class="text-dark mb-4">
@@ -593,8 +572,6 @@ while ($lab = mysqli_fetch_array($lab_result)) {
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Diagnostics Tab -->
                     <div class="tab-pane fade" id="v-pills-diagnostics" role="tabpanel" aria-labelledby="v-pills-diagnostics-tab">
                         <div class="glass-card p-4">
                             <h4 class="text-dark mb-4">
@@ -644,8 +621,6 @@ while ($lab = mysqli_fetch_array($lab_result)) {
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Lab Requests Tab -->
                     <div class="tab-pane fade" id="v-pills-lab-requests" role="tabpanel" aria-labelledby="v-pills-lab-requests-tab">
                         <div class="glass-card p-4">
                             <h4 class="text-dark mb-4">
@@ -696,8 +671,6 @@ while ($lab = mysqli_fetch_array($lab_result)) {
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Services Tab -->
                     <div class="tab-pane fade" id="v-pills-services" role="tabpanel" aria-labelledby="v-pills-services-tab">
                         <div class="glass-card p-4">
                             <h4 class="text-dark mb-4">
@@ -762,8 +735,6 @@ while ($lab = mysqli_fetch_array($lab_result)) {
             </div>
         </div>
     </div>
-
-    <!-- Modals for Patients -->
     <?php foreach($patients_data as $row): ?>
     <div class="modal fade" id="diagnosisModal-<?php echo $row['pid']; ?>" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
@@ -919,8 +890,6 @@ while ($lab = mysqli_fetch_array($lab_result)) {
         </div>
     </div>
     <?php endforeach; ?>
-
-    <!-- Modals for Diagnostics -->
     <?php foreach($diagnostics_data as $diag): ?>
     <div class="modal fade" id="viewDiagnosisModal-<?php echo $diag['id']; ?>" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
@@ -974,8 +943,6 @@ while ($lab = mysqli_fetch_array($lab_result)) {
         </div>
     </div>
     <?php endforeach; ?>
-
-    <!-- Modals for Lab Results -->
     <?php foreach($lab_data as $lab): ?>
     <div class="modal fade" id="viewLabResultModal-<?php echo $lab['id']; ?>" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
@@ -1027,8 +994,6 @@ while ($lab = mysqli_fetch_array($lab_result)) {
         </div>
     </div>
     <?php endforeach; ?>
-
-    <!-- Service Charge Modals -->
     <div class="modal fade" id="editServiceModal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <form method="post" action="doctor-panel.php" class="modal-content">
@@ -1156,40 +1121,27 @@ while ($lab = mysqli_fetch_array($lab_result)) {
 
             $('#deleteServiceModal').modal('show');
         });
-
-        // Enhanced tab switching fix
         $(document).ready(function() {
-            // Initialize Bootstrap tabs properly
             $('#v-pills-tab a').on('click', function (e) {
                 e.preventDefault();
                 $(this).tab('show');
-                
-                // Force hide all other tabs
                 $('.tab-pane').removeClass('show active');
                 var target = $(this).attr('href');
                 $(target).addClass('show active');
             });
-
-            // Ensure proper initial state
             $('.tab-pane').removeClass('show active');
             $('#v-pills-dashboard').addClass('show active');
-
-            // Fix for modal glitching
             $('.modal').on('show.bs.modal', function () {
                 $('body').addClass('modal-open');
-            });
-            
+            });           
             $('.modal').on('hidden.bs.modal', function () {
                 $('body').removeClass('modal-open');
                 $('.modal-backdrop').remove();
             });
-            
-            // Ensure modals close properly
             $('.modal .close, .modal [data-dismiss="modal"]').on('click', function() {
                 $(this).closest('.modal').modal('hide');
             });
         });
-
         $(function () {
             $('[data-toggle="tooltip"]').tooltip()
         });

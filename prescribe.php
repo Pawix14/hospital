@@ -12,11 +12,17 @@ $fname = '';
 $lname= '';
 $doctor = '';
 $is_nurse = false;
-if (isset($_SESSION['dname'])) {
-    $doctor = $_SESSION['dname'];
-} elseif (isset($_SESSION['username'])) {
-    $doctor = $_SESSION['username']; 
-    $is_nurse = true;
+if (isset($_SESSION['role'])) {
+    if ($_SESSION['role'] == 'doctor') {
+        $doctor = $_SESSION['username'];
+        $is_nurse = false;
+    } elseif ($_SESSION['role'] == 'nurse') {
+        $doctor = $_SESSION['username'];
+        $is_nurse = true;
+    } else {
+        header("Location: index.php");
+        exit();
+    }
 } else {
     header("Location: index.php");
     exit();

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 08, 2025 at 04:36 PM
+-- Generation Time: Oct 09, 2025 at 06:32 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -43,7 +43,7 @@ CREATE TABLE `adminusertb` (
 --
 
 INSERT INTO `adminusertb` (`username`, `password`, `email`, `role`, `two_factor_enabled`, `two_factor_code`, `two_factor_expires`, `backup_codes`) VALUES
-('admin', 'admin123', 'pmadridano2@gmail.com', 'admin', 1, NULL, NULL, NULL);
+('admin', 'admin123', 'pmadridano2@gmail.com', 'admin', 0, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -81,11 +81,8 @@ CREATE TABLE `admissiontb` (
 INSERT INTO `admissiontb` (`pid`, `fname`, `lname`, `gender`, `email`, `contact`, `password`, `admission_date`, `status`, `age`, `address`, `blood_group`, `medical_history`, `allergies`, `assigned_doctor`, `room_number`, `created_by`, `reason`, `created_at`, `updated_at`) VALUES
 (1, 'Paolo', 'madridano', 'Male', 'g@gmail.com', '0944644675', '$2y$10$pm.AeJSO/M2eclygLuIYiucFHUC3Ic9sK92HsVqyoHprCGKDz/RsK', '2025-09-17', 'Discharged', 20, 'kaqrew', '', NULL, NULL, 'dr_smith', '402', 'nurse', 'back pain', '2025-10-08 02:37:29', '2025-10-08 02:37:29'),
 (2, 'justin', 'nabunturan', 'Male', 'justin@gmail.com', '0995525454', '$2y$10$2Z2gHjb5rtmwAx7x7BfpEuU05.7hiI8nfCuzl6SMolQ9n9Zk3yere', '2025-09-17', 'Ready for Discharge', 32, 'cebu', '', NULL, NULL, 'pawix_12', '201', 'nurse', 'Sakit ang buto', '2025-10-08 02:37:29', '2025-10-08 02:37:29'),
-(3, 'lebron', 'james', 'Male', 'james@gmail.com', '513100312', '$2y$10$1vW0v9Kp8B9sNcQUYC3yLOPlQbZdaQUGvEy6LDCyzZZIy89N1yqRi', '2025-09-17', 'Ready for Discharge', 32, 'popasodj', '', NULL, NULL, 'pawix_12', '201', 'nurse', 'qweqp', '2025-10-08 02:37:29', '2025-10-08 02:37:29'),
 (4, 'james', 'lebron', 'Male', 'lebron@gmail.com', '0909901965', '$2y$10$Iz3TeaMWkjE6EqZQxJ97Z.7mupDJHtL5UYO548w8SvwS6YlFS7Jn.', '2025-09-17', 'Discharged', 40, 'aosemasd', '', NULL, NULL, 'pawix_12', '402', 'nurse', 'pqwjewqjr', '2025-10-08 02:37:29', '2025-10-08 02:37:29'),
-(5, 'test', '2', 'Female', 'test1@gmail.com', '09454565465', '$2y$10$o0vLvcFCBZQW4FkrHu7wauiWKJcGFK90ND.lSqLqV6q/E2aXmWOce', '2025-10-01', 'Admitted', 25, 'Km6 Upper Balulang', '', NULL, NULL, 'pawix_12', '202', 'nurse', 'back pain', '2025-10-08 02:37:29', '2025-10-08 02:37:29'),
-(6, 'p', 'm', 'Male', 'p@gmail.com', '098794944', '$2y$10$STH24j/EkyoeTZJK9JVNIea/0hw6ZAHbHrPafUUcHxZZHDcx/zBTC', '2025-10-02', 'Admitted', 19, 'Km6 Upper Balulang', '', NULL, NULL, 'pawix_12', '101', 'nurse', 'test', '2025-10-08 02:37:29', '2025-10-08 02:37:29'),
-(7, 'p', 'm', 'Male', 'p@gmail.com', '098794944', '$2y$10$tuwtL.e/BHzCx5hBmLIi.u5r7PSxd2PpJd/VzOMnXQksARBnjIwBq', '2025-10-02', 'Admitted', 19, 'Km6 Upper Balulang', '', NULL, NULL, 'pawix_12', '101', 'nurse', 'test', '2025-10-08 02:37:29', '2025-10-08 02:37:29');
+(8, 'last', 'na', 'Male', 'Pmadridano@gmail.com', '09940213443', '$2y$10$ZUSbKAS7Xc.g33Ib5dFtBekunbYKIUHzYNAt.tC5pRQM1kGR68VnO', '2025-10-09', 'Ready for Discharge', 20, 'Km6 Upper Balulang', '', NULL, NULL, 'pawix_12', '202', 'nurse', 'back pain', '2025-10-09 03:18:06', '2025-10-09 03:33:47');
 
 -- --------------------------------------------------------
 
@@ -117,11 +114,8 @@ CREATE TABLE `billtb` (
 INSERT INTO `billtb` (`pid`, `consultation_fees`, `lab_fees`, `medicine_fees`, `total`, `status`, `service_charges`, `room_charges`, `other_charges`, `discount`, `payment_date`, `payment_method`, `invoice_generated`, `receipt_generated`) VALUES
 (1, 200.00, 30.00, 0.00, 590.00, 'Paid', 160.00, 200.00, 0.00, 0.00, NULL, NULL, 0, 0),
 (2, 800.00, 400.00, 0.00, 1350.00, 'Paid', 0.00, 150.00, 0.00, 0.00, NULL, NULL, 0, 0),
-(3, 800.00, 0.00, 0.00, 950.00, 'Paid', 0.00, 150.00, 0.00, 0.00, NULL, NULL, 0, 0),
 (4, 800.00, 0.00, 0.00, 1000.00, 'Paid', 0.00, 200.00, 0.00, 0.00, NULL, NULL, 0, 1),
-(5, 800.00, 400.00, 0.00, 2000.00, 'Unpaid', 250.00, 550.00, 0.00, 0.00, NULL, NULL, 0, 0),
-(6, 800.00, 0.00, 0.00, 1050.00, 'Unpaid', 0.00, 250.00, 0.00, 0.00, NULL, NULL, 0, 0),
-(7, 800.00, 0.00, 0.00, 1050.00, 'Unpaid', 0.00, 250.00, 0.00, 0.00, NULL, NULL, 0, 0);
+(8, 800.00, 400.00, 155.00, 2505.00, 'Paid', 600.00, 550.00, 0.00, 0.00, NULL, NULL, 0, 1);
 
 -- --------------------------------------------------------
 
@@ -151,8 +145,7 @@ CREATE TABLE `diagnosticstb` (
 INSERT INTO `diagnosticstb` (`id`, `pid`, `doctor_name`, `symptoms`, `diagnosis`, `vital_signs`, `physical_examination`, `medical_history`, `diagnostic_tests_ordered`, `treatment_plan`, `created_date`, `created_time`) VALUES
 (1, 1, 'dr_smith', 'Ubo', 'Undang nag ginhawa', '120', 'Bad', 'Nabali ang tiil', 'wala', 'wala', '2025-09-17', '19:43:52'),
 (4, 4, 'pawix_12', 'wala', 'wala', 'init', 'luya', 'aans', 'wala', 'wala', '2025-09-17', '23:26:40'),
-(5, 5, 'pawix_12', 'sakit ulo', 'pangag', '10/23', 'Luya slow ', 'wala', 'wala', 'philhealth', '2025-10-01', '17:28:22'),
-(6, 5, 'pawix_12', 'sakit ulo', 'pangag', '10/23', 'Luya slow ', 'wala', 'wala', 'philhealth', '2025-10-01', '17:28:56');
+(7, 8, 'pawix_12', 'Red eyes', 'Joint disorders', '97.7 F', '....', 'None', 'wala', '3 weeks ', '2025-10-09', '11:23:38');
 
 -- --------------------------------------------------------
 
@@ -215,7 +208,7 @@ INSERT INTO `doctortb` (`id`, `username`, `password`, `fname`, `lname`, `email`,
 (1, 'dr_smith', 'doctor123', 'John', 'Smith', 'john.smith@hospital.com', '1234567890', 'Cardiology', 'MD Cardiology', 10, 200.00, 'Active', '2025-09-17', 'admin', 1, NULL, NULL, NULL),
 (2, 'dr_johnson', 'doctor123', 'Sarah', 'Johnson', 'sarah.johnson@hospital.com', '1234567891', 'Pediatrics', 'MD Pediatrics', 8, 150.00, 'Active', '2025-09-17', 'admin', 1, NULL, NULL, NULL),
 (3, 'dr_williams', 'doctor123', 'Michael', 'Williams', 'michael.williams@hospital.com', '1234567892', 'General Medicine', 'MBBS', 5, 100.00, 'On Leave', '2025-09-17', 'admin', 1, NULL, NULL, NULL),
-(7, 'pawix_12', 'paolo123', 'Gabriel', 'Madridano', 'pmadridano2@gmail.com', '09940213443', 'Cardiology', 'Ok', 13, 800.00, 'Active', '2025-09-17', 'admin', 1, '950985', '2025-10-08 16:39:53', NULL);
+(7, 'pawix_12', 'paolo123', 'Gabriel', 'Madridano', 'pmadridano2@gmail.com', '09940213443', 'Cardiology', 'Ok', 13, 800.00, 'Active', '2025-09-17', 'admin', 1, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -247,7 +240,7 @@ CREATE TABLE `emergency_access_logs` (
 
 INSERT INTO `emergency_access_logs` (`id`, `staff_username`, `staff_role`, `reason`, `contact_info`, `additional_info`, `ip_address`, `status`, `handled_by`, `handled_at`, `created_at`, `one_time_token`, `token_expires`, `token_used`, `auto_login_used`) VALUES
 (1, 'lab1', 'lab', 'Lost access to email', '0994021344', '', '::1', 'approved', 'admin', '2025-10-08 13:15:27', '2025-10-08 05:13:44', NULL, NULL, 0, 0),
-(2, 'lab2', 'lab', 'Urgent patient care required', '0994021344', '', '::1', 'approved', 'admin', '2025-10-08 13:30:35', '2025-10-08 05:29:05', '485fd95fa37f33435e6ccb951623fecc7ea808a31b8737c2403c4867b18f8a73', '2025-10-08 08:30:35', 0, 0),
+(2, 'lab2', 'lab', 'Urgent patient care required', '0994021344', '', '::1', 'approved', 'admin', '2025-10-08 13:30:35', '2025-10-08 05:29:05', '485fd95fa37f33435e6ccb951623fecc7ea808a31b8737c2403c4867b18f8a73', '2025-10-08 08:30:35', 0, 1),
 (3, 'lab2', 'lab', 'Not receiving verification codes', '0994021344', '', '::1', 'denied', 'admin', '2025-10-08 13:51:29', '2025-10-08 05:34:20', NULL, NULL, 0, 0),
 (4, 'nurse1', 'nurse', 'Not receiving verification codes', '0994021344', '', '::1', 'approved', 'admin', '2025-10-08 13:44:34', '2025-10-08 05:44:19', '590739cd321c6a652fe74d13b969b69f631cadb2c592c9b9b26719eed61e65b9', '2025-10-08 08:44:34', 0, 1),
 (5, 'pawix_12', 'doctor', 'Not receiving verification codes', '09940213443', '', '::1', 'approved', 'admin', '2025-10-08 22:30:39', '2025-10-08 14:30:07', '60de96133e1b28d6c4470696a1a950182d0bb15e83fef81916aa92a7feac015a', '2025-10-08 17:30:39', 0, 1);
@@ -275,10 +268,11 @@ CREATE TABLE `invoicetb` (
 
 INSERT INTO `invoicetb` (`id`, `pid`, `invoice_number`, `generated_date`, `generated_time`, `generated_by`, `total_amount`, `status`) VALUES
 (1, 2, 'INV-2-20250917-5253', '2025-09-17', '20:00:14', 'Patient Request', 950.00, 'Generated'),
-(2, 2, 'INV-2-20250917-6895', '2025-09-17', '20:03:04', 'Patient Request', 950.00, 'Generated'),
+(2, 2, 'INV-2-20250917-6895', '2025-09-17', '20:03:04', 'Patient Request', 950.00, 'Approved'),
 (3, 2, 'INV-2-20250917-6780', '2025-09-17', '20:18:07', 'Patient Request', 950.00, 'Approved'),
 (5, 2, 'INV-2-20250917-9660', '2025-09-17', '20:25:46', 'Patient Request', 950.00, 'Approved'),
-(6, 4, 'INV-4-20251001-5113', '2025-10-01', '15:29:41', 'Patient Request', 1000.00, 'Approved');
+(6, 4, 'INV-4-20251001-5113', '2025-10-01', '15:29:41', 'Patient Request', 1000.00, 'Approved'),
+(7, 8, 'INV-8-20251009-5763', '2025-10-09', '11:32:57', 'Patient Request', 2505.00, 'Approved');
 
 -- --------------------------------------------------------
 
@@ -341,7 +335,7 @@ CREATE TABLE `labtesttb` (
 INSERT INTO `labtesttb` (`id`, `pid`, `test_name`, `suggested_by_doctor`, `status`, `scheduled_date`, `completed_date`, `price`, `requested_date`, `requested_time`, `lab_notes`, `results`, `priority`) VALUES
 (1, 1, 'Urine Analysis', 'dr_smith', 'Completed', '2025-09-18', '2025-09-17', 30.00, '2025-09-17', '19:43:10', 'wala', 'Done', 'Normal'),
 (2, 2, 'CT Scan', 'pawix_12', 'Pending', '2025-10-24', NULL, 400.00, '2025-10-01', '16:32:16', NULL, NULL, 'Emergency'),
-(3, 5, 'CT Scan', 'pawix_12', 'Completed', '2025-10-01', '2025-10-01', 400.00, '2025-10-01', '16:32:29', 'wala\r\n', 'okay ra', 'Normal');
+(4, 8, 'CT Scan', 'pawix_12', 'Completed', '2025-10-09', '2025-10-09', 400.00, '2025-10-09', '11:23:57', 'good', 'good', 'Emergency');
 
 -- --------------------------------------------------------
 
@@ -366,7 +360,7 @@ CREATE TABLE `medicinetb` (
 --
 
 INSERT INTO `medicinetb` (`id`, `medicine_name`, `quantity`, `added_by_nurse`, `price`, `dosage`, `frequency`, `duration`, `medicine_type`) VALUES
-(1, 'Paracetamol', 100, 'nurse1', 15.50, '500mg', 'Twice a day', '', 'oral'),
+(1, 'Paracetamol', 90, 'nurse1', 15.50, '500mg', 'Twice a day', '', 'oral'),
 (2, 'Ibuprofen', 50, 'nurse1', 18.75, '200mg', 'Three times a day', '7 days', 'oral'),
 (3, 'Amoxicillin', 75, 'nurse2', 45.00, '250mg', 'Twice a day', '10 days', 'oral'),
 (4, 'Aspirin', 200, 'nurse2', 12.25, '100mg', 'Once a day', '3 days', 'oral'),
@@ -407,7 +401,7 @@ CREATE TABLE `nursetb` (
 --
 
 INSERT INTO `nursetb` (`id`, `username`, `password`, `email`, `fname`, `lname`, `contact`, `department`, `shift`, `status`, `created_date`, `created_by`, `two_factor_enabled`, `two_factor_code`, `two_factor_expires`, `backup_codes`) VALUES
-(1, 'nurse1', 'nurse123', 'pmadridano2@gmail.com', 'Mary', 'Wilson', '1234567893', 'General Ward', 'Day', 'Active', '2025-09-17', 'admin', 1, NULL, NULL, NULL),
+(1, 'nurse1', 'nurse123', 'pmadridano2@gmail.com', 'Mary', 'Wilson', '1234567893', 'General Ward', 'Day', 'Active', '2025-09-17', 'admin', 0, NULL, NULL, NULL),
 (2, 'nurse2', 'nurse123', 'pmadridano2@gmail.com', 'Lisa', 'Brown', '1234567894', 'ICU', 'Night', 'Active', '2025-09-17', 'admin', 1, NULL, NULL, NULL),
 (3, 'nurse3', 'nurse123', 'nurse3@hospital.com', 'Jennifer', 'Davis', '1234567895', 'Emergency', 'Day', 'Active', '2025-09-17', 'admin', 1, NULL, NULL, NULL),
 (6, 'testnurse', 'nurse123', 'testnurse@gmail.com', 'Test ', 'Nurse', '0844456', 'ICU', 'Morning', 'Active', '2025-09-17', 'admin', 1, NULL, NULL, NULL);
@@ -437,7 +431,7 @@ CREATE TABLE `patient_chargstb` (
 
 INSERT INTO `patient_chargstb` (`id`, `pid`, `service_id`, `quantity`, `unit_price`, `total_price`, `added_by`, `added_date`, `added_time`, `description`) VALUES
 (1, 1, 9, 2, 80.00, 160.00, 'dr_smith', '2025-09-17', '19:44:13', 'patay naka\r\n'),
-(2, 5, 5, 1, 250.00, 250.00, 'pawix_12', '2025-10-01', '16:32:54', 'wala lang');
+(3, 8, 3, 2, 300.00, 600.00, 'pawix_12', '2025-10-09', '11:24:12', 'Emergency');
 
 -- --------------------------------------------------------
 
@@ -463,9 +457,7 @@ CREATE TABLE `patient_roundstb` (
 
 INSERT INTO `patient_roundstb` (`id`, `pid`, `nurse_username`, `round_date`, `round_time`, `vital_signs`, `notes`, `status`, `created_at`) VALUES
 (1, 2, 'nurse1', '2025-09-17', '20:39:00', NULL, 'Ok', 'Scheduled', '2025-09-17 12:40:08'),
-(2, 2, 'nurse1', '2025-09-17', '20:39:00', NULL, 'Ok', 'Scheduled', '2025-09-17 12:42:22'),
-(3, 3, 'nurse2', '2025-10-01', '09:31:00', 'ad', 'wqe\nUpdate: wqe', 'Completed', '2025-10-01 07:32:08'),
-(4, 3, 'nurse2', '2025-10-01', '09:31:00', NULL, 'wqe', 'Scheduled', '2025-10-01 07:35:25');
+(2, 2, 'nurse1', '2025-09-17', '20:39:00', NULL, 'Ok', 'Scheduled', '2025-09-17 12:42:22');
 
 -- --------------------------------------------------------
 
@@ -512,7 +504,7 @@ INSERT INTO `paymentstb` (`id`, `pid`, `amount`, `payment_method`, `payment_date
 (3, 2, 950.00, 'Credit Card', '2025-09-17', '20:28:57', 'Patient Self-Service', NULL, 'Payment request submitted by patient', 'Approved'),
 (4, 4, 1000.00, 'Credit Card', '2025-10-01', '15:37:11', 'Patient Self-Service', NULL, 'Payment request submitted by patient', 'Approved'),
 (5, 4, 1000.00, 'Credit Card', '2025-10-01', '15:38:24', 'Patient Self-Service', NULL, 'Payment request submitted by patient', 'Approved'),
-(6, 3, 1402.00, 'Cash', '2025-10-08', '10:45:39', 'Patient Self-Service', NULL, 'Payment request submitted by patient', 'Approved');
+(7, 8, 2505.00, 'Cash', '2025-10-09', '11:47:17', 'Patient Self-Service', NULL, 'Payment request submitted by patient', 'Approved');
 
 -- --------------------------------------------------------
 
@@ -550,7 +542,8 @@ INSERT INTO `prestb` (`id`, `doctor`, `pid`, `fname`, `lname`, `symptoms`, `alle
 (5, 'pawix_12', 2, 'justin', 'nabunturan', '', 'Latex', 'Antihistamine', 0.60, 'qweqwe', 'Antihistamine', '2025-09-17 15:11:47', NULL, NULL, NULL),
 (6, 'pawix_12', 3, 'lebron', 'james', 'wala', 'None', 'Bandages', 2.00, 'wala', 'Bandages', '2025-10-01 08:10:08', '', '', ''),
 (7, 'pawix_12', 3, 'lebron', 'james', 'weq', 'None', 'Insulin', 450.00, 'weqwe', 'Insulin', '2025-10-01 08:10:36', '', '', ''),
-(8, 'pawix_12', 5, 'test', '2', 'sakit ngipon', 'None', 'Vitamin D', 0.90, 'wala', 'Vitamin D', '2025-10-01 08:33:22', '', '', '');
+(8, 'pawix_12', 5, 'test', '2', 'sakit ngipon', 'None', 'Vitamin D', 0.90, 'wala', 'Vitamin D', '2025-10-01 08:33:22', '', '', ''),
+(9, 'pawix_12', 8, 'last', 'na', '', 'Penicillin', 'Paracetamol', 155.00, '', 'Paracetamol', '2025-10-09 03:27:58', '500mg', '3 times a day', '7 days');
 
 -- --------------------------------------------------------
 
@@ -712,13 +705,13 @@ ALTER TABLE `servicestb`
 -- AUTO_INCREMENT for table `admissiontb`
 --
 ALTER TABLE `admissiontb`
-  MODIFY `pid` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `pid` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `diagnosticstb`
 --
 ALTER TABLE `diagnosticstb`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `doctortb`
@@ -736,7 +729,7 @@ ALTER TABLE `emergency_access_logs`
 -- AUTO_INCREMENT for table `invoicetb`
 --
 ALTER TABLE `invoicetb`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `labtb`
@@ -748,7 +741,7 @@ ALTER TABLE `labtb`
 -- AUTO_INCREMENT for table `labtesttb`
 --
 ALTER TABLE `labtesttb`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `medicinetb`
@@ -766,7 +759,7 @@ ALTER TABLE `nursetb`
 -- AUTO_INCREMENT for table `patient_chargstb`
 --
 ALTER TABLE `patient_chargstb`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `patient_roundstb`
@@ -784,13 +777,13 @@ ALTER TABLE `patreg`
 -- AUTO_INCREMENT for table `paymentstb`
 --
 ALTER TABLE `paymentstb`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `prestb`
 --
 ALTER TABLE `prestb`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `servicestb`
@@ -843,7 +836,7 @@ ALTER TABLE `patient_chargstb`
 -- Constraints for table `patient_roundstb`
 --
 ALTER TABLE `patient_roundstb`
-  ADD CONSTRAINT `patient_roundstb_ibfk_1` FOREIGN KEY (`pid`) REFERENCES `admissiontb` (`pid`);
+  ADD CONSTRAINT `fk_patient_rounds_pid` FOREIGN KEY (`pid`) REFERENCES `admissiontb` (`pid`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `paymentstb`

@@ -43,8 +43,6 @@ if (isset($_POST['update_payment'])) {
         $emergency_contact = $_POST['emergency_contact'];
         $emergency_contact_name = $_POST['emergency_contact_name'];
         $password = $_POST['password'] ?? null; 
-        
-        // Store password in plaintext for admin panel only
         $update_query = "UPDATE admissiontb SET fname='$fname', lname='$lname', gender='$gender', email='$email', contact='$contact', age='$age', address='$address', blood_group='$blood_group', emergency_contact='$emergency_contact', emergency_contact_name='$emergency_contact_name'";
         if ($password !== null && $password !== '') {
             $update_query .= ", password='$password'";
@@ -161,11 +159,8 @@ if (isset($_POST['update_payment'])) {
     
     $update_query = "UPDATE billtb SET status='$status' WHERE pid='$pid'";
     if (mysqli_query($con, $update_query)) {
-        // ALSO update the payment requests table
         $update_payments = "UPDATE paymentstb SET status='Approved' WHERE pid='$pid' AND status='Pending'";
         mysqli_query($con, $update_payments);
-        
-        // Auto-generate receipt when marked as paid
         if ($status == 'Paid') {
             $receipt_update = "UPDATE billtb SET receipt_generated=1 WHERE pid='$pid'";
             mysqli_query($con, $receipt_update);
@@ -592,13 +587,13 @@ if (isset($_POST['update_payment'])) {
                                         $query = mysqli_query($con, "SELECT * FROM admissiontb ORDER BY admission_date DESC LIMIT 5");
                                         while($row = mysqli_fetch_array($query)) {
                                             $status = $row['status'];
-                                            $badgeClass = 'secondary'; // default gray
+                                            $badgeClass = 'secondary';
                                             if ($status === 'Admitted') {
-                                                $badgeClass = 'success'; // green
+                                                $badgeClass = 'success';
                                             } elseif ($status === 'Discharged') {
-                                                $badgeClass = 'secondary'; // gray
+                                                $badgeClass = 'secondary';
                                             } elseif ($status === 'Ready for Discharge') {
-                                                $badgeClass = 'warning'; // orange/yellow
+                                                $badgeClass = 'warning';
                                             }
                                             echo '<tr>
                                                 <td>'.$row['pid'].'</td>
@@ -675,7 +670,7 @@ if (isset($_POST['update_payment'])) {
                                     </thead>
                                     <tbody>
                                         <?php 
-                                        $medicine_fees_result = mysqli_query($con, "SELECT pid, SUM(price) AS total_medicine_fees FROM prestb WHERE diagnosis_details IS NOT NULL AND diagnosis_details != '' GROUP BY pid");
+$medicine_fees_result = mysqli_query($con, "SELECT pid, SUM(price) AS total_medicine_fees FROM prestb GROUP BY pid");
                                         $medicine_fees_map = [];
                                         while ($mf_row = mysqli_fetch_assoc($medicine_fees_result)) {
                                             $medicine_fees_map[$mf_row['pid']] = $mf_row['total_medicine_fees'];
@@ -903,8 +898,6 @@ while ($row = mysqli_fetch_assoc($query)) {
                         </div>
                     </div>
                     
-
-                    <!-- Add Doctor Modal -->
                     <div class="modal fade" id="addDoctorModal" tabindex="-1" aria-labelledby="addDoctorModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-lg">
                             <div class="modal-content">
@@ -965,8 +958,6 @@ while ($row = mysqli_fetch_assoc($query)) {
                             </div>
                         </div>
                     </div>
-
-                    <!-- Nurse Management -->
                     <div class="tab-pane fade" id="nurse-management">
                         <div class="glass-card p-4">
                             <h4 class="text-dark mb-4 d-flex justify-content-between align-items-center">
@@ -1249,8 +1240,6 @@ while ($row = mysqli_fetch_assoc($query)) {
         <h4 class="text-dark mb-4">
             <i class="fas fa-key me-2"></i>User Password & 2FA Management
         </h4>
-        
-        <!-- 2FA Management Section -->
         <div class="card mb-4">
             <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
                 <h6 class="mb-0"><i class="fas fa-shield-alt me-2"></i> Two-Factor Authentication Management</h6>
@@ -1258,7 +1247,6 @@ while ($row = mysqli_fetch_assoc($query)) {
             </div>
             <div class="card-body">
                 <div class="row">
-                    <!-- Doctors 2FA -->
                     <div class="col-md-6 mb-4">
                         <h6><i class="fas fa-user-md me-2"></i> Doctors</h6>
                         <div class="table-responsive">
@@ -1305,8 +1293,6 @@ while ($row = mysqli_fetch_assoc($query)) {
                             </table>
                         </div>
                     </div>
-
-                    <!-- Nurses 2FA -->
                     <div class="col-md-6 mb-4">
                         <h6><i class="fas fa-user-nurse me-2"></i> Nurses</h6>
                         <div class="table-responsive">
@@ -1353,8 +1339,6 @@ while ($row = mysqli_fetch_assoc($query)) {
                             </table>
                         </div>
                     </div>
-
-                    <!-- Lab Staff 2FA -->
                     <div class="col-md-6 mb-4">
                         <h6><i class="fas fa-flask me-2"></i> Lab Staff</h6>
                         <div class="table-responsive">
@@ -1401,8 +1385,6 @@ while ($row = mysqli_fetch_assoc($query)) {
                             </table>
                         </div>
                     </div>
-
-                    <!-- Admins 2FA -->
                     <div class="col-md-6 mb-4">
                         <h6><i class="fas fa-user-shield me-2"></i> Administrators</h6>
                         <div class="table-responsive">
@@ -1452,8 +1434,6 @@ while ($row = mysqli_fetch_assoc($query)) {
                 </div>
             </div>
         </div>
-
-                <!-- Patient Password Management -->
                 <div class="card mb-4">
                     <div class="card-header bg-primary text-white">
                         <h6 class="mb-0"><i class="fas fa-user me-2"></i> Patient Passwords</h6>
@@ -1491,15 +1471,12 @@ while ($row = mysqli_fetch_assoc($query)) {
                         </div>
                     </div>
                 </div>
-
-                <!-- Staff Password Management -->
                 <div class="card">
                     <div class="card-header bg-info text-white">
                         <h6 class="mb-0"><i class="fas fa-users me-2"></i> Staff Passwords</h6>
                     </div>
                     <div class="card-body">
                         <div class="row">
-                            <!-- Doctors -->
                             <div class="col-md-6 mb-3">
                                 <h6><i class="fas fa-user-md me-2"></i> Doctors</h6>
                                 <div class="table-responsive">
@@ -1531,8 +1508,6 @@ while ($row = mysqli_fetch_assoc($query)) {
                                     </table>
                                 </div>
                             </div>
-
-                            <!-- Nurses -->
                             <div class="col-md-6 mb-3">
                                 <h6><i class="fas fa-user-nurse me-2"></i> Nurses</h6>
                                 <div class="table-responsive">
@@ -1564,8 +1539,6 @@ while ($row = mysqli_fetch_assoc($query)) {
                                     </table>
                                 </div>
                             </div>
-
-                            <!-- Lab Staff -->
                             <div class="col-md-6 mb-3">
                                 <h6><i class="fas fa-flask me-2"></i> Lab Staff</h6>
                                 <div class="table-responsive">
@@ -1597,8 +1570,6 @@ while ($row = mysqli_fetch_assoc($query)) {
                                     </table>
                                 </div>
                             </div>
-
-                            <!-- Admins -->
                             <div class="col-md-6 mb-3">
                                 <h6><i class="fas fa-user-shield me-2"></i> Administrators</h6>
                                 <div class="table-responsive">
@@ -1635,7 +1606,6 @@ while ($row = mysqli_fetch_assoc($query)) {
                 </div>
             </div>
         </div>
-                <!-- Password Change Modal -->
                 <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
@@ -1820,9 +1790,8 @@ if (isset($_POST['approve_emergency']) || isset($_POST['deny_emergency'])) {
     $action = isset($_POST['approve_emergency']) ? 'approved' : 'denied';
     
     if ($action == 'approved') {
-        // Generate one-time token for auto-login
         $one_time_token = bin2hex(random_bytes(32));
-        $token_expires = date('Y-m-d H:i:s', strtotime('+1 hour')); // Token valid for 1 hour
+        $token_expires = date('Y-m-d H:i:s', strtotime('+1 hour'));
         
         $query = "UPDATE emergency_access_logs SET 
                   status = 'approved', 
@@ -1844,7 +1813,6 @@ if (isset($_POST['approve_emergency']) || isset($_POST['deny_emergency'])) {
     
     if (mysqli_query($con, $query)) {
         if ($action == 'approved') {
-            // Get request details to verify
             $request_query = mysqli_query($con, "SELECT * FROM emergency_access_logs WHERE id = '$request_id'");
             $request = mysqli_fetch_assoc($request_query);
             
@@ -1856,8 +1824,6 @@ if (isset($_POST['approve_emergency']) || isset($_POST['deny_emergency'])) {
         } else {
             echo "<script>alert('Emergency request denied!');</script>";
         }
-        
-        // Refresh the page to show updated status
         echo "<script>window.location.href = 'admin-panel.php#emergency-management';</script>";
         exit();
     } else {
@@ -1908,7 +1874,6 @@ if (isset($_POST['approve_emergency']) || isset($_POST['deny_emergency'])) {
         document.getElementById('edit_nurse_shift').value = shift;
         document.getElementById('edit_nurse_status').value = status;
     }
-    // Password Management Functions
 document.querySelectorAll('.toggle-password').forEach(button => {
     button.addEventListener('click', function() {
         const targetId = this.getAttribute('data-target');
@@ -1970,20 +1935,14 @@ document.querySelectorAll('.toggle-password').forEach(button => {
         document.getElementById('user_type').value = userType;
         document.getElementById('user_id').value = userId;
         document.getElementById('changePasswordModalLabel').textContent = 'Change Password for ' + userName;
-        
-        // Reset form
         document.getElementById('passwordChangeForm').reset();
         document.getElementById('newPasswordStrength').style.width = '0%';
         document.getElementById('passwordMatchError').style.display = 'none';
     }
-
-    // Event listeners
     document.getElementById('new_password')?.addEventListener('input', function(e) {
         checkNewPasswordStrength(e.target.value);
     });
-
     document.getElementById('confirm_password')?.addEventListener('input', validatePasswordMatch);
-
     document.getElementById('passwordChangeForm')?.addEventListener('submit', function(e) {
         if (!validatePasswordMatch()) {
             e.preventDefault();

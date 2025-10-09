@@ -1,8 +1,6 @@
 <?php
-// 2fa_functions.php
 
 function generate2FACode() {
-    // Generate 6-digit code
     return sprintf("%06d", mt_rand(1, 999999));
 }
 

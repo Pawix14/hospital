@@ -46,7 +46,7 @@ $bill_query = "SELECT * FROM billtb WHERE pid='$pid'";
 $bill_result = mysqli_query($con, $bill_query);
 $bill_data = mysqli_fetch_assoc($bill_result);
 
-$medicine_fees_query = "SELECT SUM(price) AS total_medicine_fees FROM prestb WHERE pid='$pid' AND diagnosis_details IS NOT NULL AND diagnosis_details != ''";
+$medicine_fees_query = "SELECT SUM(price) AS total_medicine_fees FROM prestb WHERE pid='$pid'";
 $medicine_fees_result = mysqli_query($con, $medicine_fees_query);
 $medicine_fees_row = mysqli_fetch_assoc($medicine_fees_result);
 $calculated_medicine_fees = $medicine_fees_row['total_medicine_fees'] ?? 0;
@@ -67,25 +67,17 @@ $charges_query = "SELECT pc.*, s.service_name FROM patient_chargstb pc JOIN serv
 $charges_result = mysqli_query($con, $charges_query);
 $payments_query = "SELECT * FROM paymentstb WHERE pid='$pid' ORDER BY payment_date DESC, payment_time DESC";
 $payments_result = mysqli_query($con, $payments_query);
-$prescriptions_query = "SELECT id, doctor, pid, fname, lname, symptoms, allergy, prescription, price, diagnosis_details, prescribed_medicines, dosage, frequency, duration, created_at AS created_date FROM prestb WHERE pid='$pid' AND diagnosis_details IS NOT NULL AND diagnosis_details != '' ORDER BY id DESC";
+$prescriptions_query = "SELECT id, doctor, pid, fname, lname, symptoms, allergy, prescription, price, diagnosis_details, prescribed_medicines, dosage, frequency, duration, created_at AS created_date FROM prestb WHERE pid='$pid' ORDER BY id DESC";
 $prescriptions_result = mysqli_query($con, $prescriptions_query);
-
-// Store diagnostics data for modals
 $diagnostics_data = [];
 while($diag = mysqli_fetch_array($diagnostics_result)) {
     $diagnostics_data[] = $diag;
 }
-
-// Reset pointer for table display
 mysqli_data_seek($diagnostics_result, 0);
-
-// Store lab test data for modals
 $lab_tests_data = [];
 while($lab = mysqli_fetch_array($lab_tests_result)) {
     $lab_tests_data[] = $lab;
 }
-
-// Reset pointer for table display
 mysqli_data_seek($lab_tests_result, 0);
 
 ?>
@@ -598,7 +590,6 @@ mysqli_data_seek($lab_tests_result, 0);
                                         </button>
                                     </form>
                                     <?php
-                                    // Check if invoice exists and its status
                                     $invoice_check_query = "SELECT * FROM invoicetb WHERE pid='$pid' ORDER BY generated_date DESC, generated_time DESC LIMIT 1";
                                     $invoice_check_result = mysqli_query($con, $invoice_check_query);
                                     if ($invoice_check_result && mysqli_num_rows($invoice_check_result) > 0) {

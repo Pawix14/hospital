@@ -22,15 +22,10 @@ $create_rounds_table = "CREATE TABLE IF NOT EXISTS patient_roundstb (
     vital_signs TEXT,
     status VARCHAR(50) DEFAULT 'Scheduled'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
-
 mysqli_query($con, $create_rounds_table);
-
-// Initialize validation variables
 $validation_errors = [];
 $form_data = [];
-
 if (isset($_POST['register_admit_patient'])) {
-    // Get form data
     $fname = mysqli_real_escape_string($con, $_POST['fname']);
     $lname = mysqli_real_escape_string($con, $_POST['lname']);
     $gender = mysqli_real_escape_string($con, $_POST['gender']);
@@ -45,8 +40,6 @@ if (isset($_POST['register_admit_patient'])) {
     $reason = mysqli_real_escape_string($con, $_POST['reason']);
     $admission_date = date("Y-m-d");
     $admission_time = date("H:i:s");
-
-    // Store form data for repopulation
     $form_data = [
         'fname' => $fname,
         'lname' => $lname,
@@ -59,26 +52,20 @@ if (isset($_POST['register_admit_patient'])) {
         'assigned_doctor' => $assigned_doctor,
         'room_number' => $room_number
     ];
-
-    // Validate Email
     if (empty($email)) {
         $validation_errors['email'] = "Email is required.";
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $validation_errors['email'] = "Please enter a valid email address.";
     } else {
-        // Check if email already exists
         $email_check_query = "SELECT pid FROM admissiontb WHERE email = '$email'";
         $email_check_result = mysqli_query($con, $email_check_query);
         if (mysqli_num_rows($email_check_result) > 0) {
             $validation_errors['email'] = "This email is already registered. Please use a different email.";
         }
     }
-
-    // Validate Password
     if (empty($password)) {
         $validation_errors['password'] = "Password is required.";
     } else {
-        // Password strength validation
         if (strlen($password) < 8) {
             $validation_errors['password'] = "Password must be at least 8 characters long.";
         } elseif (!preg_match('/[A-Z]/', $password)) {
@@ -91,27 +78,19 @@ if (isset($_POST['register_admit_patient'])) {
             $validation_errors['password'] = "Password must contain at least one special character.";
         }
     }
-
-    // Validate Confirm Password
     if (empty($cpassword)) {
         $validation_errors['cpassword'] = "Please confirm your password.";
     } elseif ($password !== $cpassword) {
         $validation_errors['cpassword'] = "Passwords do not match.";
     }
-
-    // Validate Contact Number (Philippine format)
     if (empty($contact)) {
         $validation_errors['contact'] = "Contact number is required.";
     } elseif (!preg_match('/^(09|\+639)\d{9}$/', $contact)) {
         $validation_errors['contact'] = "Please enter a valid Philippine mobile number (09XXXXXXXXX or +639XXXXXXXXX).";
     }
-
-    // Validate Age
     if ($age < 1 || $age > 120) {
         $validation_errors['age'] = "Please enter a valid age (1-120).";
     }
-
-    // Validate Required Fields
     $required_fields = [
         'fname' => 'First name',
         'lname' => 'Last name',
@@ -127,8 +106,6 @@ if (isset($_POST['register_admit_patient'])) {
             $validation_errors[$field] = "$label is required.";
         }
     }
-
-    // Check if room is already occupied (only if no validation errors)
     if (empty($validation_errors)) {
         $room_check_query = "SELECT pid FROM admissiontb WHERE room_number = '$room_number' AND status = 'Admitted'";
         $room_check_result = mysqli_query($con, $room_check_query);
@@ -137,8 +114,6 @@ if (isset($_POST['register_admit_patient'])) {
             $validation_errors['room_number'] = "Room $room_number is already occupied. Please select a different room.";
         }
     }
-
-    // If no validation errors, proceed with registration
     if (empty($validation_errors)) {
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
@@ -168,18 +143,15 @@ if (isset($_POST['register_admit_patient'])) {
             mysqli_query($con, $bill_query);
 
             echo "<script>
-                alert('Patient registered and admitted successfully!\\\\nPatient ID: $pid\\\\nRoom: $room_number\\\\nAssigned Doctor: $assigned_doctor\\\\nPatient can now login with email: $email');
+                alert('Patient registered and admitted successfully!\nPatient ID: $pid\nRoom: $room_number\nAssigned Doctor: $assigned_doctor\nPatient can now login with email: $email');
                 // Clear form data after successful submission
                 window.location.href = 'nurse-panel.php#register-patient';
             </script>";
-            
-            // Clear form data after successful submission
             $form_data = [];
         } else {
             echo "<script>alert('Error registering patient: " . mysqli_error($con) . "');</script>";
         }
     } else {
-        // Show validation errors
         $error_messages = implode("\\n", $validation_errors);
         echo "<script>alert('Please fix the following errors:\\n$error_messages');</script>";
     }
@@ -1395,8 +1367,7 @@ while ($row = mysqli_fetch_array($medicine_result)) {
             $('body').removeClass('modal-open');
             $('.modal-backdrop').remove();
         });
-        
-        // Ensure modals close properly
+    
         $('.modal .close, .modal [data-dismiss="modal"]').on('click', function() {
             $(this).closest('.modal').modal('hide');
         });

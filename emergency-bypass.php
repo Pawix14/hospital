@@ -1,8 +1,6 @@
 <?php
 session_start();
 $con = mysqli_connect("localhost", "root", "", "myhmsdb");
-
-// If user came from 2FA page, pre-fill username
 $prefill_username = isset($_SESSION['2fa_username']) ? $_SESSION['2fa_username'] : '';
 
 if (isset($_POST['emergency_request'])) {
@@ -10,22 +8,17 @@ if (isset($_POST['emergency_request'])) {
     $reason = $_POST['reason'];
     $contact = $_POST['contact'];
     $additional_info = $_POST['additional_info'] ?? '';
-    
-    // Get user role from session or detect it
     $role = $_SESSION['2fa_role'] ?? '';
     if (!$role) {
-        // Auto-detect role
         $tables = ['adminusertb', 'doctortb', 'nursetb', 'labtb'];
         foreach ($tables as $table) {
             $result = mysqli_query($con, "SELECT * FROM $table WHERE username = '$username'");
             if (mysqli_num_rows($result) > 0) {
-                $role = str_replace('tb', '', $table); // adminusertb -> admin
+                $role = str_replace('tb', '', $table); 
                 break;
             }
         }
     }
-    
-    // Log the emergency request
     $ip_address = $_SERVER['REMOTE_ADDR'];
     $query = "INSERT INTO emergency_access_logs (staff_username, staff_role, reason, contact_info, additional_info, ip_address) 
               VALUES ('$username', '$role', '$reason', '$contact', '$additional_info', '$ip_address')";
@@ -155,7 +148,7 @@ if (isset($_POST['emergency_request'])) {
                 </small>
                 <br>
                 <small class="text-white-50">
-                    For immediate assistance, call: <strong>+63-XXX-XXX-XXXX</strong>
+                    For immediate assistance, call: <strong>+63-9940213443</strong>
                 </small>
             </div>
         <?php endif; ?>
@@ -171,8 +164,6 @@ if (isset($_POST['emergency_request'])) {
                 additionalSection.style.display = 'none';
             }
         }
-
-        // Form validation
         document.querySelector('form').addEventListener('submit', function(e) {
             const acknowledge = document.getElementById('acknowledge');
             if (!acknowledge.checked) {

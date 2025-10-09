@@ -23,37 +23,38 @@ $bill_query = "SELECT * FROM billtb WHERE pid = '" . $invoice['pid'] . "'";
 $bill_result = mysqli_query($con, $bill_query);
 $bill_data = mysqli_fetch_assoc($bill_result);
 
-$doctor_query = "SELECT fname, lname FROM doctortb WHERE id = (SELECT assigned_doctor FROM admissiontb WHERE pid = '" . $invoice['pid'] . "')";
-
-$doctor_result = mysqli_query($con, $doctor_query);
 $doctor_name = '';
-if ($doctor_result && mysqli_num_rows($doctor_result) > 0) {
-    $doctor_row = mysqli_fetch_assoc($doctor_result);
-    $doctor_name = $doctor_row['fname'] . ' ' . $doctor_row['lname'];
+$assigned_doctor_query = "SELECT assigned_doctor FROM admissiontb WHERE pid = '" . $invoice['pid'] . "' LIMIT 1";
+$assigned_doctor_result = mysqli_query($con, $assigned_doctor_query);
+if ($assigned_doctor_result && mysqli_num_rows($assigned_doctor_result) > 0) {
+    $assigned_doctor_row = mysqli_fetch_assoc($assigned_doctor_result);
+    $assigned_doctor_username = $assigned_doctor_row['assigned_doctor'];
+    if (!empty($assigned_doctor_username)) {
+        $doctor_query = "SELECT fname, lname FROM doctortb WHERE username = '$assigned_doctor_username' LIMIT 1";
+        $doctor_result = mysqli_query($con, $doctor_query);
+        if ($doctor_result && mysqli_num_rows($doctor_result) > 0) {
+            $doctor_row = mysqli_fetch_assoc($doctor_result);
+            $doctor_name = $doctor_row['fname'] . ' ' . $doctor_row['lname'];
+        } else {
+            $doctor_name = $assigned_doctor_username;
+        }
+    }
 }
-
-// Calculate medicine fees dynamically from prestb
-$medicine_fees_result = mysqli_query($con, "SELECT SUM(price) AS total_medicine_fees FROM prestb WHERE pid = '" . $invoice['pid'] . "' AND diagnosis_details IS NOT NULL AND diagnosis_details != ''");
+$medicine_fees_result = mysqli_query($con, "SELECT SUM(price) AS total_medicine_fees FROM prestb WHERE pid = '" . $invoice['pid'] . "'");
 $calculated_medicine_fees = 0;
 if ($medicine_fees_result && mysqli_num_rows($medicine_fees_result) > 0) {
     $mf_row = mysqli_fetch_assoc($medicine_fees_result);
     $calculated_medicine_fees = $mf_row['total_medicine_fees'] ?? 0;
 }
-
-// Recalculate total
 $calculated_total = 
     ($bill_data['consultation_fees'] ?? 0) + 
     ($bill_data['lab_fees'] ?? 0) + 
     $calculated_medicine_fees + 
     ($bill_data['room_charges'] ?? 0) + 
     ($bill_data['service_charges'] ?? 0);
-
-// Get patient details for additional information
 $patient_query = "SELECT * FROM admissiontb WHERE pid = '" . $invoice['pid'] . "'";
 $patient_result = mysqli_query($con, $patient_query);
 $patient_data = mysqli_fetch_assoc($patient_result);
-
-// Get payment status
 $payment_status = $bill_data['status'] ?? 'Unpaid';
 $status_class = ($payment_status == 'Paid') ? 'badge-success' : 'badge-warning';
 
@@ -448,7 +449,6 @@ $status_class = ($payment_status == 'Paid') ? 'badge-success' : 'badge-warning';
 
     <script>
         function downloadInvoice() {
-            // This would typically connect to a PDF generation service
             alert('PDF download functionality would be implemented here. This would generate a PDF version of the invoice.');
         }
     </script>

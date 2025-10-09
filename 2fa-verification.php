@@ -1,7 +1,5 @@
 <?php
 session_start();
-
-// Security headers
 header("X-Frame-Options: DENY");
 header("X-Content-Type-Options: nosniff");
 
