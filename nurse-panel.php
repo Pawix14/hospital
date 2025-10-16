@@ -357,6 +357,7 @@ if (isset($_POST['schedule_round'])) {
     }
 }
 
+<<<<<<< HEAD
 // Medication Administration: Mark as Given
 if (isset($_POST['mark_as_given'])) {
     $prescription_id = (int)($_POST['prescription_id'] ?? 0);
@@ -374,6 +375,8 @@ if (isset($_POST['mark_as_given'])) {
     }
 }
 
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 // Store rounds data for modals
 $today_rounds_data = [];
 $today = date('Y-m-d');
@@ -443,6 +446,7 @@ while ($insurance = mysqli_fetch_array($insurance_result)) {
     
     <style>
         :root {
+<<<<<<< HEAD
             --primary-blue: #007bff;
             --light-blue: #e3f2fd;
             --dark-blue: #0056b3;
@@ -467,6 +471,24 @@ while ($insurance = mysqli_fetch_array($insurance_result)) {
             backdrop-filter: none !important;
             -webkit-backdrop-filter: none !important;
             border-bottom: 1px solid var(--dark-blue);
+=======
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #fdbb2d 0%, #22c1c3 100%);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+        }
+
+        .navbar-glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
         }
 
         .navbar-brand {
@@ -476,16 +498,24 @@ while ($insurance = mysqli_fetch_array($insurance_result)) {
         }
 
         .glass-card {
+<<<<<<< HEAD
             background-color: var(--card-background);
             border: 1px solid #e9ecef;
             border-radius: 10px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+=======
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            transition: all 0.3s ease;
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
         }
 
         .glass-card:hover {
             transform: translateY(-5px);
         }
 
+<<<<<<< HEAD
         .stat-card-enhanced {
             border-radius: 10px;
             color: white;
@@ -538,6 +568,50 @@ while ($insurance = mysqli_fetch_array($insurance_result)) {
         .nav-link:hover {
             background-color: var(--light-blue);
             color: var(--primary-blue) !important;
+=======
+        .stat-card {
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            color: white;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .sidebar {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 20px;
+            pointer-events: auto !important;
+            z-index: 10;
+        }
+
+        .nav-pills .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+            pointer-events: auto !important;
+            z-index: 10;
+        }
+
+        .nav-pills .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .nav-pills .nav-link.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
         }
 
         .table-glass {
@@ -552,11 +626,19 @@ while ($insurance = mysqli_fetch_array($insurance_result)) {
         }
 
         .welcome-header {
+<<<<<<< HEAD
+=======
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
             text-align: center;
             margin-bottom: 30px;
         }
 
         .welcome-header h2 {
+<<<<<<< HEAD
             color: var(--primary-blue);
             font-weight: 700;
             margin-bottom: 10px;
@@ -565,6 +647,15 @@ while ($insurance = mysqli_fetch_array($insurance_result)) {
         .welcome-header p {
             color: var(--text-muted);
             font-size: 1.1rem;
+=======
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+        }
+
+        .welcome-header p {
+            color: rgba(255, 255, 255, 0.8);
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
         }
         
         .round-status-scheduled { background-color: #fff3cd; }
@@ -610,6 +701,7 @@ while ($insurance = mysqli_fetch_array($insurance_result)) {
         .trend-down { color: #dc3545; }
 
         .metric-card {
+<<<<<<< HEAD
             background-color: var(--light-blue);
             border: 1px solid var(--accent-blue);
             border-radius: 8px;
@@ -626,15 +718,38 @@ while ($insurance = mysqli_fetch_array($insurance_result)) {
 
         .metric-card small {
             color: var(--text-muted);
+=======
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+            text-align: center;
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
         }
 
         .activity-item {
             padding: 10px;
+<<<<<<< HEAD
             border-left: 3px solid var(--primary-blue);
             background-color: var(--light-blue);
             margin-bottom: 10px;
             border-radius: 5px;
             border: 1px solid var(--accent-blue);
+=======
+            border-left: 3px solid #667eea;
+            background: rgba(255,255,255,0.05);
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        .stat-card-enhanced {
+            border-radius: 15px;
+            padding: 25px;
+            color: white;
+            height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
         }
 
         .stat-card-enhanced .d-flex {
@@ -643,6 +758,7 @@ while ($insurance = mysqli_fetch_array($insurance_result)) {
         }
 
         .stat-card-enhanced .icon-container {
+<<<<<<< HEAD
             background: rgba(255,255,255,0.2);
             border-radius: 50%;
             width: 50px;
@@ -651,6 +767,10 @@ while ($insurance = mysqli_fetch_array($insurance_result)) {
             align-items: center;
             justify-content: center;
             font-size: 1.5rem;
+=======
+            font-size: 2.5rem;
+            opacity: 0.9;
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
         }
 
         .tab-content > .tab-pane {
@@ -678,9 +798,12 @@ while ($insurance = mysqli_fetch_array($insurance_result)) {
             display: block !important;
         }
     </style>
+<<<<<<< HEAD
 <style>
 #v-pills-medicine-management { display: none !important; }
 </style>
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 </head>
 
 <body>
@@ -721,15 +844,25 @@ while ($insurance = mysqli_fetch_array($insurance_result)) {
                         <a class="nav-link" id="v-pills-patient-list-tab" data-toggle="pill" href="#v-pills-patient-list" role="tab" aria-controls="v-pills-patient-list" aria-selected="false">
                             <i class="fas fa-users me-2"></i>Patient List
                         </a>
+<<<<<<< HEAD
                                                 <a class="nav-link" id="v-pills-patient-rounds-tab" data-toggle="pill" href="#v-pills-patient-rounds" role="tab" aria-controls="v-pills-patient-rounds" aria-selected="false">
+=======
+                        <a class="nav-link" id="v-pills-medicine-management-tab" data-toggle="pill" href="#v-pills-medicine-management" role="tab" aria-controls="v-pills-medicine-management" aria-selected="false">
+                            <i class="fas fa-pills me-2"></i>Manage Medicines
+                        </a>
+                        <a class="nav-link" id="v-pills-patient-rounds-tab" data-toggle="pill" href="#v-pills-patient-rounds" role="tab" aria-controls="v-pills-patient-rounds" aria-selected="false">
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
                             <i class="fas fa-clock me-2"></i>Schedule Rounds
                         </a>
                         <a class="nav-link" id="v-pills-room-management-tab" data-toggle="pill" href="#v-pills-room-management" role="tab" aria-controls="v-pills-room-management" aria-selected="false">
                             <i class="fas fa-bed me-2"></i>Room Management
                         </a>
+<<<<<<< HEAD
                         <a class="nav-link" id="v-pills-med-admin-tab" data-toggle="pill" href="#v-pills-med-admin" role="tab" aria-controls="v-pills-med-admin" aria-selected="false">
                             <i class="fas fa-syringe me-2"></i>Medication Administration
                         </a>
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
                     </div>
                 </div>
             </div>
@@ -745,7 +878,16 @@ while ($insurance = mysqli_fetch_array($insurance_result)) {
                                         <i class="fas fa-hospital-user me-1"></i>Register Patient
                                     </a>
                                 </div>
+<<<<<<< HEAD
                                                                 <div class="col-auto">
+=======
+                                <div class="col-auto">
+                                    <a href="#v-pills-medicine-management" class="btn btn-outline-success btn-sm quick-action-btn">
+                                        <i class="fas fa-pills me-1"></i>Manage Medicines
+                                    </a>
+                                </div>
+                                <div class="col-auto">
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
                                     <a href="#v-pills-patient-rounds" class="btn btn-outline-warning btn-sm quick-action-btn">
                                         <i class="fas fa-clock me-1"></i>Schedule Rounds
                                     </a>
@@ -879,7 +1021,23 @@ while ($insurance = mysqli_fetch_array($insurance_result)) {
                                         <small>Rounds Completed</small>
                                     </div>
                                 </div>
+<<<<<<< HEAD
                                                             </div>
+=======
+                                <div class="col-md-3">
+                                    <div class="metric-card">
+                                        <h3 class="text-success">
+                                            <?php
+                                            $result = mysqli_query($con, "SELECT COUNT(*) AS total FROM medicinetb WHERE quantity < 10");
+                                            $row = mysqli_fetch_assoc($result);
+                                            echo $row['total'];
+                                            ?>
+                                        </h3>
+                                        <small>Low Stock Medicines</small>
+                                    </div>
+                                </div>
+                            </div>
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
                         </div>
 
                         <div class="row g-4">
@@ -1002,7 +1160,47 @@ $activity_query = mysqli_query($con, '
                                         ?>
                                     </div>
                                 </div>
+<<<<<<< HEAD
                                                             </div>
+=======
+                                <div class="glass-card p-4">
+                                    <h5 class="text-dark mb-3">
+                                        <i class="fas fa-exclamation-triangle me-2 text-warning"></i>Low Stock Alert
+                                    </h5>
+                                    <div class="low-stock-list">
+                                        <?php
+                                        $low_stock_query = mysqli_query($con, "
+                                            SELECT medicine_name, quantity 
+                                            FROM medicinetb 
+                                            WHERE quantity < 10 
+                                            ORDER BY quantity ASC 
+                                            LIMIT 5
+                                        ");                                       
+                                        $low_stock_count = 0;
+                                        while($medicine = mysqli_fetch_array($low_stock_query)) {
+                                            $low_stock_count++;
+                                            $stock_class = $medicine['quantity'] == 0 ? 'text-danger' : 'text-warning';
+                                            $stock_text = $medicine['quantity'] == 0 ? 'Out of Stock' : 'Low Stock';
+                                            
+                                            echo '<div class="d-flex justify-content-between align-items-center mb-2 p-2 border-bottom">
+                                                <div>
+                                                    <strong>' . $medicine['medicine_name'] . '</strong><br>
+                                                    <small class="' . $stock_class . '">' . $stock_text . ' - ' . $medicine['quantity'] . ' remaining</small>
+                                                </div>
+                                                <a href="#v-pills-medicine-management" class="btn btn-outline-warning btn-sm">
+                                                    <i class="fas fa-sync-alt"></i>
+                                                </a>
+                                            </div>';
+                                        }
+                                        
+                                        if ($low_stock_count === 0) {
+                                            echo '<div class="text-center text-muted py-3">All medicines are well stocked</div>';
+                                        }
+                                        ?>
+                                    </div>
+                                </div>
+                            </div>
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
                         </div>
                     </div>
                     <div class="tab-pane fade" id="v-pills-register-patient" role="tabpanel" aria-labelledby="v-pills-register-patient-tab">
@@ -1410,6 +1608,7 @@ while ($row = mysqli_fetch_array($medicine_result)) {
                             </div>
                         </div>
                     </div>
+<<<<<<< HEAD
                     <!-- Medication Administration Tab -->
                     <div class="tab-pane fade" id="v-pills-med-admin" role="tabpanel" aria-labelledby="v-pills-med-admin-tab">
                         <div class="glass-card p-4">
@@ -1466,6 +1665,8 @@ while ($row = mysqli_fetch_array($medicine_result)) {
                         </div>
                     </div>
 
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
                     <div class="tab-pane fade" id="v-pills-patient-rounds" role="tabpanel" aria-labelledby="v-pills-patient-rounds-tab">
                         <div class="glass-card p-4">
                             <h4 class="text-dark mb-4">

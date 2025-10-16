@@ -10,14 +10,22 @@ mb_internal_encoding('UTF-8');
 if (!isset($_GET['pid'])) {
     die("Patient ID is required.");
 }
+<<<<<<< HEAD
 $pid = $_GET['pid'] ?? '';
+=======
+$pid = $_GET['pid'];
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 $generate_receipt = isset($_GET['generate']) && $_GET['generate'] == 'true';
 if (!isset($_SESSION['username'])) {
     header("Location: index.php");
     exit();
 }
 $role = $_SESSION['role'] ?? '';
+<<<<<<< HEAD
 if ($role != 'admin' && $role != 'cashier' && (!isset($_SESSION['pid']) || $_SESSION['pid'] != $pid)) {
+=======
+if ($role != 'admin' && $_SESSION['pid'] != $pid) {
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
     die("Access denied.");
 }
 $bill_query = "SELECT * FROM billtb WHERE pid='$pid'";
@@ -27,7 +35,11 @@ $bill_data = mysqli_fetch_assoc($bill_result);
 if (!$bill_data) {
     die("Bill not found.");
 }
+<<<<<<< HEAD
 if (($bill_data['status'] ?? 'Unpaid') != 'Paid') {
+=======
+if ($bill_data['status'] != 'Paid') {
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
     die("Bill is not paid. Cannot generate receipt.");
 }
 $patient_query = "SELECT * FROM admissiontb WHERE pid='$pid'";
@@ -113,6 +125,7 @@ if ($insurance_result && mysqli_num_rows($insurance_result) > 0) {
     $insurance_coverage_percent = floatval($insurance_row['coverage_percent']);
 }
 
+<<<<<<< HEAD
 $calculated_total =
     ($bill_data['consultation_fees'] ?? 0) +
     ($bill_data['lab_fees'] ?? 0) +
@@ -120,6 +133,14 @@ $calculated_total =
     ($bill_data['room_charges'] ?? 0) +
     ($bill_data['service_charges'] ?? 0) +
     ($bill_data['other_charges'] ?? 0);
+=======
+$calculated_total = 
+    ($bill_data['consultation_fees'] ?? 0) + 
+    ($bill_data['lab_fees'] ?? 0) + 
+    $calculated_medicine_fees + 
+    ($bill_data['room_charges'] ?? 0) + 
+    ($bill_data['service_charges'] ?? 0);
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 
 if ($insurance_coverage_percent > 0) {
     $insurance_coverage_amount = ($insurance_coverage_percent / 100) * $calculated_total;
@@ -291,11 +312,16 @@ if (count($medicine_details) > 0 || $calculated_medicine_fees > 0) {
 if (($bill_data['room_charges'] ?? 0) > 0) {
     $room_query = "SELECT room_number FROM admissiontb WHERE pid = '$pid'";
     $room_result = mysqli_query($con, $room_query);
+<<<<<<< HEAD
     $room_number = '';
     if ($room_result && mysqli_num_rows($room_result) > 0) {
         $room_data = mysqli_fetch_assoc($room_result);
         $room_number = $room_data['room_number'] ?? '';
     }
+=======
+    $room_data = mysqli_fetch_assoc($room_result);
+    $room_number = $room_data['room_number'] ?? '';
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
     $room_type = "";
     if (strpos($room_number, '101') !== false || strpos($room_number, '102') !== false || strpos($room_number, '103') !== false) {
         $room_type = "General Ward";
@@ -360,18 +386,25 @@ if (($bill_data['discount'] ?? 0) > 0) {
     $pdf->Cell(40, 8, '-' . number_format($bill_data['discount'], 2), 1, 1, 'R');
 }
 
+<<<<<<< HEAD
 if (($bill_data['other_charges'] ?? 0) > 0) {
     $pdf->Cell(120, 8, 'OTHER CHARGES', 1, 0, 'R');
     $pdf->Cell(30, 8, '', 1, 0, 'C');
     $pdf->Cell(40, 8, number_format($bill_data['other_charges'], 2), 1, 1, 'R');
 }
 
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 $pdf->SetFont('helvetica', 'B', 12);
 $pdf->SetFillColor(74, 107, 220);
 $pdf->SetTextColor(255, 255, 255);
 $pdf->Cell(120, 10, 'TOTAL AMOUNT PAID', 1, 0, 'R', true);
 $pdf->Cell(30, 10, '', 1, 0, 'C', true);
+<<<<<<< HEAD
 $pdf->Cell(40, 10, '₱ ' . number_format($calculated_total - $insurance_coverage_amount - ($bill_data['discount'] ?? 0) + ($bill_data['other_charges'] ?? 0), 2), 1, 1, 'R', true);
+=======
+$pdf->Cell(40, 10, '₱ ' . number_format($calculated_total - $insurance_coverage_amount - ($bill_data['discount'] ?? 0), 2), 1, 1, 'R', true);
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 
 $pdf->SetTextColor(0, 0, 0);
 $pdf->Ln(10);
@@ -398,6 +431,7 @@ if (!empty($bill_data['payment_method'])) {
     $pdf->Cell(0, 6, $bill_data['payment_method'], 0, 1);
 }
 
+<<<<<<< HEAD
 if (!empty($bill_data['cashier_id'])) {
     $cashier_query = "SELECT fname, lname FROM cashiertb WHERE id='$bill_data[cashier_id]'";
     $cashier_result = mysqli_query($con, $cashier_query);
@@ -411,6 +445,8 @@ if (!empty($bill_data['cashier_id'])) {
     }
 }
 
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 $pdf->Ln(8);
 
 // AUTHORIZATION SECTION

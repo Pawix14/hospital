@@ -262,7 +262,25 @@ if (isset($_POST['delete_insurance_company'])) {
     }
 }
 
+<<<<<<< HEAD
 
+=======
+if (isset($_POST['approve_invoice'])) {
+    $invoice_id = $_POST['invoice_id'];
+    $update_query = "UPDATE invoicetb SET status='Approved' WHERE id='$invoice_id'";
+    if (mysqli_query($con, $update_query)) {
+        echo "<script>alert('Invoice request approved successfully!');</script>";
+    }
+}
+
+if (isset($_POST['deny_invoice'])) {
+    $invoice_id = $_POST['invoice_id'];
+    $update_query = "UPDATE invoicetb SET status='Denied' WHERE id='$invoice_id'";
+    if (mysqli_query($con, $update_query)) {
+        echo "<script>alert('Invoice request denied.');</script>";
+    }
+}
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 
 if (isset($_POST['approve_emergency']) || isset($_POST['deny_emergency'])) {
     $request_id = $_POST['request_id'];
@@ -326,21 +344,33 @@ if (isset($_POST['approve_emergency']) || isset($_POST['deny_emergency'])) {
     
     <style>
         :root {
+<<<<<<< HEAD
             --primary-blue: #4a90e2;
             --light-blue: #e8f4fd;
             --dark-blue: #2c5282;
             --success-green: #48bb78;
             --warning-yellow: #ed8936;
             --danger-red: #e53e3e;
+=======
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #fdbb2d 0%, #22c1c3 100%);
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
         }
 
         body {
             font-family: 'Inter', sans-serif;
+<<<<<<< HEAD
             background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+=======
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
             min-height: 100vh;
         }
 
         .navbar-glass {
+<<<<<<< HEAD
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
             border-bottom: 1px solid rgba(0,0,0,0.1);
@@ -350,10 +380,22 @@ if (isset($_POST['approve_emergency']) || isset($_POST['deny_emergency'])) {
             font-family: 'Inter', sans-serif;
             font-weight: 600;
             color: var(--dark-blue) !important;
+=======
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .navbar-brand {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            color: white !important;
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
         }
 
         .glass-card {
             background: rgba(255, 255, 255, 0.95);
+<<<<<<< HEAD
             border-radius: 15px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
@@ -363,6 +405,15 @@ if (isset($_POST['approve_emergency']) || isset($_POST['deny_emergency'])) {
         .glass-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+=======
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
         }
 
         .stat-card {
@@ -373,7 +424,11 @@ if (isset($_POST['approve_emergency']) || isset($_POST['deny_emergency'])) {
             display: flex;
             flex-direction: column;
             justify-content: center;
+<<<<<<< HEAD
             color: var(--dark-blue);
+=======
+            color: white;
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
         }
 
         .stat-card:hover {
@@ -381,16 +436,24 @@ if (isset($_POST['approve_emergency']) || isset($_POST['deny_emergency'])) {
         }
 
         .sidebar {
+<<<<<<< HEAD
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
             border-radius: 15px;
             padding: 20px;
             border: 1px solid rgba(0,0,0,0.05);
+=======
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 20px;
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
             pointer-events: auto !important;
             z-index: 10;
         }
 
         .nav-pills .nav-link {
+<<<<<<< HEAD
             color: var(--dark-blue);
             border-radius: 10px;
             padding: 12px 15px;
@@ -411,6 +474,25 @@ if (isset($_POST['approve_emergency']) || isset($_POST['deny_emergency'])) {
             background: var(--primary-blue);
             color: white;
             box-shadow: 0 2px 10px rgba(74, 144, 226, 0.3);
+=======
+            color: rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+            pointer-events: auto !important;
+            z-index: 10;
+        }
+
+        .nav-pills .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .nav-pills .nav-link.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
         }
 
         .table-glass {
@@ -419,6 +501,7 @@ if (isset($_POST['approve_emergency']) || isset($_POST['deny_emergency'])) {
         }
 
         .table-glass th {
+<<<<<<< HEAD
             background: rgba(0,0,0,0.05);
             color: var(--dark-blue);
             font-weight: 600;
@@ -442,6 +525,30 @@ if (isset($_POST['approve_emergency']) || isset($_POST['deny_emergency'])) {
 
         .welcome-header p {
             color: #718096;
+=======
+            background: rgba(255, 255, 255, 0.2);
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .welcome-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .welcome-header h2 {
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+        }
+
+        .welcome-header p {
+            color: rgba(255, 255, 255, 0.8);
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
         }
 
         .password-toggle, .toggle-password {
@@ -585,7 +692,13 @@ if (isset($_POST['approve_emergency']) || isset($_POST['deny_emergency'])) {
                         <a class="nav-link" role="tab" data-toggle="tab" href="#nurse-management" aria-controls="nurse-management" aria-selected="false" id="nurse-management-tab">
                             <i class="fas fa-user-nurse me-2"></i>Nurse Management
                         </a>
+<<<<<<< HEAD
 
+=======
+                        <a class="nav-link" role="tab" data-toggle="tab" href="#invoice-requests" aria-controls="invoice-requests" aria-selected="false" id="invoice-requests-tab">
+                            <i class="fas fa-file-invoice me-2"></i>Invoice Requests
+                        </a>
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
                         <?php if ($_SESSION['role'] === 'admin'): ?>
                         <a class="nav-link" role="tab" data-toggle="tab" href="#prescriptions" aria-controls="prescriptions" aria-selected="false" id="prescriptions-tab">
                             <i class="fa fa-medkit me-2"></i>Prescriptions
@@ -599,9 +712,12 @@ if (isset($_POST['approve_emergency']) || isset($_POST['deny_emergency'])) {
                         <a class="nav-link" role="tab" data-toggle="tab" href="#patient-insurance-management" aria-controls="patient-insurance-management" aria-selected="false" id="patient-insurance-management-tab">
                             <i class="fas fa-shield-alt me-2"></i>Patient Insurance
                         </a>
+<<<<<<< HEAD
                         <a class="nav-link" role="tab" data-toggle="tab" href="#cashier-management" aria-controls="cashier-management" aria-selected="false" id="cashier-management-tab">
                             <i class="fas fa-cash-register me-2"></i>Cashier Management
                         </a>
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
                         <?php endif; ?>
                     </div>
                 </div>
@@ -1236,7 +1352,69 @@ while ($row = mysqli_fetch_assoc($query)) {
                         </div>
                     </div>
 
+<<<<<<< HEAD
 
+=======
+                <div class="tab-pane fade" id="invoice-requests" role="tabpanel" aria-labelledby="invoice-requests-tab">
+                <div class="glass-card p-4">
+                    <h4 class="text-dark mb-4">
+                        <i class="fas fa-file-invoice me-2"></i>Invoice Requests
+                    </h4>
+                    <div class="table-responsive">
+                        <table class="table table-glass">
+                            <thead>
+                                <tr>
+                                    <th>Invoice ID</th>
+                                    <th>Patient ID</th>
+                                    <th>Patient Name</th>
+                                    <th>Invoice Number</th>
+                                    <th>Total Amount</th>
+                                    <th>Generated Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                $invoice_query = "SELECT i.*, a.fname, a.lname FROM invoicetb i JOIN admissiontb a ON i.pid = a.pid ORDER BY i.generated_date DESC, i.generated_time DESC";
+                                $invoice_result = mysqli_query($con, $invoice_query);
+                                while ($invoice = mysqli_fetch_array($invoice_result)) {
+                                    $statusClass = 'secondary';
+                                    if ($invoice['status'] == 'Approved') {
+                                        $statusClass = 'success';
+                                    } elseif ($invoice['status'] == 'Denied') {
+                                        $statusClass = 'danger';
+                                    } elseif ($invoice['status'] == 'Generated') {
+                                        $statusClass = 'warning';
+                                    }
+                                    echo '<tr>
+                                        <td>' . $invoice['id'] . '</td>
+                                        <td>' . $invoice['pid'] . '</td>
+                                        <td>' . $invoice['fname'] . ' ' . $invoice['lname'] . '</td>
+                                        <td>' . $invoice['invoice_number'] . '</td>
+                                        <td>₱' . number_format($invoice['total_amount'], 2) . '</td>
+                                        <td>' . $invoice['generated_date'] . '</td>
+                                        <td><span class="badge bg-' . $statusClass . '">' . $invoice['status'] . '</span></td>
+                                        <td>';
+                                    if ($invoice['status'] == 'Generated') {
+                                        echo '<form method="POST" style="display:inline;">
+                                            <input type="hidden" name="invoice_id" value="' . $invoice['id'] . '">
+                                            <button type="submit" name="approve_invoice" class="btn btn-sm btn-success" onclick="return confirm(\'Approve this invoice request?\')">Approve</button>
+                                            <button type="submit" name="deny_invoice" class="btn btn-sm btn-danger" onclick="return confirm(\'Deny this invoice request?\')">Deny</button>
+                                        </form>';
+                                    } else {
+                                        echo '-';
+                                    }
+                                    echo '</td>
+                                    </tr>';
+                                }
+                                ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
             <?php if ($_SESSION['role'] === 'admin'): ?>
             <div class="tab-pane fade" id="prescriptions" role="tabpanel" aria-labelledby="prescriptions-tab">
                 <div class="glass-card p-4">
@@ -2290,14 +2468,22 @@ while ($row = mysqli_fetch_assoc($query)) {
         $emergency_query = mysqli_query($con, "SELECT * FROM emergency_access_logs ORDER BY created_at DESC");
         $pending_count = mysqli_num_rows(mysqli_query($con, "SELECT * FROM emergency_access_logs WHERE status='pending'"));
         ?>
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
         <?php if ($pending_count > 0): ?>
             <div class="alert alert-warning">
                 <i class="fas fa-bell me-2"></i>
                 <strong><?php echo $pending_count; ?> pending emergency request(s) need attention!</strong>
             </div>
         <?php endif; ?>
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
         <div class="table-responsive">
             <table class="table table-glass">
                 <thead>
@@ -2329,9 +2515,15 @@ while ($row = mysqli_fetch_assoc($query)) {
                             <?php endif; ?>
                         </td>
                         <td>
+<<<<<<< HEAD
                             <span class="badge bg-<?php
                                 echo $request['status'] == 'pending' ? 'warning' :
                                      ($request['status'] == 'approved' ? 'success' : 'secondary');
+=======
+                            <span class="badge bg-<?php 
+                                echo $request['status'] == 'pending' ? 'warning' : 
+                                     ($request['status'] == 'approved' ? 'success' : 'secondary'); 
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
                             ?>">
                                 <?php echo ucfirst($request['status']); ?>
                             </span>
@@ -2359,14 +2551,22 @@ while ($row = mysqli_fetch_assoc($query)) {
                             <?php if ($request['status'] == 'pending'): ?>
                                 <form method="POST" style="display:inline;">
                                     <input type="hidden" name="request_id" value="<?php echo $request['id']; ?>">
+<<<<<<< HEAD
                                     <button type="submit" name="approve_emergency" class="btn btn-sm btn-success"
+=======
+                                    <button type="submit" name="approve_emergency" class="btn btn-sm btn-success" 
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
                                             onclick="return confirm('Approve emergency access for <?php echo $request['staff_username']; ?>? This will allow one-time 2FA bypass.')">
                                         <i class="fas fa-check"></i> Approve
                                     </button>
                                 </form>
                                 <form method="POST" style="display:inline;">
                                     <input type="hidden" name="request_id" value="<?php echo $request['id']; ?>">
+<<<<<<< HEAD
                                     <button type="submit" name="deny_emergency" class="btn btn-sm btn-danger"
+=======
+                                    <button type="submit" name="deny_emergency" class="btn btn-sm btn-danger" 
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
                                             onclick="return confirm('Deny emergency access for <?php echo $request['staff_username']; ?>?')">
                                         <i class="fas fa-times"></i> Deny
                                     </button>
@@ -2388,6 +2588,7 @@ while ($row = mysqli_fetch_assoc($query)) {
     </div>
 </div>
 
+<<<<<<< HEAD
 <!-- Add Cashier Modal -->
 <div class="modal fade" id="addCashierModal" tabindex="-1" aria-labelledby="addCashierModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -2532,6 +2733,23 @@ while ($row = mysqli_fetch_assoc($query)) {
 
 <?php
 
+=======
+<?php
+if (isset($_POST['approve_invoice'])) {
+    $invoice_id = $_POST['invoice_id'];
+    $update_query = "UPDATE invoicetb SET status='Approved' WHERE id='$invoice_id'";
+    if (mysqli_query($con, $update_query)) {
+        echo "<script>alert('Invoice request approved successfully!');</script>";
+    }
+}
+    if (isset($_POST['deny_invoice'])) {
+        $invoice_id = $_POST['invoice_id'];
+        $update_query = "UPDATE invoicetb SET status='Denied' WHERE id='$invoice_id'";
+        if (mysqli_query($con, $update_query)) {
+            echo "<script>alert('Invoice request denied.');</script>";
+        }
+    }
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 if (isset($_POST['approve_emergency']) || isset($_POST['deny_emergency'])) {
     $request_id = $_POST['request_id'];
     $admin_username = $_SESSION['username'];
@@ -2580,6 +2798,7 @@ if (isset($_POST['approve_emergency']) || isset($_POST['deny_emergency'])) {
     }
 }
 
+<<<<<<< HEAD
 // Cashier Management
 if (isset($_POST['add_cashier'])) {
     $username = $_POST['cashier_username'];
@@ -2620,6 +2839,8 @@ if (isset($_POST['delete_cashier'])) {
     }
 }
 
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 // Insurance Company Management
 if (isset($_POST['add_insurance_company'])) {
     $company_name = $_POST['company_name'];
@@ -2707,6 +2928,7 @@ if (isset($_POST['delete_insurance_company'])) {
         document.getElementById('edit_nurse_shift').value = shift;
         document.getElementById('edit_nurse_status').value = status;
     }
+<<<<<<< HEAD
 
     function editCashier(id, fname, lname, email, contact, status) {
         document.getElementById('edit_cashier_id').value = id;
@@ -2716,6 +2938,8 @@ if (isset($_POST['delete_insurance_company'])) {
         document.getElementById('edit_cashier_contact').value = contact;
         document.getElementById('edit_cashier_status').value = status;
     }
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 document.querySelectorAll('.toggle-password').forEach(button => {
     button.addEventListener('click', function() {
         const targetId = this.getAttribute('data-target');
@@ -2793,7 +3017,13 @@ document.querySelectorAll('.toggle-password').forEach(button => {
     });
 </script>
     <script>
+<<<<<<< HEAD
         document.addEventListener('DOMContentLoaded', function() {
+=======
+        // Initialize charts
+        document.addEventListener('DOMContentLoaded', function() {
+            // Admissions Chart
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
             const admissionsCtx = document.getElementById('admissionsChart').getContext('2d');
             const admissionsChart = new Chart(admissionsCtx, {
                 type: 'line',

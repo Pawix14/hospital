@@ -3,7 +3,11 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
+<<<<<<< HEAD
 -- Generation Time: Oct 16, 2025 at 01:14 PM
+=======
+-- Generation Time: Oct 09, 2025 at 07:34 PM
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -71,6 +75,7 @@ CREATE TABLE `admissiontb` (
   `created_by` varchar(50) DEFAULT 'nurse',
   `reason` text NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+<<<<<<< HEAD
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `main_doctor_id` int(11) DEFAULT NULL,
   `operating_doctor_id` int(11) DEFAULT NULL,
@@ -78,12 +83,16 @@ CREATE TABLE `admissiontb` (
   `operation_date` date DEFAULT NULL,
   `operation_time` time DEFAULT NULL,
   `operation_status` enum('Not Scheduled','Scheduled','In Progress','Completed','Cancelled') DEFAULT 'Not Scheduled'
+=======
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 --
 -- Dumping data for table `admissiontb`
 --
 
+<<<<<<< HEAD
 INSERT INTO `admissiontb` (`pid`, `fname`, `lname`, `gender`, `email`, `contact`, `password`, `admission_date`, `status`, `age`, `address`, `blood_group`, `medical_history`, `allergies`, `assigned_doctor`, `room_number`, `created_by`, `reason`, `created_at`, `updated_at`, `main_doctor_id`, `operating_doctor_id`, `operation_notes`, `operation_date`, `operation_time`, `operation_status`) VALUES
 (8, 'last', 'na', 'Male', 'Pmadridano@gmail.com', '09940213443', '$2y$10$ZUSbKAS7Xc.g33Ib5dFtBekunbYKIUHzYNAt.tC5pRQM1kGR68VnO', '2025-10-09', 'Discharged', 20, 'Km6 Upper Balulang', '', NULL, NULL, 'pawix_12', '202', 'nurse', 'back pain', '2025-10-09 03:18:06', '2025-10-09 17:22:51', NULL, NULL, NULL, NULL, NULL, 'Not Scheduled'),
 (11, 'Insure', 'inurse', 'Male', 'Insu@gmail.com', '09940213443', '$2y$10$KIOzACrapi5l5Ov8.SIwkujl8lQukaxjo/V.wuuSj8KyKPnMuL1MG', '2025-10-09', 'Discharged', 20, 'Km6 Upper Balulang', '', NULL, NULL, 'pawix_12', '101', 'nurse', 'Test insurance', '2025-10-09 11:52:28', '2025-10-09 17:23:52', NULL, NULL, NULL, NULL, NULL, 'Not Scheduled'),
@@ -116,6 +125,15 @@ CREATE TABLE `adverse_reactions` (
   `follow_up_notes` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+=======
+INSERT INTO `admissiontb` (`pid`, `fname`, `lname`, `gender`, `email`, `contact`, `password`, `admission_date`, `status`, `age`, `address`, `blood_group`, `medical_history`, `allergies`, `assigned_doctor`, `room_number`, `created_by`, `reason`, `created_at`, `updated_at`) VALUES
+(8, 'last', 'na', 'Male', 'Pmadridano@gmail.com', '09940213443', '$2y$10$ZUSbKAS7Xc.g33Ib5dFtBekunbYKIUHzYNAt.tC5pRQM1kGR68VnO', '2025-10-09', 'Discharged', 20, 'Km6 Upper Balulang', '', NULL, NULL, 'pawix_12', '202', 'nurse', 'back pain', '2025-10-09 03:18:06', '2025-10-09 17:22:51'),
+(11, 'Insure', 'inurse', 'Male', 'Insu@gmail.com', '09940213443', '$2y$10$KIOzACrapi5l5Ov8.SIwkujl8lQukaxjo/V.wuuSj8KyKPnMuL1MG', '2025-10-09', 'Discharged', 20, 'Km6 Upper Balulang', '', NULL, NULL, 'pawix_12', '101', 'nurse', 'Test insurance', '2025-10-09 11:52:28', '2025-10-09 17:23:52'),
+(13, 'p', 'inurse', 'Male', 'Philhealth@gmail.com', '09940213443', '$2y$10$V.X/yB75.aNg3i6AIjRUueLcfXcyuWvlVz0T1UM9ak2jqMbdLAzdu', '2025-10-09', 'Discharged', 20, 'Km6 Upper Balulang', '', NULL, NULL, 'pawix_12', '402', 'nurse', 'Phil@123', '2025-10-09 12:27:07', '2025-10-09 17:22:57'),
+(14, 'Insurance1', 'n', 'Male', 'In@gmail.com', '09940213443', '$2y$10$ZreCkpE/x6In9PnLWQOgKusZBTJxglA9VZ1bnvIxIvIW4jUb.Aqvq', '2025-10-09', 'Discharged', 20, 'Km6 Upper Balulang', '', NULL, NULL, 'pawix_12', '401', 'nurse', 'In@12345', '2025-10-09 12:33:52', '2025-10-09 17:15:07'),
+(16, 'qweqwe', 'eqwewq', 'Male', 'qweq@qwe.com', '09123456789', '$2y$10$EARO85.y4IdB7o.wl6BNauGbxpWLnAy3YluQQi7Gt/XvBZRsArMHu', '2025-10-09', 'Discharged', 21, 'qweqwe', '', NULL, NULL, 'pawix_12', '102', 'nurse', 'qweqwe', '2025-10-09 14:05:00', '2025-10-09 17:23:02'),
+(17, 'Thursday', 'alas 10', 'Male', 'Thursday@gmail.com', '09999999991', '$2y$10$KcMdFXlBM1neybZ9GnPn9u0bgpoAVA6UVmZlDDtmAvmxtZfVBSDBW', '2025-10-09', 'Discharged', 60, 'Km6 Upper Balulang', '', NULL, NULL, 'pawix_12', '401', 'nurse', 'Thursday', '2025-10-09 17:19:36', '2025-10-09 17:27:47');
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 
 -- --------------------------------------------------------
 
@@ -124,7 +142,10 @@ CREATE TABLE `adverse_reactions` (
 --
 
 CREATE TABLE `billtb` (
+<<<<<<< HEAD
   `id` int(11) NOT NULL,
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
   `pid` int(11) NOT NULL,
   `consultation_fees` decimal(10,2) NOT NULL DEFAULT 0.00,
   `lab_fees` decimal(10,2) NOT NULL DEFAULT 0.00,
@@ -140,17 +161,22 @@ CREATE TABLE `billtb` (
   `invoice_generated` tinyint(1) DEFAULT 0,
   `receipt_generated` tinyint(1) DEFAULT 0,
   `insurance_covered` decimal(10,2) DEFAULT 0.00,
+<<<<<<< HEAD
   `patient_payable` decimal(10,2) DEFAULT 0.00,
   `cashier_id` int(11) DEFAULT NULL,
   `payment_status` enum('Pending','Approved','Rejected') DEFAULT 'Pending',
   `payment_time` time DEFAULT NULL,
   `amount_paid` decimal(10,2) DEFAULT 0.00
+=======
+  `patient_payable` decimal(10,2) DEFAULT 0.00
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 --
 -- Dumping data for table `billtb`
 --
 
+<<<<<<< HEAD
 INSERT INTO `billtb` (`id`, `pid`, `consultation_fees`, `lab_fees`, `medicine_fees`, `total`, `status`, `service_charges`, `room_charges`, `other_charges`, `discount`, `payment_date`, `payment_method`, `invoice_generated`, `receipt_generated`, `insurance_covered`, `patient_payable`, `cashier_id`, `payment_status`, `payment_time`, `amount_paid`) VALUES
 (1, 8, 800.00, 400.00, 155.00, 2505.00, 'Paid', 600.00, 550.00, 0.00, 0.00, NULL, NULL, 0, 1, 0.00, 2505.00, NULL, 'Pending', NULL, 0.00),
 (2, 11, 800.00, 0.00, 0.00, 1050.00, 'Unpaid', 0.00, 250.00, 0.00, 0.00, NULL, NULL, 0, 0, 0.00, 1050.00, NULL, 'Pending', NULL, 0.00),
@@ -231,6 +257,15 @@ CREATE TABLE `counseling_notes` (
   `follow_up_date` date DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+=======
+INSERT INTO `billtb` (`pid`, `consultation_fees`, `lab_fees`, `medicine_fees`, `total`, `status`, `service_charges`, `room_charges`, `other_charges`, `discount`, `payment_date`, `payment_method`, `invoice_generated`, `receipt_generated`, `insurance_covered`, `patient_payable`) VALUES
+(8, 800.00, 400.00, 155.00, 2505.00, 'Paid', 600.00, 550.00, 0.00, 0.00, NULL, NULL, 0, 1, 0.00, 2505.00),
+(11, 800.00, 0.00, 0.00, 1050.00, 'Unpaid', 0.00, 250.00, 0.00, 0.00, NULL, NULL, 0, 0, 0.00, 1050.00),
+(13, 800.00, 0.00, 0.00, 1200.00, 'Unpaid', 0.00, 400.00, 0.00, 0.00, NULL, NULL, 0, 0, 600.00, 600.00),
+(14, 800.00, 300.00, 1513.50, 4013.50, 'Paid', 1000.00, 400.00, 0.00, 0.00, NULL, NULL, 0, 0, 180.00, 1020.00),
+(16, 800.00, 0.00, 0.00, 1050.00, 'Unpaid', 0.00, 250.00, 0.00, 0.00, NULL, NULL, 0, 0, 0.00, 1050.00),
+(17, 800.00, 500.00, 35.00, 2235.00, 'Paid', 500.00, 400.00, 0.00, 0.00, NULL, NULL, 0, 0, 600.00, 600.00);
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 
 -- --------------------------------------------------------
 
@@ -316,19 +351,30 @@ CREATE TABLE `doctortb` (
   `two_factor_enabled` tinyint(4) DEFAULT 0,
   `two_factor_code` varchar(10) DEFAULT NULL,
   `two_factor_expires` datetime DEFAULT NULL,
+<<<<<<< HEAD
   `backup_codes` text DEFAULT NULL,
   `is_operating_doctor` tinyint(1) DEFAULT 0
+=======
+  `backup_codes` text DEFAULT NULL
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `doctortb`
 --
 
+<<<<<<< HEAD
 INSERT INTO `doctortb` (`id`, `username`, `password`, `fname`, `lname`, `email`, `contact`, `specialization`, `qualification`, `experience_years`, `consultation_fee`, `status`, `created_date`, `created_by`, `two_factor_enabled`, `two_factor_code`, `two_factor_expires`, `backup_codes`, `is_operating_doctor`) VALUES
 (2, 'dr_johnson', 'doctor123', 'Sarah', 'Johnson', 'sarah.johnson@hospital.com', '1234567891', 'Pediatrics', 'MD Pediatrics', 8, 150.00, 'Active', '2025-09-17', 'admin', 1, NULL, NULL, NULL, 0),
 (3, 'dr_williams', 'doctor123', 'Michael', 'Williams', 'michael.williams@hospital.com', '1234567892', 'General Medicine', 'MBBS', 5, 100.00, 'On Leave', '2025-09-17', 'admin', 0, NULL, NULL, NULL, 0),
 (7, 'pawix_12', 'paolo123', 'Gabriel', 'Madridano', 'pmadridano2@gmail.com', '09940213443', 'Cardiology', 'Ok', 13, 800.00, 'Active', '2025-09-17', 'admin', 1, NULL, NULL, NULL, 0),
 (10, 'operating_doc', 'opdoc123', 'Operating', 'Doctor', 'opdoc@hospital.com', '1234567890', 'Surgery', 'MD Surgery', 10, 500.00, 'Active', '2025-10-14', 'admin', 0, NULL, NULL, NULL, 1);
+=======
+INSERT INTO `doctortb` (`id`, `username`, `password`, `fname`, `lname`, `email`, `contact`, `specialization`, `qualification`, `experience_years`, `consultation_fee`, `status`, `created_date`, `created_by`, `two_factor_enabled`, `two_factor_code`, `two_factor_expires`, `backup_codes`) VALUES
+(2, 'dr_johnson', 'doctor123', 'Sarah', 'Johnson', 'sarah.johnson@hospital.com', '1234567891', 'Pediatrics', 'MD Pediatrics', 8, 150.00, 'Active', '2025-09-17', 'admin', 1, NULL, NULL, NULL),
+(3, 'dr_williams', 'doctor123', 'Michael', 'Williams', 'michael.williams@hospital.com', '1234567892', 'General Medicine', 'MBBS', 5, 100.00, 'On Leave', '2025-09-17', 'admin', 0, NULL, NULL, NULL),
+(7, 'pawix_12', 'paolo123', 'Gabriel', 'Madridano', 'pmadridano2@gmail.com', '09940213443', 'Cardiology', 'Ok', 13, 800.00, 'Active', '2025-09-17', 'admin', 1, NULL, NULL, NULL);
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 
 -- --------------------------------------------------------
 
@@ -393,6 +439,7 @@ INSERT INTO `insurance_companiestb` (`insurance_id`, `company_name`, `contact_pe
 -- --------------------------------------------------------
 
 --
+<<<<<<< HEAD
 -- Table structure for table `inventory_logs`
 --
 
@@ -416,6 +463,8 @@ CREATE TABLE `inventory_logs` (
 -- --------------------------------------------------------
 
 --
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 -- Table structure for table `invoicetb`
 --
 
@@ -539,6 +588,7 @@ INSERT INTO `medicinetb` (`id`, `medicine_name`, `quantity`, `added_by_nurse`, `
 -- --------------------------------------------------------
 
 --
+<<<<<<< HEAD
 -- Table structure for table `monitoring_reports`
 --
 
@@ -561,6 +611,8 @@ CREATE TABLE `monitoring_reports` (
 -- --------------------------------------------------------
 
 --
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 -- Table structure for table `nursetb`
 --
 
@@ -589,12 +641,17 @@ CREATE TABLE `nursetb` (
 
 INSERT INTO `nursetb` (`id`, `username`, `password`, `email`, `fname`, `lname`, `contact`, `department`, `shift`, `status`, `created_date`, `created_by`, `two_factor_enabled`, `two_factor_code`, `two_factor_expires`, `backup_codes`) VALUES
 (1, 'nurse1', 'nurse123', 'pmadridano2@gmail.com', 'Mary', 'Wilson', '1234567893', 'General Ward', 'Day', 'Active', '2025-09-17', 'admin', 1, NULL, NULL, NULL),
+<<<<<<< HEAD
 (2, 'nurse2', 'nurse123', 'pmadridano2@gmail.com', 'Lisa', 'Brown', '1234567894', 'ICU', 'Night', 'Active', '2025-09-17', 'admin', 0, NULL, NULL, NULL),
+=======
+(2, 'nurse2', 'nurse123', 'pmadridano2@gmail.com', 'Lisa', 'Brown', '1234567894', 'ICU', 'Night', 'Active', '2025-09-17', 'admin', 1, '057674', '2025-10-09 19:28:04', NULL),
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 (3, 'nurse3', 'nurse123', 'nurse3@hospital.com', 'Jennifer', 'Davis', '1234567895', 'Emergency', 'Day', 'Active', '2025-09-17', 'admin', 1, '399159', '2025-10-09 15:39:08', NULL);
 
 -- --------------------------------------------------------
 
 --
+<<<<<<< HEAD
 -- Table structure for table `operations`
 --
 
@@ -613,6 +670,8 @@ CREATE TABLE `operations` (
 -- --------------------------------------------------------
 
 --
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 -- Table structure for table `patient_chargstb`
 --
 
@@ -664,8 +723,12 @@ CREATE TABLE `patient_insurancetb` (
 INSERT INTO `patient_insurancetb` (`patient_insurance_id`, `patient_id`, `insurance_id`, `policy_number`, `coverage_percent`, `start_date`, `end_date`, `status`, `created_at`, `updated_at`) VALUES
 (9, 13, 1, 'POL7258', 50.00, '2025-10-09', NULL, 'active', '2025-10-09 12:27:07', '2025-10-09 12:27:07'),
 (10, 14, 3, 'POL7789', 15.00, '2025-10-09', NULL, 'active', '2025-10-09 12:33:52', '2025-10-09 12:33:52'),
+<<<<<<< HEAD
 (11, 17, 1, 'POL7122', 50.00, '2025-10-10', NULL, 'active', '2025-10-09 17:19:36', '2025-10-09 17:19:36'),
 (12, 18, 1, 'POL72222', 10.00, '2025-10-14', NULL, 'active', '2025-10-14 12:48:47', '2025-10-14 12:48:47');
+=======
+(11, 17, 1, 'POL7122', 50.00, '2025-10-10', NULL, 'active', '2025-10-09 17:19:36', '2025-10-09 17:19:36');
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 
 -- --------------------------------------------------------
 
@@ -695,6 +758,7 @@ INSERT INTO `patient_roundstb` (`id`, `pid`, `nurse_username`, `round_date`, `ro
 -- --------------------------------------------------------
 
 --
+<<<<<<< HEAD
 -- Table structure for table `patient_transferstb`
 --
 
@@ -712,6 +776,8 @@ CREATE TABLE `patient_transferstb` (
 -- --------------------------------------------------------
 
 --
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 -- Table structure for table `patreg`
 --
 
@@ -770,6 +836,7 @@ INSERT INTO `paymentstb` (`id`, `pid`, `amount`, `payment_method`, `payment_date
 -- --------------------------------------------------------
 
 --
+<<<<<<< HEAD
 -- Table structure for table `pharmacisttb`
 --
 
@@ -794,6 +861,8 @@ INSERT INTO `pharmacisttb` (`id`, `username`, `password`, `email`, `contact`, `f
 -- --------------------------------------------------------
 
 --
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 -- Table structure for table `prestb`
 --
 
@@ -812,18 +881,23 @@ CREATE TABLE `prestb` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `dosage` text DEFAULT NULL,
   `frequency` text DEFAULT NULL,
+<<<<<<< HEAD
   `duration` text DEFAULT NULL,
   `status` varchar(20) NOT NULL DEFAULT 'Pending',
   `dispensed_by` varchar(50) DEFAULT NULL,
   `dispensed_date` datetime DEFAULT NULL,
   `given_by` varchar(50) DEFAULT NULL,
   `given_date` datetime DEFAULT NULL
+=======
+  `duration` text DEFAULT NULL
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `prestb`
 --
 
+<<<<<<< HEAD
 INSERT INTO `prestb` (`id`, `doctor`, `pid`, `fname`, `lname`, `symptoms`, `allergy`, `prescription`, `price`, `diagnosis_details`, `prescribed_medicines`, `created_at`, `dosage`, `frequency`, `duration`, `status`, `dispensed_by`, `dispensed_date`, `given_by`, `given_date`) VALUES
 (1, 'pawix_12', 2, 'justin', 'nabunturan', NULL, 'Pollen', 'Amoxicillin, Aspirin, Antihistamine, Cough Syrup, Antiseptic Cream', 7.70, 'qwewq', 'Amoxicillin, Aspirin, Antihistamine, Cough Syrup, Antiseptic Cream', '2025-09-17 14:56:23', NULL, NULL, NULL, 'Pending', NULL, NULL, NULL, NULL),
 (2, 'pawix_12', 2, 'justin', 'nabunturan', NULL, 'None', 'Amoxicillin', 1.20, 'asdasdas', 'Amoxicillin', '2025-09-17 14:57:54', NULL, NULL, NULL, 'Pending', NULL, NULL, NULL, NULL),
@@ -838,6 +912,22 @@ INSERT INTO `prestb` (`id`, `doctor`, `pid`, `fname`, `lname`, `symptoms`, `alle
 (11, 'pawix_12', 14, 'Insurance1', 'n', '', 'None', 'Paracetamol, Vitamin D', 180.50, '', 'Paracetamol, Vitamin D', '2025-10-09 12:35:45', '500mg,1000 IU', '3 times a day,1 time a day', '5 days,10 days', 'Pending', NULL, NULL, NULL, NULL),
 (12, 'pawix_12', 14, 'Insurance1', 'n', '', 'Penicillin', 'Paracetamol, Antiseptic Cream', 1333.00, '', 'Paracetamol, Antiseptic Cream', '2025-10-09 16:28:34', '500mg,200mg', '3 times a day,2 times a day', ',5 days', 'Pending', NULL, NULL, NULL, NULL),
 (13, 'pawix_12', 17, 'Thursday', 'alas 10', '', 'None', 'Bandages', 35.00, '', 'Bandages', '2025-10-09 17:24:40', '', '', '', 'Pending', NULL, NULL, NULL, NULL);
+=======
+INSERT INTO `prestb` (`id`, `doctor`, `pid`, `fname`, `lname`, `symptoms`, `allergy`, `prescription`, `price`, `diagnosis_details`, `prescribed_medicines`, `created_at`, `dosage`, `frequency`, `duration`) VALUES
+(1, 'pawix_12', 2, 'justin', 'nabunturan', NULL, 'Pollen', 'Amoxicillin, Aspirin, Antihistamine, Cough Syrup, Antiseptic Cream', 7.70, 'qwewq', 'Amoxicillin, Aspirin, Antihistamine, Cough Syrup, Antiseptic Cream', '2025-09-17 14:56:23', NULL, NULL, NULL),
+(2, 'pawix_12', 2, 'justin', 'nabunturan', NULL, 'None', 'Amoxicillin', 1.20, 'asdasdas', 'Amoxicillin', '2025-09-17 14:57:54', NULL, NULL, NULL),
+(3, 'pawix_12', 2, 'justin', 'nabunturan', '', 'Latex', 'Antihistamine', 0.60, 'qweqwe', 'Antihistamine', '2025-09-17 15:10:14', NULL, NULL, NULL),
+(4, 'pawix_12', 2, 'justin', 'nabunturan', '', 'Latex', 'Antihistamine', 0.60, 'qweqwe', 'Antihistamine', '2025-09-17 15:10:20', NULL, NULL, NULL),
+(5, 'pawix_12', 2, 'justin', 'nabunturan', '', 'Latex', 'Antihistamine', 0.60, 'qweqwe', 'Antihistamine', '2025-09-17 15:11:47', NULL, NULL, NULL),
+(6, 'pawix_12', 3, 'lebron', 'james', 'wala', 'None', 'Bandages', 2.00, 'wala', 'Bandages', '2025-10-01 08:10:08', '', '', ''),
+(7, 'pawix_12', 3, 'lebron', 'james', 'weq', 'None', 'Insulin', 450.00, 'weqwe', 'Insulin', '2025-10-01 08:10:36', '', '', ''),
+(8, 'pawix_12', 5, 'test', '2', 'sakit ngipon', 'None', 'Vitamin D', 0.90, 'wala', 'Vitamin D', '2025-10-01 08:33:22', '', '', ''),
+(9, 'pawix_12', 8, 'last', 'na', '', 'Penicillin', 'Paracetamol', 155.00, '', 'Paracetamol', '2025-10-09 03:27:58', '500mg', '3 times a day', '7 days'),
+(10, 'pawix_12', 10, 'Ins ', 'insurance', '', 'Pollen', 'Aspirin', 122.50, '', 'Aspirin', '2025-10-09 11:13:12', '75mg', '1 time a day', '5 days'),
+(11, 'pawix_12', 14, 'Insurance1', 'n', '', 'None', 'Paracetamol, Vitamin D', 180.50, '', 'Paracetamol, Vitamin D', '2025-10-09 12:35:45', '500mg,1000 IU', '3 times a day,1 time a day', '5 days,10 days'),
+(12, 'pawix_12', 14, 'Insurance1', 'n', '', 'Penicillin', 'Paracetamol, Antiseptic Cream', 1333.00, '', 'Paracetamol, Antiseptic Cream', '2025-10-09 16:28:34', '500mg,200mg', '3 times a day,2 times a day', ',5 days'),
+(13, 'pawix_12', 17, 'Thursday', 'alas 10', '', 'None', 'Bandages', 35.00, '', 'Bandages', '2025-10-09 17:24:40', '', '', '');
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 
 -- --------------------------------------------------------
 
@@ -870,6 +960,7 @@ INSERT INTO `servicestb` (`id`, `service_name`, `service_category`, `price`, `de
 (9, 'Nursing Care', 'Care', 80.00, 'Daily nursing care charges', 'Active'),
 (10, 'Medical Equipment Usage', 'Equipment', 25.00, 'Basic medical equipment usage', 'Active');
 
+<<<<<<< HEAD
 -- --------------------------------------------------------
 
 --
@@ -889,6 +980,8 @@ CREATE TABLE `surgerytb` (
   `completed_time` time DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 --
 -- Indexes for dumped tables
 --
@@ -906,6 +999,7 @@ ALTER TABLE `admissiontb`
   ADD PRIMARY KEY (`pid`);
 
 --
+<<<<<<< HEAD
 -- Indexes for table `adverse_reactions`
 --
 ALTER TABLE `adverse_reactions`
@@ -940,6 +1034,12 @@ ALTER TABLE `compounding_records`
 ALTER TABLE `counseling_notes`
   ADD PRIMARY KEY (`id`),
   ADD KEY `pid` (`pid`);
+=======
+-- Indexes for table `billtb`
+--
+ALTER TABLE `billtb`
+  ADD PRIMARY KEY (`pid`);
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 
 --
 -- Indexes for table `diagnosticstb`
@@ -974,6 +1074,7 @@ ALTER TABLE `insurance_companiestb`
   ADD PRIMARY KEY (`insurance_id`);
 
 --
+<<<<<<< HEAD
 -- Indexes for table `inventory_logs`
 --
 ALTER TABLE `inventory_logs`
@@ -981,6 +1082,8 @@ ALTER TABLE `inventory_logs`
   ADD KEY `medicine_id` (`medicine_id`);
 
 --
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 -- Indexes for table `invoicetb`
 --
 ALTER TABLE `invoicetb`
@@ -1008,6 +1111,7 @@ ALTER TABLE `medicinetb`
   ADD PRIMARY KEY (`id`);
 
 --
+<<<<<<< HEAD
 -- Indexes for table `monitoring_reports`
 --
 ALTER TABLE `monitoring_reports`
@@ -1015,18 +1119,23 @@ ALTER TABLE `monitoring_reports`
   ADD KEY `pid` (`pid`);
 
 --
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 -- Indexes for table `nursetb`
 --
 ALTER TABLE `nursetb`
   ADD PRIMARY KEY (`id`);
 
 --
+<<<<<<< HEAD
 -- Indexes for table `operations`
 --
 ALTER TABLE `operations`
   ADD PRIMARY KEY (`id`);
 
 --
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 -- Indexes for table `patient_chargstb`
 --
 ALTER TABLE `patient_chargstb`
@@ -1050,6 +1159,7 @@ ALTER TABLE `patient_roundstb`
   ADD KEY `pid` (`pid`);
 
 --
+<<<<<<< HEAD
 -- Indexes for table `patient_transferstb`
 --
 ALTER TABLE `patient_transferstb`
@@ -1059,6 +1169,8 @@ ALTER TABLE `patient_transferstb`
   ADD KEY `to_doctor_id` (`to_doctor_id`);
 
 --
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 -- Indexes for table `patreg`
 --
 ALTER TABLE `patreg`
@@ -1072,6 +1184,7 @@ ALTER TABLE `paymentstb`
   ADD KEY `pid` (`pid`);
 
 --
+<<<<<<< HEAD
 -- Indexes for table `pharmacisttb`
 --
 ALTER TABLE `pharmacisttb`
@@ -1085,6 +1198,12 @@ ALTER TABLE `prestb`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_prestb_status` (`status`),
   ADD KEY `idx_prestb_dispensed_date` (`dispensed_date`);
+=======
+-- Indexes for table `prestb`
+--
+ALTER TABLE `prestb`
+  ADD PRIMARY KEY (`id`);
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 
 --
 -- Indexes for table `servicestb`
@@ -1093,6 +1212,7 @@ ALTER TABLE `servicestb`
   ADD PRIMARY KEY (`id`);
 
 --
+<<<<<<< HEAD
 -- Indexes for table `surgerytb`
 --
 ALTER TABLE `surgerytb`
@@ -1101,6 +1221,8 @@ ALTER TABLE `surgerytb`
   ADD KEY `operating_doctor_id` (`operating_doctor_id`);
 
 --
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -1108,6 +1230,7 @@ ALTER TABLE `surgerytb`
 -- AUTO_INCREMENT for table `admissiontb`
 --
 ALTER TABLE `admissiontb`
+<<<<<<< HEAD
   MODIFY `pid` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
@@ -1139,6 +1262,9 @@ ALTER TABLE `compounding_records`
 --
 ALTER TABLE `counseling_notes`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+=======
+  MODIFY `pid` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 
 --
 -- AUTO_INCREMENT for table `diagnosticstb`
@@ -1150,7 +1276,11 @@ ALTER TABLE `diagnosticstb`
 -- AUTO_INCREMENT for table `doctortb`
 --
 ALTER TABLE `doctortb`
+<<<<<<< HEAD
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+=======
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 
 --
 -- AUTO_INCREMENT for table `emergency_access_logs`
@@ -1165,12 +1295,15 @@ ALTER TABLE `insurance_companiestb`
   MODIFY `insurance_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
+<<<<<<< HEAD
 -- AUTO_INCREMENT for table `inventory_logs`
 --
 ALTER TABLE `inventory_logs`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 -- AUTO_INCREMENT for table `invoicetb`
 --
 ALTER TABLE `invoicetb`
@@ -1195,24 +1328,30 @@ ALTER TABLE `medicinetb`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
+<<<<<<< HEAD
 -- AUTO_INCREMENT for table `monitoring_reports`
 --
 ALTER TABLE `monitoring_reports`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 -- AUTO_INCREMENT for table `nursetb`
 --
 ALTER TABLE `nursetb`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
+<<<<<<< HEAD
 -- AUTO_INCREMENT for table `operations`
 --
 ALTER TABLE `operations`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 -- AUTO_INCREMENT for table `patient_chargstb`
 --
 ALTER TABLE `patient_chargstb`
@@ -1222,7 +1361,11 @@ ALTER TABLE `patient_chargstb`
 -- AUTO_INCREMENT for table `patient_insurancetb`
 --
 ALTER TABLE `patient_insurancetb`
+<<<<<<< HEAD
   MODIFY `patient_insurance_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+=======
+  MODIFY `patient_insurance_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 
 --
 -- AUTO_INCREMENT for table `patient_roundstb`
@@ -1231,12 +1374,15 @@ ALTER TABLE `patient_roundstb`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
+<<<<<<< HEAD
 -- AUTO_INCREMENT for table `patient_transferstb`
 --
 ALTER TABLE `patient_transferstb`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 -- AUTO_INCREMENT for table `patreg`
 --
 ALTER TABLE `patreg`
@@ -1249,12 +1395,15 @@ ALTER TABLE `paymentstb`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
+<<<<<<< HEAD
 -- AUTO_INCREMENT for table `pharmacisttb`
 --
 ALTER TABLE `pharmacisttb`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 -- AUTO_INCREMENT for table `prestb`
 --
 ALTER TABLE `prestb`
@@ -1267,16 +1416,20 @@ ALTER TABLE `servicestb`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
+<<<<<<< HEAD
 -- AUTO_INCREMENT for table `surgerytb`
 --
 ALTER TABLE `surgerytb`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 -- Constraints for dumped tables
 --
 
 --
+<<<<<<< HEAD
 -- Constraints for table `adverse_reactions`
 --
 ALTER TABLE `adverse_reactions`
@@ -1299,6 +1452,12 @@ ALTER TABLE `compounding_records`
 --
 ALTER TABLE `counseling_notes`
   ADD CONSTRAINT `counseling_notes_ibfk_1` FOREIGN KEY (`pid`) REFERENCES `admissiontb` (`pid`);
+=======
+-- Constraints for table `billtb`
+--
+ALTER TABLE `billtb`
+  ADD CONSTRAINT `billtb_ibfk_1` FOREIGN KEY (`pid`) REFERENCES `admissiontb` (`pid`);
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 
 --
 -- Constraints for table `diagnosticstb`
@@ -1313,12 +1472,15 @@ ALTER TABLE `dischargetb`
   ADD CONSTRAINT `dischargetb_ibfk_1` FOREIGN KEY (`pid`) REFERENCES `admissiontb` (`pid`);
 
 --
+<<<<<<< HEAD
 -- Constraints for table `inventory_logs`
 --
 ALTER TABLE `inventory_logs`
   ADD CONSTRAINT `inventory_logs_ibfk_1` FOREIGN KEY (`medicine_id`) REFERENCES `medicinetb` (`id`);
 
 --
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 -- Constraints for table `invoicetb`
 --
 ALTER TABLE `invoicetb`
@@ -1331,12 +1493,15 @@ ALTER TABLE `labtesttb`
   ADD CONSTRAINT `labtesttb_ibfk_1` FOREIGN KEY (`pid`) REFERENCES `admissiontb` (`pid`);
 
 --
+<<<<<<< HEAD
 -- Constraints for table `monitoring_reports`
 --
 ALTER TABLE `monitoring_reports`
   ADD CONSTRAINT `monitoring_reports_ibfk_1` FOREIGN KEY (`pid`) REFERENCES `admissiontb` (`pid`);
 
 --
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 -- Constraints for table `patient_chargstb`
 --
 ALTER TABLE `patient_chargstb`
@@ -1357,6 +1522,7 @@ ALTER TABLE `patient_roundstb`
   ADD CONSTRAINT `fk_patient_rounds_pid` FOREIGN KEY (`pid`) REFERENCES `admissiontb` (`pid`) ON DELETE CASCADE;
 
 --
+<<<<<<< HEAD
 -- Constraints for table `patient_transferstb`
 --
 ALTER TABLE `patient_transferstb`
@@ -1365,10 +1531,13 @@ ALTER TABLE `patient_transferstb`
   ADD CONSTRAINT `patient_transferstb_ibfk_3` FOREIGN KEY (`to_doctor_id`) REFERENCES `doctortb` (`id`);
 
 --
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 -- Constraints for table `paymentstb`
 --
 ALTER TABLE `paymentstb`
   ADD CONSTRAINT `paymentstb_ibfk_1` FOREIGN KEY (`pid`) REFERENCES `admissiontb` (`pid`);
+<<<<<<< HEAD
 
 --
 -- Constraints for table `surgerytb`
@@ -1376,6 +1545,8 @@ ALTER TABLE `paymentstb`
 ALTER TABLE `surgerytb`
   ADD CONSTRAINT `surgerytb_ibfk_1` FOREIGN KEY (`pid`) REFERENCES `admissiontb` (`pid`),
   ADD CONSTRAINT `surgerytb_ibfk_2` FOREIGN KEY (`operating_doctor_id`) REFERENCES `doctortb` (`id`);
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -173,10 +173,17 @@ $patients_result = mysqli_query($con,$query);
 while ($row = mysqli_fetch_array($patients_result)) {
     $patients_data[] = $row;
 }
+<<<<<<< HEAD
 $diagnostics_query = "SELECT d.*, a.fname, a.lname, p.prescribed_medicines, p.dosage, p.frequency, p.duration FROM diagnosticstb d
                     JOIN admissiontb a ON d.pid = a.pid
                     LEFT JOIN prestb p ON d.pid = p.pid AND d.doctor_name = p.doctor
                     WHERE d.doctor_name = '$doctor'
+=======
+$diagnostics_query = "SELECT d.*, a.fname, a.lname, p.prescribed_medicines FROM diagnosticstb d 
+                    JOIN admissiontb a ON d.pid = a.pid 
+                    LEFT JOIN prestb p ON d.pid = p.pid AND d.doctor_name = p.doctor
+                    WHERE d.doctor_name = '$doctor' 
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
                     ORDER BY d.created_date DESC, d.created_time DESC";
 $diagnostics_result = mysqli_query($con, $diagnostics_query);
 while ($diag = mysqli_fetch_array($diagnostics_result)) {
@@ -201,6 +208,7 @@ while ($lab = mysqli_fetch_array($lab_result)) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<<<<<<< HEAD
 
     <style>
         :root {
@@ -292,11 +300,113 @@ while ($lab = mysqli_fetch_array($lab_result)) {
         }
 
         .welcome-header {
+=======
+    
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #fdbb2d 0%, #22c1c3 100%);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+        }
+
+        .navbar-glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .navbar-brand {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            color: white !important;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card {
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            color: white;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .sidebar {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 20px;
+            pointer-events: auto !important;
+            z-index: 10;
+        }
+
+        .nav-pills .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+            pointer-events: auto !important;
+            z-index: 10;
+            cursor: pointer !important;
+        }
+
+        .nav-pills .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .nav-pills .nav-link.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .table-glass {
+            background: transparent;
+            color: #2c3e50;
+        }
+
+        .table-glass th {
+            background: rgba(255, 255, 255, 0.2);
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .welcome-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
             text-align: center;
             margin-bottom: 30px;
         }
 
         .welcome-header h2 {
+<<<<<<< HEAD
             color: var(--primary-blue);
             font-weight: 700;
             margin-bottom: 10px;
@@ -468,6 +578,64 @@ while ($lab = mysqli_fetch_array($lab_result)) {
             box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
         }
 
+=======
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+        }
+
+        .welcome-header p {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .badge-lg {
+            padding: 8px 12px;
+            font-size: 0.9rem;
+        }
+        .btn-outline-light:hover {
+            color: #25bef7;
+            background-color: #f8f9fa;
+            border-color: #f8f9fa;
+        }
+        .modal {
+            z-index: 1050 !important;
+        }
+        .modal-backdrop {
+            z-index: 1040 !important;
+        }
+        .nav-pills .nav-link {
+            pointer-events: all !important;
+        }   
+        .sidebar * {
+            pointer-events: all !important;
+        }
+        .tab-content > .tab-pane {
+            display: none;
+        }
+        .tab-content > .active {
+            display: block;
+        }
+        .fade {
+            transition: opacity 0.15s linear;
+        }
+        .fade:not(.show) {
+            opacity: 0;
+        }
+        .fade.show {
+            opacity: 1;
+        }
+        .tab-pane {
+            display: none !important;
+        }
+        .tab-pane.active {
+            display: block !important;
+        }
+        .tab-pane.show {
+            display: block !important;
+        }
+
+        /* Enhanced Professional Styles */
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
         .quick-action-btn {
             transition: all 0.3s ease;
         }
@@ -477,6 +645,7 @@ while ($lab = mysqli_fetch_array($lab_result)) {
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
+<<<<<<< HEAD
         .trend-up {
             color: var(--success-gradient);
         }
@@ -545,10 +714,53 @@ while ($lab = mysqli_fetch_array($lab_result)) {
             z-index: 9999;
         }
 
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
         .trend-indicator {
             font-size: 0.8em;
             margin-left: 5px;
         }
+<<<<<<< HEAD
+=======
+
+        .trend-up { color: #28a745; }
+        .trend-down { color: #dc3545; }
+
+        .metric-card {
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+            text-align: center;
+        }
+
+        .activity-item {
+            padding: 10px;
+            border-left: 3px solid #667eea;
+            background: rgba(255,255,255,0.05);
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        .stat-card-enhanced {
+            border-radius: 15px;
+            padding: 25px;
+            color: white;
+            height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .stat-card-enhanced .d-flex {
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .stat-card-enhanced .icon-container {
+            font-size: 2.5rem;
+            opacity: 0.9;
+        }
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
     </style>
 </head>
 
@@ -887,9 +1099,12 @@ while ($lab = mysqli_fetch_array($lab_result)) {
                                             <th>Diagnosis</th>
                                             <th>Treatment Plan</th>
                                             <th>Prescription</th>
+<<<<<<< HEAD
                                             <th>Dosage</th>
                                             <th>Frequency</th>
                                             <th>Duration</th>
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
@@ -898,9 +1113,12 @@ while ($lab = mysqli_fetch_array($lab_result)) {
                                         mysqli_data_seek($diagnostics_result, 0);
                                         while ($diag = mysqli_fetch_array($diagnostics_result)) {
                                             $prescription_display = (!empty($diag['prescribed_medicines'])) ? substr($diag['prescribed_medicines'], 0, 30) . '...' : 'no prescription';
+<<<<<<< HEAD
                                             $dosage_display = (!empty($diag['dosage'])) ? substr($diag['dosage'], 0, 20) . '...' : 'N/A';
                                             $frequency_display = (!empty($diag['frequency'])) ? substr($diag['frequency'], 0, 20) . '...' : 'N/A';
                                             $duration_display = (!empty($diag['duration'])) ? substr($diag['duration'], 0, 20) . '...' : 'N/A';
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
                                             echo '<tr>
                                                 <td>' . $diag['created_date'] . '<br><small>' . $diag['created_time'] . '</small></td>
                                                 <td>' . $diag['fname'] . ' ' . $diag['lname'] . '<br><small>ID: ' . $diag['pid'] . '</small></td>
@@ -908,9 +1126,12 @@ while ($lab = mysqli_fetch_array($lab_result)) {
                                                 <td>' . substr($diag['diagnosis'], 0, 50) . '...</td>
                                                 <td>' . substr($diag['treatment_plan'], 0, 50) . '...</td>
                                                 <td>' . $prescription_display . '</td>
+<<<<<<< HEAD
                                                 <td>' . $dosage_display . '</td>
                                                 <td>' . $frequency_display . '</td>
                                                 <td>' . $duration_display . '</td>
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
                                                 <td>
                                                     <button class="btn btn-info btn-sm" data-toggle="modal" data-target="#viewDiagnosisModal-' . $diag['id'] . '">
                                                         <i class="fas fa-eye"></i> View
@@ -1244,6 +1465,7 @@ while ($lab = mysqli_fetch_array($lab_result)) {
                             <p><?php echo $diag['treatment_plan']; ?></p>
                         </div>
                     </div>
+<<<<<<< HEAD
                     <?php if (!empty($diag['prescribed_medicines'])): ?>
                     <hr>
                     <div class="row">
@@ -1259,6 +1481,8 @@ while ($lab = mysqli_fetch_array($lab_result)) {
                         </div>
                     </div>
                     <?php endif; ?>
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>

@@ -177,16 +177,22 @@ if(isset($_POST['login'])){
         $result = mysqli_query($con, $query);
         if(mysqli_num_rows($result) == 1) {
             $user_found = true;
+<<<<<<< HEAD
             $row = mysqli_fetch_array($result, MYSQLI_ASSOC);
             $role = $row['is_operating_doctor'] ? 'operating_doctor' : 'doctor';
             $_SESSION['doctor_id'] = $row['id'];
 
+=======
+            $role = 'doctor';
+            
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
             if (shouldBypass2FA($con, $username)) {
                 if (useEmergencyAutoLogin($con, $username)) {
                     $_SESSION['username'] = $username;
                     $_SESSION['role'] = $role;
                     $_SESSION['emergency_login'] = true;
                     session_regenerate_id(true);
+<<<<<<< HEAD
                     header("Location: " . ($role == 'operating_doctor' ? 'operating-doctor-panel.php' : 'doctor-panel.php'));
                     exit();
                 }
@@ -196,6 +202,17 @@ if(isset($_POST['login'])){
                 $code = generate2FACode();
                 $email = getUserEmail($con, $username, $role);
 
+=======
+                    header("Location: doctor-panel.php");
+                    exit();
+                }
+            }
+            
+            if (is2FAEnabled($con, $username, $role)) {
+                $code = generate2FACode();
+                $email = getUserEmail($con, $username, $role);
+                
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
                 if ($email && store2FACode($con, $username, $code, $role) && send2FAEmail($email, $code, $username)) {
                     $_SESSION['2fa_username'] = $username;
                     $_SESSION['2fa_role'] = $role;
@@ -206,13 +223,21 @@ if(isset($_POST['login'])){
                 } else {
                     $_SESSION['username'] = $username;
                     $_SESSION['role'] = $role;
+<<<<<<< HEAD
                     header("Location: " . ($role == 'operating_doctor' ? 'operating-doctor-panel.php' : 'doctor-panel.php'));
+=======
+                    header("Location: doctor-panel.php");
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
                     exit();
                 }
             } else {
                 $_SESSION['username'] = $username;
                 $_SESSION['role'] = $role;
+<<<<<<< HEAD
                 header("Location: " . ($role == 'operating_doctor' ? 'operating-doctor-panel.php' : 'doctor-panel.php'));
+=======
+                header("Location: doctor-panel.php");
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
                 exit();
             }
         }
@@ -261,6 +286,7 @@ if(isset($_POST['login'])){
         }
     }
     if (!$user_found) {
+<<<<<<< HEAD
         // Pharmacist login
         $query = "select * from pharmacisttb where username='$username';";
         $result = mysqli_query($con, $query);
@@ -310,6 +336,8 @@ if(isset($_POST['login'])){
         }
     }
     if (!$user_found) {
+=======
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
         echo("<script>alert('Invalid Username/Email or Password. Try Again!');
               window.location.href = 'index.php';</script>");
     }
@@ -563,4 +591,8 @@ function display_admin_panel(){
   </body>
 </html>';
 }
+<<<<<<< HEAD
 ?>
+=======
+?>
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516

@@ -121,6 +121,7 @@ if (isset($_POST['reject_test'])) {
     
     <style>
         :root {
+<<<<<<< HEAD
             --primary-blue: #007bff;
             --light-blue: #e3f2fd;
             --dark-blue: #0056b3;
@@ -145,6 +146,24 @@ if (isset($_POST['reject_test'])) {
             backdrop-filter: none !important;
             -webkit-backdrop-filter: none !important;
             border-bottom: 1px solid var(--dark-blue);
+=======
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #fdbb2d 0%, #22c1c3 100%);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+        }
+
+        .navbar-glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
         }
 
         .navbar-brand {
@@ -154,6 +173,7 @@ if (isset($_POST['reject_test'])) {
         }
 
         .glass-card {
+<<<<<<< HEAD
             background-color: var(--card-background);
             border: 1px solid #e9ecef;
             border-radius: 10px;
@@ -212,6 +232,60 @@ if (isset($_POST['reject_test'])) {
         .nav-link:hover {
             background-color: var(--light-blue);
             color: var(--primary-blue) !important;
+=======
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card {
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            color: white;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .sidebar {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 20px;
+            pointer-events: auto !important;
+            z-index: 10;
+        }
+
+        .nav-pills .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+            pointer-events: auto !important;
+            z-index: 10;
+        }
+
+        .nav-pills .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .nav-pills .nav-link.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
         }
 
         .table-glass {
@@ -226,11 +300,19 @@ if (isset($_POST['reject_test'])) {
         }
 
         .welcome-header {
+<<<<<<< HEAD
+=======
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
             text-align: center;
             margin-bottom: 30px;
         }
 
         .welcome-header h2 {
+<<<<<<< HEAD
             color: var(--primary-blue);
             font-weight: 700;
             margin-bottom: 10px;
@@ -239,6 +321,15 @@ if (isset($_POST['reject_test'])) {
         .welcome-header p {
             color: var(--text-muted);
             font-size: 1.1rem;
+=======
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+        }
+
+        .welcome-header p {
+            color: rgba(255, 255, 255, 0.8);
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
         }
         
         .badge-warning { background-color: #ffc107; }
@@ -264,6 +355,7 @@ if (isset($_POST['reject_test'])) {
         .trend-down { color: #dc3545; }
 
         .metric-card {
+<<<<<<< HEAD
             background-color: var(--light-blue);
             border: 1px solid var(--accent-blue);
             border-radius: 8px;
@@ -280,15 +372,38 @@ if (isset($_POST['reject_test'])) {
 
         .metric-card small {
             color: var(--text-muted);
+=======
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+            text-align: center;
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
         }
 
         .activity-item {
             padding: 10px;
+<<<<<<< HEAD
             border-left: 3px solid var(--primary-blue);
             background-color: var(--light-blue);
             margin-bottom: 10px;
             border-radius: 5px;
             border: 1px solid var(--accent-blue);
+=======
+            border-left: 3px solid #667eea;
+            background: rgba(255,255,255,0.05);
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        .stat-card-enhanced {
+            border-radius: 15px;
+            padding: 25px;
+            color: white;
+            height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
         }
 
         .stat-card-enhanced .d-flex {
@@ -297,6 +412,7 @@ if (isset($_POST['reject_test'])) {
         }
 
         .stat-card-enhanced .icon-container {
+<<<<<<< HEAD
             background: rgba(255,255,255,0.2);
             border-radius: 50%;
             width: 50px;
@@ -305,6 +421,10 @@ if (isset($_POST['reject_test'])) {
             align-items: center;
             justify-content: center;
             font-size: 1.5rem;
+=======
+            font-size: 2.5rem;
+            opacity: 0.9;
+>>>>>>> 988146efdeebdeb84e801caeb3930c961cd69516
         }
 
         .priority-indicator {
